@@ -28,12 +28,12 @@ El sistema opera mediante un **pipeline de 5 etapas secuenciales**, cada una eje
 │                    PIPELINE SCITOOLS RADAR                       │
 │                                                                  │
 │  [Inventario]  →  [Investigador]  →  [Clasificador]             │
-│     Check DB       GPT-5.3 +          Gemini 3.1                │
-│                    Tavily API         Flash Lite                  │
+│     Check DB       Sonnet 4 +         Sonnet 4                  │
+│                    Tavily API                                    │
 │                       │                    │                     │
 │                       ▼                    ▼                     │
 │               [Redactor]  →  [Creador BD]  →  [Evaluador]       │
-│               GPT-5.3          SQLAlchemy     GPT-5 Nano        │
+│               Opus 4           SQLAlchemy     Sonnet 4           │
 │               JSON mode                                          │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -46,13 +46,13 @@ El sistema opera mediante un **pipeline de 5 etapas secuenciales**, cada una eje
 ## 2. Busqueda de Nuevas Herramientas
 
 ### Archivo: `app/agent/researcher.py`
-### Modelo: `gpt-5.3-chat-latest` + Tavily Search API
+### Modelo: `claude-sonnet-4-20250514` + Tavily Search API
 
 ### Proceso
 
 1. **Consulta del inventario actual**: Se obtienen todas las herramientas existentes en la BD para evitar duplicados.
 
-2. **Generacion de queries de busqueda**: GPT-5.3 genera queries de busqueda optimizadas basadas en:
+2. **Generacion de queries de busqueda**: Claude Sonnet 4 genera queries de busqueda optimizadas basadas en:
    - Tendencias actuales en herramientas de investigacion
    - Gaps en el inventario actual (campos sin cobertura)
    - Categorias con pocas herramientas
@@ -62,7 +62,7 @@ El sistema opera mediante un **pipeline de 5 etapas secuenciales**, cada una eje
    - Filtro de dominio para fuentes confiables (.edu, .org, repositorios oficiales)
    - Busqueda en modo "search" con extractos
 
-4. **Analisis y extraccion**: GPT-5.3 analiza los resultados y extrae:
+4. **Analisis y extraccion**: Claude Sonnet 4 analiza los resultados y extrae:
    - Nombre de la herramienta
    - URL oficial
    - Resumen (1-2 oraciones)
@@ -100,7 +100,7 @@ El sistema opera mediante un **pipeline de 5 etapas secuenciales**, cada una eje
 ## 3. Deteccion de Actualizaciones
 
 ### Archivo: `app/agent/researcher.py` (segunda fase)
-### Modelo: `gpt-5.3-chat-latest` + Tavily Search API
+### Modelo: `claude-sonnet-4-20250514` + Tavily Search API
 
 ### Proceso
 
@@ -114,7 +114,7 @@ El sistema opera mediante un **pipeline de 5 etapas secuenciales**, cada una eje
    - Analisis de la pagina oficial (si tiene URL)
    - Deteccion de cambios en funcionalidades, precios, plataformas
 
-3. **Comparacion con registro actual**: GPT-5.3 compara el estado actual en BD con la informacion encontrada, detectando:
+3. **Comparacion con registro actual**: Claude Sonnet 4 compara el estado actual en BD con la informacion encontrada, detectando:
    - Cambios en funcionalidad (`summary`)
    - Cambio de categoria
    - Nuevas integraciones
@@ -152,19 +152,19 @@ El sistema opera mediante un **pipeline de 5 etapas secuenciales**, cada una eje
 ### 4.1 Clasificacion
 
 #### Archivo: `app/agent/classifier.py`
-#### Modelo: `gemini-3.1-flash-lite`
+#### Modelo: `claude-sonnet-4-20250514`
 
 Cada herramienta nueva pasa por el clasificador que asigna:
 
 - **Campo cientifico** (field): Uno de los campos predefinidos (Multidisciplinar, Ciencias Sociales, Ciencias de la Salud, etc.)
 - **Categoria** (category): Tipo de herramienta (IA/ML, Busqueda/Descubrimiento, Gestion de Referencias, etc.)
 
-El clasificador usa Gemini Flash Lite por su velocidad y bajo costo, ideal para tareas de clasificacion binaria/categorica.
+El clasificador usa Claude Sonnet 4 por su velocidad y precision, ideal para tareas de clasificacion categorica.
 
 ### 4.2 Redaccion Editorial
 
 #### Archivo: `app/agent/writer.py`
-#### Modelo: `gpt-5.3-chat-latest` (JSON mode)
+#### Modelo: `claude-opus-4-20250514` (JSON mode)
 
 El redactor genera el contenido editorial HTML de la entrada:
 
@@ -215,7 +215,7 @@ Tras la redaccion, el sistema:
 ## 5. Evaluacion de Calidad
 
 ### Archivo: `app/agent/evaluator.py`
-### Modelo: `gpt-5-nano`
+### Modelo: `claude-sonnet-4-20250514`
 
 Tras crear la entrada, el evaluador analiza la calidad del contenido generado:
 
@@ -286,17 +286,17 @@ AGENT_MAX_UPDATES = 5                 # Max actualizaciones por ejecucion
     │
     ▼
 [3] Investigador: buscar nuevas herramientas + actualizaciones
-    │   └── Tavily API + GPT-5.3
+    │   └── Tavily API + Claude Sonnet 4
     │   └── Recibir: new_tools[] + updates[]
     │
     ▼
 [4] Clasificador: categorizar herramientas nuevas
-    │   └── Gemini 3.1 Flash Lite
+    │   └── Claude Sonnet 4
     │   └── Asignar: field + category a cada tool
     │
     ▼
 [5] Redactor: generar editorial HTML
-    │   └── GPT-5.3 (JSON mode)
+    │   └── Claude Opus 4 (JSON mode)
     │   └── Recibir: editorial_html + tools_data
     │
     ▼
@@ -306,7 +306,7 @@ AGENT_MAX_UPDATES = 5                 # Max actualizaciones por ejecucion
     │
     ▼
 [7] Evaluador: evaluar calidad
-    │   └── GPT-5 Nano (JSON mode)
+    │   └── Claude Sonnet 4 (JSON mode)
     │   └── Guardar metricas en AgentRun
     │
     ▼
@@ -332,19 +332,19 @@ Ademas de la automatizacion, se puede disparar manualmente:
 
 | Etapa | Modelo | Temperatura | Tokens aprox. | Uso |
 |---|---|---|---|---|
-| Investigacion | `gpt-5.3-chat-latest` | 0.3 | ~4,000 | Busqueda + analisis |
-| Clasificacion | `gemini-3.1-flash-lite` | 0.2 | ~800 | Categorizar herramientas |
-| Redaccion | `gpt-5.3-chat-latest` | 0.4 | ~6,000 | Editorial HTML (JSON) |
-| Evaluacion | `gpt-5-nano` | 0.1 | ~1,000 | Metricas de calidad |
-| Chat (SciBot) | `gpt-5.3-chat-latest` | 0.5 | ~1,500 | Consultas usuario |
-| Fallback | `deepseek-v3.2` | 0.3 | variable | Modelo de respaldo |
+| Investigacion | `claude-sonnet-4-20250514` | 0.3 | ~4,000 | Busqueda + analisis |
+| Clasificacion | `claude-sonnet-4-20250514` | 0.2 | ~800 | Categorizar herramientas |
+| Redaccion | `claude-opus-4-20250514` | 0.4 | ~6,000 | Editorial HTML (JSON) |
+| Evaluacion | `claude-sonnet-4-20250514` | 0.1 | ~1,000 | Metricas de calidad |
+| Chat (SciBot) | `claude-sonnet-4-20250514` | 0.5 | ~1,500 | Consultas usuario |
+| Fallback | `gemini-2.5-flash-preview-04-17` | 0.3 | variable | Modelo de respaldo |
 
 ### Reintentos y resiliencia
 
 El servicio LLM (`llm_service.py`) utiliza `tenacity` para reintentos automaticos:
 - Maximo 3 intentos
 - Espera exponencial: 2s, 4s, 8s (max 10s)
-- Si todos fallan, intenta con modelo fallback (DeepSeek v3.2)
+- Si todos fallan, intenta con modelo fallback (Gemini 2.5 Flash)
 
 ---
 
@@ -387,7 +387,7 @@ AgentRun (ejecucion del agente)
 | Error | Comportamiento |
 |---|---|
 | Tavily API falla | Se omite la busqueda web, usa solo el inventario existente |
-| Modelo LLM falla (3 reintentos) | Intenta con modelo fallback (DeepSeek v3.2) |
+| Modelo LLM falla (3 reintentos) | Intenta con modelo fallback (Gemini 2.5 Flash) |
 | Fallback tambien falla | AgentRun se marca con `status='error'`, se loguea el error |
 | Error en persistencia BD | Rollback de la transaccion, AgentRun registra el error |
 | Calidad < 5 | Entrada se publica pero se marca para revision manual |

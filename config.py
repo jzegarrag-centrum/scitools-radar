@@ -34,12 +34,12 @@ class Config:
     
     # Modelos LLM via CometAPI
     MODELS = {
-        'research': 'gpt-5.3-chat-latest',
-        'classifier': 'gemini-3.1-flash-lite',
-        'writer': 'gpt-5.3-chat-latest',
-        'evaluator': 'gpt-5-nano',
-        'chat': 'gpt-5.3-chat-latest',
-        'fallback': 'deepseek-v3.2',
+        'research': 'claude-sonnet-4-20250514',
+        'classifier': 'claude-sonnet-4-20250514',
+        'writer': 'claude-opus-4-20250514',
+        'evaluator': 'claude-sonnet-4-20250514',
+        'chat': 'claude-sonnet-4-20250514',
+        'fallback': 'gemini-2.5-flash-preview-04-17',
     }
     
     # Web Search

@@ -62,11 +62,11 @@ def run_daily_agent():
     
     Pasos:
     0. Inventory Check
-    1. Research Agent (GPT-5.3 + Tavily)
+    1. Research Agent (Claude Sonnet 4 + Tavily)
     2. Classifier Agent (Gemini Flash Lite)
-    3. Writer Agent (GPT-5.3 JSON mode)
+    3. Writer Agent (Claude Opus 4 JSON mode)
     4. Entry Creator (DB insert)
-    5. Quality Evaluator (GPT-5 Nano)
+    5. Quality Evaluator (Claude Sonnet 4)
     """
     logger.info("=" * 60)
     logger.info("STARTING DAILY AGENT RUN")

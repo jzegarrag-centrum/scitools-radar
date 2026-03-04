@@ -148,7 +148,7 @@ class AgentRun(db.Model):
     # Costos
     total_tokens = db.Column(db.Integer)
     total_cost_usd = db.Column(db.Float)
-    models_used = db.Column(db.JSON)  # {"research": "gpt-5.3-chat-latest", ...}
+    models_used = db.Column(db.JSON)  # {"research": "claude-sonnet-4-20250514", ...}
     
     # Error si falló
     error = db.Column(db.Text)

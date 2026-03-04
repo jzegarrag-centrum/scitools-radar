@@ -50,7 +50,7 @@ class LLMService:
         
         Args:
             messages: Lista de mensajes [{"role": "system", "content": "..."}]
-            model: ID del modelo (ej: "gpt-5.3-chat-latest", "gemini-3.1-flash-lite")
+            model: ID del modelo (ej: "claude-opus-4-20250514", "claude-sonnet-4-20250514")
             temperature: 0.0-2.0
             max_tokens: Límite de tokens de salida
             response_format: {"type": "json_object"} para JSON mode
@@ -92,7 +92,7 @@ class LLMService:
             raise
     
     def research_call(self, messages: List[Dict], **kwargs) -> Dict:
-        """Llamada para Research Agent (GPT-5.3)"""
+        """Llamada para Research Agent (Claude Sonnet 4)"""
         return self.chat_completion(
             messages=messages,
             model=self.models['research'],
@@ -101,7 +101,7 @@ class LLMService:
         )
     
     def classifier_call(self, messages: List[Dict], **kwargs) -> Dict:
-        """Llamada para Classifier Agent (Gemini 3.1 Flash Lite)"""
+        """Llamada para Classifier Agent (Claude Sonnet 4)"""
         return self.chat_completion(
             messages=messages,
             model=self.models['classifier'],
@@ -110,7 +110,7 @@ class LLMService:
         )
     
     def writer_call(self, messages: List[Dict], **kwargs) -> Dict:
-        """Llamada para Writer Agent (GPT-5.3 JSON mode)"""
+        """Llamada para Writer Agent (Claude Opus 4 JSON mode)"""
         return self.chat_completion(
             messages=messages,
             model=self.models['writer'],
@@ -120,7 +120,7 @@ class LLMService:
         )
     
     def evaluator_call(self, messages: List[Dict], **kwargs) -> Dict:
-        """Llamada para Quality Evaluator (GPT-5 Nano)"""
+        """Llamada para Quality Evaluator (Claude Sonnet 4)"""
         return self.chat_completion(
             messages=messages,
             model=self.models['evaluator'],
@@ -130,7 +130,7 @@ class LLMService:
         )
     
     def chat_call(self, messages: List[Dict], **kwargs) -> Dict:
-        """Llamada para Chat Agent conversacional (GPT-5.3)"""
+        """Llamada para Chat Agent conversacional (Claude Sonnet 4)"""
         return self.chat_completion(
             messages=messages,
             model=self.models['chat'],
@@ -140,7 +140,7 @@ class LLMService:
         )
 
     def fallback_call(self, messages: List[Dict], **kwargs) -> Dict:
-        """Llamada con modelo fallback (DeepSeek v3.2)"""
+        """Llamada con modelo fallback (Gemini 2.5 Flash)"""
         return self.chat_completion(
             messages=messages,
             model=self.models['fallback'],

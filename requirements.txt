@@ -17,7 +17,7 @@ python-dotenv==1.0.*
 
 # CometAPI (único SDK necesario — formato OpenAI-compatible)
 # Apunta a https://api.cometapi.com/v1 con una sola API key
-# Accede a GPT-5.3, Gemini 3.1, DeepSeek, y 500+ modelos
+# Accede a Claude, Gemini, GPT, DeepSeek, y 500+ modelos
 openai==1.60.*
 
 # Agent tooling
