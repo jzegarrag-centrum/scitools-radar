@@ -1,118 +1,178 @@
 {% extends 'base.html' %}
 
-{% block title %}Admin - SciTools Radar{% endblock %}
+{% block title %}Admin Dashboard - SciTools Radar{% endblock %}
+
+{% block styles %}
+<style>
+    .admin-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+    .admin-header h1 { color:var(--azul); font-size:1.6rem; display:flex; align-items:center; gap:0.6rem; }
+    .admin-header .user-badge { background:var(--azul-pale); color:var(--azul); padding:0.4rem 1rem; border-radius:20px; font-size:0.85rem; font-weight:600; }
+    .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; margin-bottom:2rem; }
+    .kpi-card { background:white; border-radius:12px; padding:1.5rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:1px solid var(--borde); position:relative; overflow:hidden; }
+    .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .kpi-card.blue::before { background:var(--azul); }
+    .kpi-card.orange::before { background:var(--naranja); }
+    .kpi-card.green::before { background:var(--exito); }
+    .kpi-card.red::before { background:var(--peligro); }
+    .kpi-val { font-size:2.2rem; font-weight:800; line-height:1.2; }
+    .kpi-label { font-size:0.8rem; color:var(--gris-medio); margin-top:0.3rem; text-transform:uppercase; letter-spacing:0.5px; }
+    .section-card { background:white; border-radius:12px; padding:1.5rem 2rem; margin-bottom:1.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:1px solid var(--borde); }
+    .section-card h2 { color:var(--azul); font-size:1.1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+    .actions-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
+    .action-btn { display:flex; align-items:center; gap:0.8rem; padding:1rem 1.2rem; border-radius:10px; text-decoration:none; font-weight:600; font-size:0.9rem; transition:all 0.3s; border:2px solid transparent; }
+    .action-btn i { font-size:1.2rem; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:8px; flex-shrink:0; }
+    .action-btn.primary { background:var(--azul); color:white; }
+    .action-btn.primary:hover { background:var(--azul-light); transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,56,101,0.3); }
+    .action-btn.primary i { background:rgba(255,255,255,0.15); }
+    .action-btn.orange { background:var(--naranja); color:white; }
+    .action-btn.orange:hover { background:var(--naranja-dark); transform:translateY(-2px); box-shadow:0 4px 12px rgba(255,107,0,0.3); }
+    .action-btn.orange i { background:rgba(255,255,255,0.15); }
+    .action-btn.outline { background:white; color:var(--azul); border-color:var(--borde); }
+    .action-btn.outline:hover { border-color:var(--azul); background:var(--azul-pale); }
+    .action-btn.outline i { background:var(--azul-pale); color:var(--azul); }
+    .badge-draft { display:inline-flex; align-items:center; gap:0.3rem; background:#FEF3C7; color:#D97706; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem; font-weight:600; }
+    .status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+    .status-dot.success { background:var(--exito); }
+    .status-dot.failed { background:var(--peligro); }
+    .status-dot.running { background:#F59E0B; animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .mini-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+    .mini-table th { text-align:left; padding:0.6rem 0.75rem; border-bottom:2px solid var(--borde); color:var(--gris-medio); font-weight:600; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.3px; }
+    .mini-table td { padding:0.6rem 0.75rem; border-bottom:1px solid #f0f0f0; }
+    .mini-table tr:last-child td { border-bottom:none; }
+    .schedule-badge { display:inline-flex; align-items:center; gap:0.4rem; background:var(--azul-pale); color:var(--azul); padding:0.35rem 0.8rem; border-radius:8px; font-size:0.82rem; font-weight:600; }
+    /* Live monitor bar */
+    .monitor-bar { background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:1rem 1.2rem; display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; }
+    .monitor-bar.active { background:#FEF3C7; border-color:#FCD34D; }
+    .monitor-bar .progress-ring { width:40px; height:40px; position:relative; flex-shrink:0; }
+    .monitor-bar .progress-text { font-weight:700; font-size:0.85rem; }
+    .progress-bar-track { height:6px; background:#E5E7EB; border-radius:3px; flex:1; overflow:hidden; }
+    .progress-bar-fill { height:100%; border-radius:3px; background:var(--naranja); transition:width 0.5s ease; }
+</style>
+{% endblock %}
 
 {% block content %}
-<h1 style="margin-bottom: 2rem; color: var(--azul);">⚙️ Panel de Administración</h1>
-
-<!-- Stats Overview -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-    <div class="card" style="text-align: center;">
-        <div style="font-size: 2.5rem; color: var(--azul); font-weight: 700;">{{ stats.total_tools }}</div>
-        <div style="color: #666;">Herramientas Activas</div>
-    </div>
-    
-    <div class="card" style="text-align: center;">
-        <div style="font-size: 2.5rem; color: var(--naranja); font-weight: 700;">{{ stats.total_entries }}</div>
-        <div style="color: #666;">Entradas del Blog</div>
-    </div>
-    
-    <div class="card" style="text-align: center;">
-        <div style="font-size: 2.5rem; color: var(--azul); font-weight: 700;">{{ stats.total_updates }}</div>
-        <div style="color: #666;">Actualizaciones</div>
-    </div>
-    
-    <div class="card" style="text-align: center;">
-        {% if stats.last_agent_run %}
-        <div style="font-size: 1.5rem; font-weight: 700;" 
-             class="{% if stats.last_agent_run.status == 'success' %}success{% else %}danger{% endif %}">
-            {{ '✅' if stats.last_agent_run.status == 'success' else '❌' }}
-        </div>
-        <div style="color: #666; font-size: 0.9rem;">
-            Último agente:<br>
-            {{ stats.last_agent_run.status }}
-        </div>
-        {% else %}
-        <div style="color: #666;">Sin ejecuciones</div>
+<div class="admin-header">
+    <h1><i class="fas fa-cogs" style="color:var(--naranja);"></i> Panel de Administracion</h1>
+    <div style="display:flex;align-items:center;gap:1rem;">
+        {% if draft_count > 0 %}
+        <a href="{{ url_for('admin.entries', status='draft') }}" class="badge-draft">
+            <i class="fas fa-file-pen"></i> {{ draft_count }} borrador{{ 'es' if draft_count > 1 }}
+        </a>
         {% endif %}
+        <span class="user-badge"><i class="fas fa-user-shield"></i> {{ current_user.username or current_user.email }}</span>
+        <a href="{{ url_for('admin.logout') }}" style="color:var(--peligro);font-size:0.85rem;text-decoration:none;" title="Cerrar sesion">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Live Monitor (si el agente esta corriendo) -->
+{% if agent_status.running %}
+<div class="monitor-bar active" id="liveMonitor">
+    <i class="fas fa-spinner fa-spin" style="font-size:1.3rem;color:#D97706;"></i>
+    <div style="flex:1;">
+        <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.3rem;" id="monitorStep">{{ agent_status.step }}</div>
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="monitorProgress" style="width:{{ agent_status.progress }}%;"></div>
+        </div>
+    </div>
+    <span class="progress-text" id="monitorPercent">{{ agent_status.progress }}%</span>
+</div>
+{% endif %}
+
+<!-- KPIs -->
+<div class="kpi-grid">
+    <div class="kpi-card blue">
+        <div class="kpi-val" style="color:var(--azul);">{{ stats.total_tools }}</div>
+        <div class="kpi-label">Herramientas</div>
+    </div>
+    <div class="kpi-card orange">
+        <div class="kpi-val" style="color:var(--naranja);">{{ stats.total_entries }}</div>
+        <div class="kpi-label">Entradas Blog</div>
+    </div>
+    <div class="kpi-card green">
+        <div class="kpi-val" style="color:var(--exito);">{{ stats.total_updates }}</div>
+        <div class="kpi-label">Actualizaciones</div>
+    </div>
+    <div class="kpi-card blue">
+        <div class="kpi-val" style="color:var(--azul);">{{ stats.total_agent_runs }}</div>
+        <div class="kpi-label">Ejecuciones IA</div>
     </div>
 </div>
 
 <!-- Quick Actions -->
-<div class="card" style="margin-bottom: 2rem;">
-    <h2 style="color: var(--azul); margin-bottom: 1rem;">Acciones Rápidas</h2>
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <a href="{{ url_for('admin.tools') }}" class="btn">Ver Herramientas</a>
-        <a href="{{ url_for('admin.entries') }}" class="btn">Ver Entradas</a>
-        <a href="{{ url_for('admin.agent_control') }}" class="btn btn-secondary">Control del Agente</a>
-        <a href="{{ url_for('admin.quality_metrics') }}" class="btn btn-secondary">Métricas de Calidad</a>
+<div class="section-card">
+    <h2><i class="fas fa-bolt" style="color:var(--naranja);"></i> Acciones Rapidas</h2>
+    <div class="actions-grid">
+        <a href="{{ url_for('admin.agent_control') }}" class="action-btn primary">
+            <i class="fas fa-robot"></i>
+            <div>Control del Agente<br><small style="font-weight:400;opacity:0.8;">Ejecutar, buscar, programar</small></div>
+        </a>
+        <a href="{{ url_for('admin.entries') }}" class="action-btn orange">
+            <i class="fas fa-newspaper"></i>
+            <div>Gestionar Entradas<br><small style="font-weight:400;opacity:0.8;">Aprobar, rechazar, generar</small></div>
+        </a>
+        <a href="{{ url_for('admin.tools') }}" class="action-btn outline">
+            <i class="fas fa-wrench"></i>
+            <div>Herramientas<br><small style="font-weight:400;opacity:0.8;">{{ stats.total_tools }} activas</small></div>
+        </a>
+        <a href="{{ url_for('admin.quality_metrics') }}" class="action-btn outline">
+            <i class="fas fa-chart-line"></i>
+            <div>Metricas de Calidad<br><small style="font-weight:400;opacity:0.8;">Tendencias y costos</small></div>
+        </a>
+    </div>
+</div>
+
+<!-- Schedule Info -->
+<div class="section-card">
+    <h2><i class="fas fa-calendar-alt" style="color:var(--azul);"></i> Programacion del Agente</h2>
+    <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+        <div class="schedule-badge">
+            <i class="fas fa-clock"></i>
+            {{ schedule_config.days | upper }} a las {{ schedule_config.hour }}:00 UTC
+        </div>
+        <span style="font-size:0.85rem;color:var(--gris-medio);">
+            {% if schedule_config.enabled %}
+                <span class="status-dot success"></span> Activo
+            {% else %}
+                <span class="status-dot failed"></span> Desactivado
+            {% endif %}
+        </span>
+        <a href="{{ url_for('admin.agent_control') }}" style="color:var(--naranja);font-size:0.85rem;text-decoration:none;font-weight:600;">
+            Cambiar configuracion <i class="fas fa-arrow-right"></i>
+        </a>
     </div>
 </div>
 
 <!-- Recent Entries -->
-<div class="card" style="margin-bottom: 2rem;">
-    <h2 style="color: var(--azul); margin-bottom: 1rem;">Últimas Entradas</h2>
+<div class="section-card">
+    <h2><i class="fas fa-file-alt" style="color:var(--naranja);"></i> Ultimas Entradas</h2>
     {% if recent_entries %}
-    <table style="width: 100%; border-collapse: collapse;">
+    <table class="mini-table">
         <thead>
-            <tr style="border-bottom: 2px solid var(--borde);">
-                <th style="text-align: left; padding: 0.75rem;">Fecha</th>
-                <th style="text-align: left; padding: 0.75rem;">Herramientas</th>
-                <th style="text-align: left; padding: 0.75rem;">Updates</th>
-                <th style="text-align: left; padding: 0.75rem;">Por</th>
-            </tr>
+            <tr><th>Fecha</th><th>Herr.</th><th>Upd.</th><th>Creador</th><th>Estado</th></tr>
         </thead>
         <tbody>
             {% for entry in recent_entries %}
-            <tr style="border-bottom: 1px solid var(--borde);">
-                <td style="padding: 0.75rem;">
-                    <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}" 
-                       style="color: var(--azul); text-decoration: none;">
-                        {{ entry.date.strftime('%Y-%m-%d') }}
+            <tr>
+                <td>
+                    <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}" style="color:var(--azul);text-decoration:none;font-weight:600;">
+                        {{ entry.date.strftime('%d %b %Y') }}
                     </a>
                 </td>
-                <td style="padding: 0.75rem;">{{ entry.tools|length }}</td>
-                <td style="padding: 0.75rem;">{{ entry.updates|length }}</td>
-                <td style="padding: 0.75rem;">{{ entry.created_by }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p style="color: #666;">No hay entradas todavía.</p>
-    {% endif %}
-</div>
-
-<!-- Recent Agent Runs -->
-<div class="card">
-    <h2 style="color: var(--azul); margin-bottom: 1rem;">Últimas Ejecuciones del Agente</h2>
-    {% if recent_runs %}
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="border-bottom: 2px solid var(--borde);">
-                <th style="text-align: left; padding: 0.75rem;">Inicio</th>
-                <th style="text-align: left; padding: 0.75rem;">Status</th>
-                <th style="text-align: left; padding: 0.75rem;">Tools</th>
-                <th style="text-align: left; padding: 0.75rem;">Calidad</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for run in recent_runs %}
-            <tr style="border-bottom: 1px solid var(--borde);">
-                <td style="padding: 0.75rem;">{{ run.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td style="padding: 0.75rem;">
-                    <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;
-                                 background: {% if run.status == 'success' %}#d4edda{% elif run.status == 'failed' %}#f8d7da{% else %}#fff3cd{% endif%};
-                                 color: {% if run.status == 'success' %}#155724{% elif run.status == 'failed' %}#721c24{% else %}#856404{% endif %};">
-                        {{ run.status }}
-                    </span>
-                </td>
-                <td style="padding: 0.75rem;">{{ run.tools_new }}/{{ run.tools_found }}</td>
-                <td style="padding: 0.75rem;">
-                    {% if run.completeness %}
-                        {{ (run.completeness * 100)|round|int }}%
+                <td>{{ entry.tools|length }}</td>
+                <td>{{ entry.updates|length }}</td>
+                <td style="font-size:0.82rem;">{{ entry.created_by }}</td>
+                <td>
+                    {% if entry.status == 'draft' %}
+                        <span style="color:#D97706;font-weight:600;font-size:0.82rem;"><i class="fas fa-pen"></i> Borrador</span>
+                    {% elif entry.status == 'published' %}
+                        <span style="color:var(--exito);font-size:0.82rem;"><i class="fas fa-check-circle"></i> Publicada</span>
+                    {% elif entry.status == 'rejected' %}
+                        <span style="color:var(--peligro);font-size:0.82rem;"><i class="fas fa-times-circle"></i> Rechazada</span>
                     {% else %}
-                        -
+                        <span style="color:var(--exito);font-size:0.82rem;"><i class="fas fa-check-circle"></i> Publicada</span>
                     {% endif %}
                 </td>
             </tr>
@@ -120,7 +180,59 @@
         </tbody>
     </table>
     {% else %}
-    <p style="color: #666;">No hay ejecuciones todavía.</p>
+    <p style="color:var(--gris-medio);padding:1rem;text-align:center;">No hay entradas todavia.</p>
     {% endif %}
 </div>
+
+<!-- Recent Agent Runs -->
+<div class="section-card">
+    <h2><i class="fas fa-history" style="color:var(--azul);"></i> Ultimas Ejecuciones del Agente</h2>
+    {% if recent_runs %}
+    <table class="mini-table">
+        <thead>
+            <tr><th>Fecha</th><th>Estado</th><th>Nuevas</th><th>Calidad</th></tr>
+        </thead>
+        <tbody>
+            {% for run in recent_runs %}
+            <tr>
+                <td>{{ run.started_at.strftime('%d %b %Y %H:%M') }}</td>
+                <td>
+                    <span class="status-dot {{ run.status }}"></span>
+                    {{ run.status }}
+                </td>
+                <td>{{ run.tools_new or 0 }}/{{ run.tools_found or 0 }}</td>
+                <td>
+                    {% if run.completeness %}{{ (run.completeness * 100)|round|int }}%{% else %}-{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--gris-medio);padding:1rem;text-align:center;">No hay ejecuciones todavia.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Polling para monitoreo en tiempo real
+{% if agent_status.running %}
+(function poll() {
+    fetch('{{ url_for("admin.agent_status_api") }}')
+        .then(r => r.json())
+        .then(data => {
+            const step = document.getElementById('monitorStep');
+            const progress = document.getElementById('monitorProgress');
+            const percent = document.getElementById('monitorPercent');
+            if (step) step.textContent = data.step || '';
+            if (progress) progress.style.width = (data.progress || 0) + '%';
+            if (percent) percent.textContent = (data.progress || 0) + '%';
+            if (data.running) setTimeout(poll, 2000);
+            else location.reload();
+        })
+        .catch(() => setTimeout(poll, 5000));
+})();
+{% endif %}
+</script>
 {% endblock %}

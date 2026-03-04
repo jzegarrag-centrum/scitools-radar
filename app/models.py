@@ -18,6 +18,7 @@ tool_entries = db.Table('tool_entries',
 class User(UserMixin, db.Model):
     """Usuario administrador"""
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=True, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256))
     name = db.Column(db.String(100))
@@ -32,7 +33,7 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
     
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f'<User {self.username or self.email}>'
 
 
 @login_manager.user_loader
@@ -89,6 +90,7 @@ class Entry(db.Model):
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_by = db.Column(db.String(50), default='agent')  # agent|manual
+    status = db.Column(db.String(20), default='published')  # draft|approved|published
     
     # Relaciones
     tools = db.relationship('Tool', secondary=tool_entries, back_populates='entries')

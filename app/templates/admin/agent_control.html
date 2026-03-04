@@ -1,150 +1,321 @@
 {% extends 'base.html' %}
 
-{% block title %}Control de Agente - Admin{% endblock %}
+{% block title %}Control del Agente - Admin{% endblock %}
 
 {% block styles %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+    .agent-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+    .agent-header h1 { color:var(--azul); font-size:1.5rem; display:flex; align-items:center; gap:0.6rem; }
+    .panel { background:white; border-radius:12px; padding:1.5rem 2rem; margin-bottom:1.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:1px solid var(--borde); }
+    .panel h2 { color:var(--azul); font-size:1.05rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+    .trigger-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem; }
+    .trigger-card { background:var(--gris-claro); border:2px solid var(--borde); border-radius:12px; padding:1.5rem; transition:all 0.3s; }
+    .trigger-card:hover { border-color:var(--naranja); box-shadow:0 4px 12px rgba(255,107,0,0.1); }
+    .trigger-card h3 { color:var(--azul); font-size:0.95rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem; }
+    .trigger-card p { font-size:0.82rem; color:var(--gris-medio); margin-bottom:1rem; line-height:1.5; }
+    .trigger-card .btn-trigger { width:100%; padding:0.7rem; border:none; border-radius:8px; font-weight:700; font-size:0.85rem; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:0.4rem; }
+    .trigger-card .btn-trigger.run { background:var(--naranja); color:white; }
+    .trigger-card .btn-trigger.run:hover { background:var(--naranja-dark); }
+    .trigger-card .btn-trigger.search { background:var(--azul); color:white; }
+    .trigger-card .btn-trigger.search:hover { background:var(--azul-light); }
+    .trigger-card .btn-trigger.generate { background:var(--exito); color:white; }
+    .trigger-card .btn-trigger.generate:hover { background:#059669; }
+    .trigger-card .btn-trigger:disabled { opacity:0.5; cursor:not-allowed; }
+    /* Schedule form */
+    .schedule-form { display:grid; grid-template-columns:1fr 120px auto auto; gap:1rem; align-items:end; }
+    .schedule-form .form-group { margin:0; }
+    .schedule-form label { display:block; font-size:0.8rem; font-weight:600; color:var(--gris-medio); margin-bottom:0.3rem; text-transform:uppercase; letter-spacing:0.3px; }
+    .schedule-form input, .schedule-form select { width:100%; padding:0.6rem 0.8rem; border:2px solid var(--borde); border-radius:8px; font-family:inherit; font-size:0.9rem; }
+    .schedule-form input:focus, .schedule-form select:focus { outline:none; border-color:var(--naranja); }
+    .schedule-form .btn-save { padding:0.6rem 1.5rem; background:var(--azul); color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.85rem; transition:all 0.3s; }
+    .schedule-form .btn-save:hover { background:var(--azul-light); }
+    .toggle-switch { position:relative; width:48px; height:26px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; top:0; left:0; right:0; bottom:0; background:#ccc; border-radius:26px; cursor:pointer; transition:0.3s; }
+    .toggle-slider::before { content:''; position:absolute; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; }
+    .toggle-switch input:checked + .toggle-slider { background:var(--exito); }
+    .toggle-switch input:checked + .toggle-slider::before { transform:translateX(22px); }
+    /* Live monitor */
+    .live-monitor { background:#FFFBEB; border:2px solid #FCD34D; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem; }
+    .live-monitor.idle { background:#F0FDF4; border-color:#BBF7D0; }
+    .live-monitor h2 { color:#92400E; font-size:1rem; margin-bottom:1rem; }
+    .live-monitor.idle h2 { color:#166534; }
+    .progress-track { height:8px; background:#E5E7EB; border-radius:4px; overflow:hidden; margin:0.8rem 0; }
+    .progress-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--naranja),#FBBF24); transition:width 0.5s ease; }
+    .log-area { background:#1a1a2e; color:#A5F3FC; border-radius:8px; padding:1rem; font-family:'JetBrains Mono',monospace; font-size:0.78rem; max-height:200px; overflow-y:auto; line-height:1.6; margin-top:0.8rem; }
+    .log-area .log-line { padding:0.1rem 0; }
+    .log-area .log-line.error { color:#FCA5A5; }
+    /* Runs table */
+    .runs-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .runs-table th { text-align:left; padding:0.6rem 0.75rem; border-bottom:2px solid var(--borde); color:var(--gris-medio); font-weight:600; font-size:0.75rem; text-transform:uppercase; }
+    .runs-table td { padding:0.6rem 0.75rem; border-bottom:1px solid #f0f0f0; }
+    .status-pill { padding:0.2rem 0.6rem; border-radius:20px; font-size:0.78rem; font-weight:600; }
+    .status-pill.success { background:#D1FAE5; color:#065F46; }
+    .status-pill.failed { background:#FEE2E2; color:#991B1B; }
+    .status-pill.running { background:#FEF3C7; color:#92400E; }
+    .status-pill.queued { background:#DBEAFE; color:#1E40AF; }
+    @media (max-width:768px) {
+        .schedule-form { grid-template-columns:1fr; }
+        .trigger-grid { grid-template-columns:1fr; }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 1rem;">
-    <a href="{{ url_for('admin.dashboard') }}" style="color: var(--azul); text-decoration: none;">
-        ← Volver al panel
+<div class="agent-header">
+    <h1><i class="fas fa-robot" style="color:var(--naranja);"></i> Centro de Control del Agente</h1>
+    <a href="{{ url_for('admin.dashboard') }}" style="color:var(--azul);text-decoration:none;font-size:0.9rem;">
+        <i class="fas fa-arrow-left"></i> Volver al panel
     </a>
 </div>
 
-<h1 style="margin-bottom: 2rem; color: var(--azul);">🤖 Centro de Control del Agente</h1>
+<!-- Live Monitor -->
+<div class="live-monitor {% if not agent_status.running %}idle{% endif %}" id="liveMonitorPanel">
+    <h2 id="monitorTitle">
+        {% if agent_status.running %}
+            <i class="fas fa-spinner fa-spin"></i> Agente en Ejecucion
+        {% else %}
+            <i class="fas fa-check-circle"></i> Agente Inactivo
+        {% endif %}
+    </h2>
+    <div id="monitorContent">
+        {% if agent_status.running %}
+            <div style="font-weight:600;font-size:0.9rem;" id="monitorStep">{{ agent_status.step }}</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="monitorProgress" style="width:{{ agent_status.progress }}%;"></div>
+            </div>
+            <div style="text-align:right;font-size:0.82rem;font-weight:700;color:var(--naranja);" id="monitorPercent">{{ agent_status.progress }}%</div>
+        {% else %}
+            <div style="font-size:0.88rem;color:#166534;">
+                {% if agent_status.step %}
+                    Ultimo estado: {{ agent_status.step }}
+                {% else %}
+                    Listo para ejecutar. Usa los controles de abajo para iniciar.
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    {% if agent_status.log %}
+    <div class="log-area" id="logArea">
+        {% for line in agent_status.log %}
+        <div class="log-line {% if 'ERROR' in line %}error{% endif %}">{{ line }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
 
-<!-- Manual Trigger -->
-<div class="card" style="margin-bottom: 2rem;">
-    <h2 style="color: var(--azul); margin-bottom: 1rem;">🚀 Ejecutar Manualmente</h2>
-    <p style="color: #666; margin-bottom: 1rem;">
-        El agente se ejecuta automáticamente de lunes a viernes a las 7:00 AM (Lima).
-        Puedes ejecutarlo manualmente ahora si necesitas generar una entrada inmediatamente.
-    </p>
-    <form method="post" action="{{ url_for('admin.run_agent') }}" 
-          onsubmit="return confirm('¿Ejecutar el agente ahora? Esto puede tardar varios minutos.');">
-        <button type="submit" class="btn">▶️ Ejecutar Agente Ahora</button>
+<!-- Trigger Actions -->
+<div class="panel">
+    <h2><i class="fas fa-play-circle" style="color:var(--naranja);"></i> Activacion Manual</h2>
+    <div class="trigger-grid">
+        <!-- Run Full Pipeline -->
+        <div class="trigger-card">
+            <h3><i class="fas fa-rocket" style="color:var(--naranja);"></i> Pipeline Completo</h3>
+            <p>Ejecuta los 5 pasos del agente: Research -> Classify -> Write -> Create -> Evaluate.
+               Genera una entrada completa y la publica automaticamente.</p>
+            <form method="post" action="{{ url_for('admin.run_agent') }}"
+                  onsubmit="return confirm('Ejecutar pipeline completo? Puede tardar varios minutos.')">
+                <button type="submit" class="btn-trigger run" {% if agent_status.running %}disabled{% endif %}>
+                    <i class="fas fa-play"></i> Ejecutar Pipeline
+                </button>
+            </form>
+        </div>
+
+        <!-- Search New Tools -->
+        <div class="trigger-card">
+            <h3><i class="fas fa-search" style="color:var(--azul);"></i> Buscar Herramientas</h3>
+            <p>Ejecuta solo Research + Classify para encontrar nuevas herramientas sin generar
+               una entrada del blog. Las herramientas nuevas se agregan al inventario.</p>
+            <form method="post" action="{{ url_for('admin.search_new_tools') }}"
+                  onsubmit="return confirm('Iniciar busqueda de nuevas herramientas?')">
+                <button type="submit" class="btn-trigger search" {% if agent_status.running %}disabled{% endif %}>
+                    <i class="fas fa-search-plus"></i> Buscar Nuevas
+                </button>
+            </form>
+        </div>
+
+        <!-- Generate Entry -->
+        <div class="trigger-card">
+            <h3><i class="fas fa-pen-fancy" style="color:var(--exito);"></i> Generar Entrada</h3>
+            <p>Ejecuta el pipeline completo y genera la entrada como <strong>borrador</strong>
+               para que puedas revisarla y aprobarla antes de publicar.</p>
+            <form method="post" action="{{ url_for('admin.generate_entry') }}"
+                  onsubmit="return confirm('Generar nueva entrada como borrador?')">
+                <button type="submit" class="btn-trigger generate" {% if agent_status.running %}disabled{% endif %}>
+                    <i class="fas fa-file-pen"></i> Generar Borrador
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Configuration -->
+<div class="panel">
+    <h2><i class="fas fa-calendar-check" style="color:var(--azul);"></i> Configuracion de Frecuencia</h2>
+    <form method="post" action="{{ url_for('admin.update_schedule') }}" class="schedule-form">
+        <div class="form-group">
+            <label for="days">Dias de ejecucion</label>
+            <input type="text" id="days" name="days" value="{{ schedule_config.days }}"
+                   placeholder="tue,thu o mon-fri" title="Formato cron: mon,tue,wed,thu,fri o mon-fri">
+        </div>
+        <div class="form-group">
+            <label for="hour">Hora (UTC)</label>
+            <input type="number" id="hour" name="hour" value="{{ schedule_config.hour }}"
+                   min="0" max="23" step="1">
+        </div>
+        <div class="form-group">
+            <label>Activo</label>
+            <label class="toggle-switch" title="Activar/desactivar scheduler">
+                <input type="checkbox" name="enabled" {% if schedule_config.enabled %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn-save"><i class="fas fa-save"></i> Guardar</button>
+        </div>
     </form>
+    <div style="margin-top:0.8rem;font-size:0.8rem;color:var(--gris-medio);">
+        <i class="fas fa-info-circle"></i>
+        Formatos validos: <code>tue,thu</code> (dias especificos), <code>mon-fri</code> (rango).
+        Max tools: {{ schedule_config.max_new_tools }}, Max updates: {{ schedule_config.max_updates }}.
+    </div>
 </div>
 
 <!-- Recent Runs -->
-<div class="card" style="margin-bottom: 2rem;">
-    <h2 style="color: var(--azul); margin-bottom: 1rem;">📋 Últimas Ejecuciones</h2>
+<div class="panel">
+    <h2><i class="fas fa-history" style="color:var(--azul);"></i> Historial de Ejecuciones</h2>
     {% if runs %}
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="border-bottom: 2px solid var(--borde);">
-                <th style="text-align: left; padding: 0.75rem;">Inicio</th>
-                <th style="text-align: left; padding: 0.75rem;">Fin</th>
-                <th style="text-align: left; padding: 0.75rem;">Status</th>
-                <th style="text-align: left; padding: 0.75rem;">Tools</th>
-                <th style="text-align: left; padding: 0.75rem;">Updates</th>
-                <th style="text-align: left; padding: 0.75rem;">Calidad</th>
-                <th style="text-align: left; padding: 0.75rem;">Costo</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for run in runs %}
-            <tr style="border-bottom: 1px solid var(--borde);">
-                <td style="padding: 0.75rem;">{{ run.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td style="padding: 0.75rem;">
-                    {% if run.finished_at %}
-                        {{ run.finished_at.strftime('%H:%M') }}
-                        <span style="color: #666; font-size: 0.85rem;">({{ run.duration_seconds }}s)</span>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td style="padding: 0.75rem;">
-                    <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;
-                                 background: {% if run.status == 'success' %}#d4edda{% elif run.status == 'failed' %}#f8d7da{% else %}#fff3cd{% endif%};
-                                 color: {% if run.status == 'success' %}#155724{% elif run.status == 'failed' %}#721c24{% else %}#856404{% endif %};">
-                        {{ run.status }}
-                    </span>
-                </td>
-                <td style="padding: 0.75rem;">
-                    {{ run.tools_new }}/{{ run.tools_found }}
-                </td>
-                <td style="padding: 0.75rem;">{{ run.updates_count }}</td>
-                <td style="padding: 0.75rem;">
-                    {% if run.completeness %}
-                        <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem;">
-                            <span>C: {{ (run.completeness * 100)|round|int }}%</span>
-                            <span>H: {{ (run.hallucination_risk * 100)|round|int }}%</span>
-                        </div>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td style="padding: 0.75rem;">
-                    {% if run.total_cost_usd %}
-                        ${{ "%.4f"|format(run.total_cost_usd) }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div style="overflow-x:auto;">
+        <table class="runs-table">
+            <thead>
+                <tr>
+                    <th>Inicio</th><th>Fin</th><th>Estado</th>
+                    <th>Nuevas</th><th>Updates</th><th>Calidad</th><th>Costo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for run in runs %}
+                <tr>
+                    <td>{{ run.started_at.strftime('%d %b %H:%M') }}</td>
+                    <td>
+                        {% if run.finished_at %}
+                            {{ run.finished_at.strftime('%H:%M') }}
+                            <span style="color:var(--gris-medio);font-size:0.78rem;">({{ run.duration_seconds|round|int }}s)</span>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td><span class="status-pill {{ run.status }}">{{ run.status }}</span></td>
+                    <td>{{ run.tools_new or 0 }}/{{ run.tools_found or 0 }}</td>
+                    <td>{{ run.updates_count or 0 }}</td>
+                    <td>
+                        {% if run.completeness %}
+                            <span style="color:var(--azul);font-weight:600;">{{ (run.completeness * 100)|round|int }}%</span>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>
+                        {% if run.total_cost_usd %}${{ "%.4f"|format(run.total_cost_usd) }}{% else %}-{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-    <p style="color: #666;">No hay ejecuciones todavía.</p>
+    <p style="color:var(--gris-medio);text-align:center;padding:2rem;">No hay ejecuciones registradas.</p>
     {% endif %}
 </div>
 
 <!-- Quality Trends -->
 {% if quality_trends %}
-<div class="card">
-    <h2 style="color: var(--azul); margin-bottom: 1rem;">📈 Tendencias de Calidad (últimos 30 días)</h2>
-    <canvas id="qualityChart" style="max-height: 300px;"></canvas>
+<div class="panel">
+    <h2><i class="fas fa-chart-line" style="color:var(--naranja);"></i> Tendencias de Calidad (30d)</h2>
+    <canvas id="qualityChart" style="max-height:280px;"></canvas>
 </div>
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
-{% if quality_trends %}
 <script>
-    const ctx = document.getElementById('qualityChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {{ quality_trends.dates|tojson }},
-            datasets: [
-                {
-                    label: 'Completeness',
-                    data: {{ quality_trends.completeness|tojson }},
-                    borderColor: '#003865',
-                    backgroundColor: 'rgba(0, 56, 101, 0.1)',
-                    tension: 0.4
-                },
-                {
-                    label: 'Field Diversity',
-                    data: {{ quality_trends.field_diversity|tojson }},
-                    borderColor: '#FF6B00',
-                    backgroundColor: 'rgba(255, 107, 0, 0.1)',
-                    tension: 0.4
-                },
-                {
-                    label: 'Hallucination Risk',
-                    data: {{ quality_trends.hallucination_risk|tojson }},
-                    borderColor: '#dc3545',
-                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                    tension: 0.4
+// Real-time polling
+(function poll() {
+    fetch('{{ url_for("admin.agent_status_api") }}')
+        .then(r => r.json())
+        .then(data => {
+            const panel = document.getElementById('liveMonitorPanel');
+            const title = document.getElementById('monitorTitle');
+            const content = document.getElementById('monitorContent');
+
+            if (data.running) {
+                panel.classList.remove('idle');
+                panel.classList.add('');
+                title.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agente en Ejecucion';
+                title.style.color = '#92400E';
+                content.innerHTML = `
+                    <div style="font-weight:600;font-size:0.9rem;">${data.step}</div>
+                    <div class="progress-track"><div class="progress-fill" style="width:${data.progress}%;"></div></div>
+                    <div style="text-align:right;font-size:0.82rem;font-weight:700;color:var(--naranja);">${data.progress}%</div>
+                `;
+                // Update log
+                let logArea = document.getElementById('logArea');
+                if (!logArea) {
+                    logArea = document.createElement('div');
+                    logArea.id = 'logArea';
+                    logArea.className = 'log-area';
+                    panel.appendChild(logArea);
                 }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 1
+                logArea.innerHTML = data.log.map(l =>
+                    `<div class="log-line ${l.includes('ERROR') ? 'error' : ''}">${l}</div>`
+                ).join('');
+                logArea.scrollTop = logArea.scrollHeight;
+
+                // Disable buttons
+                document.querySelectorAll('.btn-trigger').forEach(b => b.disabled = true);
+                setTimeout(poll, 2000);
+            } else {
+                if (panel.style.borderColor !== 'rgb(187, 247, 208)') {
+                    // State changed from running to idle — reload
+                    location.reload();
                 }
+                setTimeout(poll, 10000);
             }
-        }
-    });
-</script>
+        })
+        .catch(() => setTimeout(poll, 5000));
+})();
+
+{% if quality_trends %}
+// Quality chart
+const ctx = document.getElementById('qualityChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ quality_trends|map(attribute='date')|list|tojson }},
+        datasets: [
+            {
+                label: 'Completeness',
+                data: {{ quality_trends|map(attribute='completeness')|list|tojson }},
+                borderColor: '#003865', backgroundColor: 'rgba(0,56,101,0.08)',
+                tension: 0.4, fill: true, borderWidth: 2
+            },
+            {
+                label: 'Field Diversity',
+                data: {{ quality_trends|map(attribute='diversity')|list|tojson }},
+                borderColor: '#FF6B00', backgroundColor: 'rgba(255,107,0,0.08)',
+                tension: 0.4, fill: true, borderWidth: 2
+            },
+            {
+                label: 'Hallucination Risk',
+                data: {{ quality_trends|map(attribute='hallucination_risk')|list|tojson }},
+                borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.08)',
+                tension: 0.4, fill: true, borderWidth: 2
+            }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: true,
+        scales: { y: { beginAtZero: true, max: 1 } },
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
 {% endif %}
+</script>
 {% endblock %}

@@ -1,61 +1,168 @@
 {% extends 'base.html' %}
 
-{% block title %}Gestión de Entradas - Admin{% endblock %}
+{% block title %}Gestion de Entradas - Admin{% endblock %}
+
+{% block styles %}
+<style>
+    .entries-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+    .entries-header h1 { color:var(--azul); font-size:1.5rem; display:flex; align-items:center; gap:0.6rem; }
+    .panel { background:white; border-radius:12px; padding:1.5rem 2rem; margin-bottom:1.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:1px solid var(--borde); }
+    .panel h2 { color:var(--azul); font-size:1.05rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+    .filter-bar { display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .filter-btn { padding:0.5rem 1rem; border-radius:20px; font-size:0.82rem; font-weight:600; text-decoration:none; border:2px solid var(--borde); color:var(--gris-medio); transition:all 0.3s; }
+    .filter-btn:hover { border-color:var(--azul); color:var(--azul); }
+    .filter-btn.active { background:var(--azul); color:white; border-color:var(--azul); }
+    .filter-btn .count { background:rgba(255,255,255,0.2); padding:0.1rem 0.4rem; border-radius:10px; font-size:0.75rem; margin-left:0.3rem; }
+    .filter-btn.active .count { background:rgba(255,255,255,0.3); }
+    .entries-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+    .entries-table th { text-align:left; padding:0.7rem 0.75rem; border-bottom:2px solid var(--borde); color:var(--gris-medio); font-weight:600; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.3px; }
+    .entries-table td { padding:0.7rem 0.75rem; border-bottom:1px solid #f0f0f0; vertical-align:middle; }
+    .entries-table tr:hover { background:var(--gris-claro); }
+    .status-badge { display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.7rem; border-radius:20px; font-size:0.78rem; font-weight:600; }
+    .status-badge.draft { background:#FEF3C7; color:#D97706; }
+    .status-badge.published { background:#D1FAE5; color:#065F46; }
+    .status-badge.rejected { background:#FEE2E2; color:#991B1B; }
+    .action-btn-sm { padding:0.35rem 0.7rem; border:none; border-radius:6px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:0.3rem; }
+    .action-btn-sm.approve { background:#D1FAE5; color:#065F46; }
+    .action-btn-sm.approve:hover { background:#A7F3D0; }
+    .action-btn-sm.reject { background:#FEE2E2; color:#991B1B; }
+    .action-btn-sm.reject:hover { background:#FECACA; }
+    .action-btn-sm.revert { background:#DBEAFE; color:#1E40AF; }
+    .action-btn-sm.revert:hover { background:#BFDBFE; }
+    .editorial-preview { max-width:350px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--gris-medio); font-size:0.85rem; }
+    .generate-bar { display:flex; align-items:center; justify-content:space-between; background:var(--azul-pale); border-radius:10px; padding:1rem 1.5rem; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+    .generate-bar .info { font-size:0.88rem; color:var(--azul); }
+    .btn-generate { padding:0.7rem 1.5rem; background:var(--exito); color:white; border:none; border-radius:8px; font-weight:700; font-size:0.88rem; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:0.4rem; }
+    .btn-generate:hover { background:#059669; transform:translateY(-1px); }
+    .pagination-bar { display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--borde); }
+    .pagination-bar a { color:var(--azul); text-decoration:none; font-weight:600; font-size:0.88rem; }
+    .pagination-bar a:hover { color:var(--naranja); }
+</style>
+{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 1rem;">
-    <a href="{{ url_for('admin.dashboard') }}" style="color: var(--azul); text-decoration: none;">
-        ← Volver al panel
+<div class="entries-header">
+    <h1><i class="fas fa-newspaper" style="color:var(--naranja);"></i> Gestion de Entradas</h1>
+    <a href="{{ url_for('admin.dashboard') }}" style="color:var(--azul);text-decoration:none;font-size:0.9rem;">
+        <i class="fas fa-arrow-left"></i> Volver al panel
     </a>
 </div>
 
-<h1 style="margin-bottom: 2rem; color: var(--azul);">📰 Gestión de Entradas</h1>
+<!-- Generate New Entry -->
+<div class="generate-bar">
+    <div class="info">
+        <i class="fas fa-magic" style="color:var(--naranja);"></i>
+        Genera una nueva entrada del blog con IA. Se creara como <strong>borrador</strong> para tu revision.
+    </div>
+    <form method="post" action="{{ url_for('admin.generate_entry') }}"
+          onsubmit="return confirm('Generar nueva entrada como borrador?')">
+        <button type="submit" class="btn-generate">
+            <i class="fas fa-pen-fancy"></i> Generar Nueva Entrada
+        </button>
+    </form>
+</div>
 
-<div class="card">
-    <div style="margin-bottom: 1rem; color: #666;">
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div style="padding:0.8rem 1rem;margin-bottom:1rem;border-radius:8px;font-size:0.9rem;
+                        background:{% if category=='success' %}#D1FAE5{% elif category=='warning' %}#FEF3C7{% elif category=='danger' %}#FEE2E2{% else %}#DBEAFE{% endif %};
+                        color:{% if category=='success' %}#065F46{% elif category=='warning' %}#92400E{% elif category=='danger' %}#991B1B{% else %}#1E40AF{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <a href="{{ url_for('admin.entries') }}" class="filter-btn {% if not status_filter %}active{% endif %}">
+        Todas
+    </a>
+    <a href="{{ url_for('admin.entries', status='draft') }}" class="filter-btn {% if status_filter == 'draft' %}active{% endif %}">
+        <i class="fas fa-pen"></i> Borradores
+        {% if draft_count %}<span class="count">{{ draft_count }}</span>{% endif %}
+    </a>
+    <a href="{{ url_for('admin.entries', status='published') }}" class="filter-btn {% if status_filter == 'published' %}active{% endif %}">
+        <i class="fas fa-check-circle"></i> Publicadas
+    </a>
+    <a href="{{ url_for('admin.entries', status='rejected') }}" class="filter-btn {% if status_filter == 'rejected' %}active{% endif %}">
+        <i class="fas fa-times-circle"></i> Rechazadas
+    </a>
+</div>
+
+<!-- Entries Table -->
+<div class="panel">
+    <div style="margin-bottom:0.8rem;color:var(--gris-medio);font-size:0.85rem;">
         Total: {{ entries.total }} entradas
     </div>
-    
+
     {% if entries.items %}
-    <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse;">
+    <div style="overflow-x:auto;">
+        <table class="entries-table">
             <thead>
-                <tr style="border-bottom: 2px solid var(--borde);">
-                    <th style="text-align: left; padding: 0.75rem;">Fecha</th>
-                    <th style="text-align: left; padding: 0.75rem;">Herramientas</th>
-                    <th style="text-align: left; padding: 0.75rem;">Actualizaciones</th>
-                    <th style="text-align: left; padding: 0.75rem;">Creado por</th>
-                    <th style="text-align: left; padding: 0.75rem;">Editorial</th>
-                    <th style="text-align: left; padding: 0.75rem;">Acciones</th>
+                <tr>
+                    <th>Fecha</th><th>Herr.</th><th>Upd.</th><th>Creador</th>
+                    <th>Estado</th><th>Editorial</th><th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for entry in entries.items %}
-                <tr style="border-bottom: 1px solid var(--borde);">
-                    <td style="padding: 0.75rem;">
-                        <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}" 
-                           style="color: var(--azul); text-decoration: none; font-weight: 600;">
-                            {{ entry.date.strftime('%Y-%m-%d') }}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}"
+                           style="color:var(--azul);text-decoration:none;font-weight:700;">
+                            {{ entry.date.strftime('%d %b %Y') }}
                         </a>
                     </td>
-                    <td style="padding: 0.75rem; text-align: center;">{{ entry.tools|length }}</td>
-                    <td style="padding: 0.75rem; text-align: center;">{{ entry.updates|length }}</td>
-                    <td style="padding: 0.75rem;">
-                        <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;
-                                     background: {% if entry.created_by == 'agent' %}#d1ecf1{% else %}#fff3cd{% endif%};
-                                     color: {% if entry.created_by == 'agent' %}#0c5460{% else %}#856404{% endif %};">
-                            {{ entry.created_by }}
-                        </span>
+                    <td style="text-align:center;">{{ entry.tools|length }}</td>
+                    <td style="text-align:center;">{{ entry.updates|length }}</td>
+                    <td>
+                        <span style="font-size:0.82rem;color:var(--gris-medio);">{{ entry.created_by }}</span>
                     </td>
-                    <td style="padding: 0.75rem; max-width: 400px;">
-                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; color: #666;">
-                            {{ entry.editorial|truncate(80) }}
-                        </div>
+                    <td>
+                        {% if entry.status == 'draft' %}
+                            <span class="status-badge draft"><i class="fas fa-pen"></i> Borrador</span>
+                        {% elif entry.status == 'published' %}
+                            <span class="status-badge published"><i class="fas fa-check"></i> Publicada</span>
+                        {% elif entry.status == 'rejected' %}
+                            <span class="status-badge rejected"><i class="fas fa-times"></i> Rechazada</span>
+                        {% else %}
+                            <span class="status-badge published"><i class="fas fa-check"></i> Publicada</span>
+                        {% endif %}
                     </td>
-                    <td style="padding: 0.75rem;">
-                        <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}" 
-                           style="color: var(--naranja); text-decoration: none; font-size: 0.9rem;">
-                            Ver →
+                    <td>
+                        <div class="editorial-preview">{{ entry.editorial|truncate(80) }}</div>
+                    </td>
+                    <td style="white-space:nowrap;">
+                        {% if entry.status == 'draft' %}
+                            <form method="post" action="{{ url_for('admin.approve_entry', entry_id=entry.id) }}" style="display:inline;">
+                                <button type="submit" class="action-btn-sm approve" title="Aprobar y publicar">
+                                    <i class="fas fa-check"></i> Aprobar
+                                </button>
+                            </form>
+                            <form method="post" action="{{ url_for('admin.reject_entry', entry_id=entry.id) }}" style="display:inline;">
+                                <button type="submit" class="action-btn-sm reject" title="Rechazar">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                        {% elif entry.status == 'rejected' %}
+                            <form method="post" action="{{ url_for('admin.revert_entry', entry_id=entry.id) }}" style="display:inline;">
+                                <button type="submit" class="action-btn-sm revert" title="Mover a borrador">
+                                    <i class="fas fa-undo"></i> Borrador
+                                </button>
+                            </form>
+                        {% elif entry.status == 'published' %}
+                            <form method="post" action="{{ url_for('admin.revert_entry', entry_id=entry.id) }}" style="display:inline;">
+                                <button type="submit" class="action-btn-sm revert" title="Despublicar">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                        <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}"
+                           style="color:var(--naranja);text-decoration:none;font-size:0.82rem;font-weight:600;margin-left:0.5rem;">
+                            Ver <i class="fas fa-external-link-alt"></i>
                         </a>
                     </td>
                 </tr>
@@ -63,29 +170,27 @@
             </tbody>
         </table>
     </div>
-    
+
     <!-- Pagination -->
-    <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--borde);">
+    <div class="pagination-bar">
         {% if entries.has_prev %}
-        <a href="{{ url_for('admin.entries', page=entries.prev_num) }}" class="btn btn-secondary">
-            ← Anterior
-        </a>
-        {% else %}
-        <span></span>
-        {% endif %}
-        
-        <span style="color: #666;">Página {{ entries.page }} de {{ entries.pages }}</span>
-        
+            <a href="{{ url_for('admin.entries', page=entries.prev_num, status=status_filter) }}">
+                <i class="fas fa-chevron-left"></i> Anterior
+            </a>
+        {% else %}<span></span>{% endif %}
+
+        <span style="color:var(--gris-medio);font-size:0.85rem;">
+            Pagina {{ entries.page }} de {{ entries.pages }}
+        </span>
+
         {% if entries.has_next %}
-        <a href="{{ url_for('admin.entries', page=entries.next_num) }}" class="btn btn-secondary">
-            Siguiente →
-        </a>
-        {% else %}
-        <span></span>
-        {% endif %}
+            <a href="{{ url_for('admin.entries', page=entries.next_num, status=status_filter) }}">
+                Siguiente <i class="fas fa-chevron-right"></i>
+            </a>
+        {% else %}<span></span>{% endif %}
     </div>
     {% else %}
-    <p style="color: #666; padding: 2rem; text-align: center;">No hay entradas todavía.</p>
+    <p style="color:var(--gris-medio);padding:2rem;text-align:center;">No se encontraron entradas.</p>
     {% endif %}
 </div>
 {% endblock %}

@@ -46,8 +46,9 @@ class Config:
     TAVILY_API_KEY = os.environ.get('TAVILY_API_KEY')
     
     # Admin
+    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
     ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@smartcentrum.edu.pe')
-    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin1234')
     
     # Agent
     AGENT_SCHEDULE_HOUR = int(os.environ.get('AGENT_SCHEDULE_HOUR', 7))

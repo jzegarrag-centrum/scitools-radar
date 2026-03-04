@@ -2,7 +2,7 @@
 Rutas públicas - Blog, inventario, estadísticas
 """
 from flask import Blueprint, render_template, request, abort
-from app.models import Tool, Entry, Update, AgentRun
+from app.models import Tool, Entry, Update, AgentRun, db
 from app.services.search_service import SearchService
 from app.services.stats_service import StatsService
 from app import cache
@@ -17,12 +17,16 @@ def index():
     page = request.args.get('page', 1, type=int)
     per_page = 10
     
-    entries = Entry.query.order_by(Entry.date.desc()).paginate(
+    entries = Entry.query.filter(
+        db.or_(Entry.status == 'published', Entry.status.is_(None))
+    ).order_by(Entry.date.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )
     
     total_tools = Tool.query.count()
-    total_entries = Entry.query.count()
+    total_entries = Entry.query.filter(
+        db.or_(Entry.status == 'published', Entry.status.is_(None))
+    ).count()
     
     return render_template(
         'index.html',
@@ -130,7 +134,10 @@ def entrada_detalle(date_str):
     except ValueError:
         abort(404)
     
-    entry = Entry.query.filter_by(date=date_obj).first_or_404()
+    entry = Entry.query.filter(
+        Entry.date == date_obj,
+        db.or_(Entry.status == 'published', Entry.status.is_(None))
+    ).first_or_404()
     
     # Tools and updates for this entry
     tools = list(entry.tools)
@@ -142,8 +149,14 @@ def entrada_detalle(date_str):
     agent_run = AgentRun.query.filter_by(entry_id=entry.id).first() if hasattr(AgentRun, 'entry_id') else None
     
     # Previous / Next entries for navigation
-    prev_entry = Entry.query.filter(Entry.date < entry.date).order_by(Entry.date.desc()).first()
-    next_entry = Entry.query.filter(Entry.date > entry.date).order_by(Entry.date.asc()).first()
+    prev_entry = Entry.query.filter(
+        Entry.date < entry.date,
+        db.or_(Entry.status == 'published', Entry.status.is_(None))
+    ).order_by(Entry.date.desc()).first()
+    next_entry = Entry.query.filter(
+        Entry.date > entry.date,
+        db.or_(Entry.status == 'published', Entry.status.is_(None))
+    ).order_by(Entry.date.asc()).first()
     
     return render_template(
         'entrada_detalle.html',
