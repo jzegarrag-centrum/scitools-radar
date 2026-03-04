@@ -3,7 +3,7 @@
   buildCommand = "pip install -r requirements.txt"
 
 [deploy]
-  releaseCommand = "python -m flask --app wsgi db upgrade"
+  releaseCommand = "python -m flask --app wsgi db upgrade && python seed.py"
   startCommand = "gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120"
   healthcheckPath = "/health"
   healthcheckTimeout = 30
