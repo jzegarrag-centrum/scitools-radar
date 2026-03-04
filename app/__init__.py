@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -17,7 +17,7 @@ def create_app(config_name=None):
     """Application factory pattern"""
     
     if config_name is None:
-        config_name = os.environ.get('FLASK_ENV', 'development')
+        config_name = os.environ.get('FLASK_ENV', 'production')
     
     app = Flask(__name__)
     app.config.from_object(config[config_name])
@@ -54,13 +54,24 @@ def create_app(config_name=None):
     def inject_theme():
         return {'theme': app.config['THEME_COLORS']}
     
+    # Health check (lightweight, no DB)
+    @app.route('/health')
+    def health():
+        return {'status': 'ok'}, 200
+    
     # Error handlers
     @app.errorhandler(404)
     def not_found(e):
-        return {'error': 'Not found'}, 404
+        from flask import request as req
+        if req.path.startswith('/api/'):
+            return {'error': 'Not found'}, 404
+        return render_template('errors/404.html'), 404
     
     @app.errorhandler(500)
     def server_error(e):
-        return {'error': 'Internal server error'}, 500
+        from flask import request as req
+        if req.path.startswith('/api/'):
+            return {'error': 'Internal server error'}, 500
+        return render_template('errors/500.html'), 500
     
     return app

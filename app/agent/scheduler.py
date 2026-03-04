@@ -20,7 +20,8 @@ scheduler = None
 
 def init_scheduler(app):
     """
-    Inicializa el scheduler del agente
+    Inicializa el scheduler del agente.
+    Usa gunicorn --workers 1 para evitar jobs duplicados.
     
     Args:
         app: Flask app instance
@@ -29,6 +30,11 @@ def init_scheduler(app):
     
     if not app.config.get('AGENT_ENABLED', False):
         logger.info("Agent scheduler DISABLED by config")
+        return
+    
+    # Evitar duplicación: solo iniciar si no existe ya
+    if scheduler is not None:
+        logger.info("Scheduler already running, skipping")
         return
     
     scheduler = BackgroundScheduler(timezone='America/Lima')
