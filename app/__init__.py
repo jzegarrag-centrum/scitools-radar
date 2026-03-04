@@ -74,4 +74,31 @@ def create_app(config_name=None):
             return {'error': 'Internal server error'}, 500
         return render_template('errors/500.html'), 500
     
+    # ── Garantizar usuario admin ──────────────────────────────
+    _ensure_admin(app)
+    
     return app
+
+
+def _ensure_admin(app):
+    """Crea el usuario admin si no existe (seguro pre-migración)."""
+    try:
+        with app.app_context():
+            from app.models import User
+            admin = User.query.filter_by(
+                username=app.config['ADMIN_USERNAME']
+            ).first()
+            if admin is None:
+                admin = User(
+                    username=app.config['ADMIN_USERNAME'],
+                    email=app.config['ADMIN_EMAIL'],
+                    name='Administrador',
+                    is_admin=True,
+                )
+                admin.set_password(app.config['ADMIN_PASSWORD'])
+                db.session.add(admin)
+                db.session.commit()
+                app.logger.info('Admin user created (%s)', app.config['ADMIN_USERNAME'])
+    except Exception:
+        # Las tablas pueden no existir aún (pre-migración)
+        pass

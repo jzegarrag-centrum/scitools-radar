@@ -2,7 +2,7 @@
 Servicio de búsqueda full-text en PostgreSQL
 """
 from typing import List, Optional
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, case
 from app import db
 from app.models import Tool
 
@@ -50,7 +50,10 @@ class SearchService:
         # Orden por relevancia (nombre primero, luego summary)
         if query:
             q = q.order_by(
-                func.position(func.lower(query), func.lower(Tool.name)).desc(),
+                case(
+                    (Tool.name.ilike(f'%{query}%'), 1),
+                    else_=0
+                ).desc(),
                 Tool.last_updated.desc()
             )
         else:
