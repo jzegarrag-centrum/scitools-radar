@@ -53,7 +53,7 @@ class Tool(db.Model):
     
     # Categorización (según # SciTools Radar Docs)
     field = db.Column(db.String(100))  # Campo disciplinar
-    category = db.Column(db.String(10))  # A-P (16 categorías)
+    category = db.Column(db.String(200))  # Categoría descriptiva
     priority_source = db.Column(db.String(50))  # De las 24 fuentes prioritarias
     tags = db.Column(db.String(500))  # Tags CSV: "AI,NLP,open-source"
     

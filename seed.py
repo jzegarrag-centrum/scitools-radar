@@ -9,6 +9,16 @@ import sys
 from datetime import date, datetime
 from werkzeug.security import generate_password_hash
 
+
+def _to_date(val):
+    """Parse date or datetime string to date object"""
+    if not val:
+        return None
+    try:
+        return date.fromisoformat(val)
+    except ValueError:
+        return datetime.fromisoformat(val).date()
+
 # Asegurar que podemos importar la app
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -71,8 +81,8 @@ def seed():
             pricing=t.get('pricing'),
             platform=t.get('platform'),
             developer=t.get('developer'),
-            first_seen=date.fromisoformat(t['first_seen']) if t.get('first_seen') else None,
-            last_updated=date.fromisoformat(t['last_updated']) if t.get('last_updated') else None,
+            first_seen=_to_date(t.get('first_seen')),
+            last_updated=_to_date(t.get('last_updated')),
             status=t.get('status', 'active'),
         )
         db.session.add(tool)
