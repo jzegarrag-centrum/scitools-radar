@@ -131,6 +131,22 @@
     .rank-2 { background: #94a3b8; }
     .rank-3 { background: #b45309; }
     .rank-default { background: var(--gris-medio); }
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stats-header h1 { font-size: 1.25rem; }
+        .stats-cards { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        .stat-card { padding: 1rem; }
+        .stat-icon { width: 40px; height: 40px; font-size: 1rem; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.5rem; }
+        .chart-card { padding: 1rem; }
+        .chart-canvas-wrap { height: 220px; }
+        .top-table td, .top-table th { padding: 0.4rem 0.5rem; font-size: 0.82rem; }
+    }
+    @media (max-width: 480px) {
+        .stats-cards { grid-template-columns: repeat(2, 1fr); }
+        .stat-value { font-size: 1.3rem; }
+        .stat-label { font-size: 0.75rem; }
+    }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 {% endblock %}
@@ -138,7 +154,7 @@
 {% block content %}
 <div class="stats-header">
     <h1><i class="fas fa-chart-bar" style="color: var(--naranja);"></i> Estadisticas del Radar</h1>
-    <p>Metricas y tendencias sobre herramientas de investigacion monitoreadas</p>
+    <p>Métricas y tendencias sobre herramientas de investigación monitoreadas</p>
 </div>
 
 <!-- KPI Cards -->
@@ -216,7 +232,7 @@
             <div style="font-size: 2.5rem; font-weight: 800; color: var(--naranja);">
                 {{ stats.last_entry.date if stats.last_entry.date is string else stats.last_entry['date'] }}
             </div>
-            <div style="color: var(--gris-medio); margin-top: 0.5rem;">Fecha de la ultima entrada del blog</div>
+            <div style="color: var(--gris-medio); margin-top: 0.5rem;">Fecha de la última entrada del blog</div>
             <a href="{{ url_for('main.index') }}" class="btn" style="margin-top: 1.5rem;">
                 <i class="fas fa-arrow-right"></i> Ver entradas
             </a>
@@ -254,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'right', labels: { boxWidth: 12, padding: 10, font: { size: 11, family: 'Inter' } } }
+                legend: { position: window.innerWidth < 768 ? 'bottom' : 'right', labels: { boxWidth: 12, padding: 10, font: { size: 11, family: 'Inter' } } }
             }
         }
     });

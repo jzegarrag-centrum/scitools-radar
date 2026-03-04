@@ -211,7 +211,22 @@
     }
     @media (max-width: 768px) {
         .two-col { grid-template-columns: 1fr; }
-        .tool-hero-top { flex-direction: column; }
+        .tool-hero-top { flex-direction: column; gap: 1rem; }
+        .tool-hero { padding: 1.25rem; }
+        .tool-hero-info h1 { font-size: 1.35rem; }
+        .tool-hero-icon { width: 52px; height: 52px; font-size: 1.25rem; border-radius: 12px; }
+        .tool-hero-actions { flex-direction: column; }
+        .tool-hero-actions .btn { justify-content: center; }
+        .tool-meta-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .detail-section { padding: 1.25rem; }
+        .timeline-item { gap: 0.75rem; }
+        .change-diff { font-size: 0.75rem; padding: 0.5rem 0.6rem; }
+        .entry-list-item { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+    }
+    @media (max-width: 480px) {
+        .tool-meta-grid { grid-template-columns: 1fr; }
+        .tool-hero-badges { gap: 0.35rem; }
+        .badge { font-size: 0.72rem; }
     }
     .tag-list {
         display: flex;
@@ -291,11 +306,11 @@
     <!-- Meta Grid -->
     <div class="tool-meta-grid">
         <div class="tool-meta-item">
-            <span class="tool-meta-label">Primera deteccion</span>
+            <span class="tool-meta-label">Primera detección</span>
             <span class="tool-meta-value">{{ tool.first_seen.strftime('%d %b %Y') if tool.first_seen else 'No registrada' }}</span>
         </div>
         <div class="tool-meta-item">
-            <span class="tool-meta-label">Ultima actualizacion</span>
+            <span class="tool-meta-label">Última actualización</span>
             <span class="tool-meta-value">{{ tool.last_updated.strftime('%d %b %Y') if tool.last_updated else 'Sin actualizaciones' }}</span>
         </div>
         {% if tool.developer %}
@@ -306,7 +321,7 @@
         {% endif %}
         {% if tool.priority_source %}
         <div class="tool-meta-item">
-            <span class="tool-meta-label">Fuente prioritaria</span>
+            <span class="tool-meta-label">Fuente principal</span>
             <span class="tool-meta-value">{{ tool.priority_source }}</span>
         </div>
         {% endif %}
@@ -340,7 +355,7 @@
         </div>
         {% else %}
         <p style="color: var(--gris-medio); font-size: 0.92rem; text-align: center; padding: 2rem;">
-            <i class="fas fa-check-circle" style="color: var(--exito);"></i> Sin cambios registrados aun.
+            <i class="fas fa-check-circle" style="color: var(--exito);"></i> Sin cambios registrados aún.
         </p>
         {% endif %}
     </div>
@@ -366,7 +381,7 @@
         </div>
         {% else %}
         <p style="color: var(--gris-medio); font-size: 0.92rem; text-align: center; padding: 2rem;">
-            Sin menciones en el blog aun.
+            Sin menciones en el blog aún.
         </p>
         {% endif %}
     </div>

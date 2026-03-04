@@ -164,6 +164,23 @@
         font-size: 0.88rem;
         color: var(--gris-medio);
     }
+    /* Responsive */
+    @media (max-width: 768px) {
+        .about-hero { padding: 2rem 1.25rem; }
+        .about-hero h1 { font-size: 1.4rem; }
+        .about-hero p { font-size: 0.95rem; }
+        .about-section { padding: 1.25rem; }
+        .about-section h2 { font-size: 1.05rem; }
+        .schedule-box { flex-direction: column; text-align: center; gap: 0.75rem; padding: 1rem; }
+        .schedule-box i { font-size: 1.5rem; }
+        .tech-grid { grid-template-columns: repeat(2, 1fr); }
+        .pipeline-step { padding: 1rem 0.75rem; }
+    }
+    @media (max-width: 480px) {
+        .about-hero h1 { font-size: 1.2rem; }
+        .tech-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .tech-item { font-size: 0.82rem; padding: 0.5rem 0.6rem; }
+    }
 </style>
 {% endblock %}
 
@@ -172,31 +189,31 @@
 <div class="about-hero">
     <h1><i class="fas fa-satellite-dish"></i> SciTools Radar</h1>
     <p>
-        Plataforma de monitoreo automatizado de herramientas de investigacion cientifica,
+        Plataforma de monitoreo automatizado de herramientas de investigación científica,
         impulsada por agentes de inteligencia artificial.
     </p>
 </div>
 
 <!-- What is it -->
 <div class="about-section">
-    <h2><i class="fas fa-info-circle"></i> Que es SciTools Radar?</h2>
+    <h2><i class="fas fa-info-circle"></i> ¿Qué es SciTools Radar?</h2>
     <p>
         SciTools Radar es un sistema inteligente que rastrea, clasifica y reporta herramientas
-        digitales relevantes para la investigacion academica y cientifica. El sistema combina
-        un pipeline de agentes de IA con curaduria humana para mantener un inventario actualizado
+        digitales relevantes para la investigación académica y científica. El sistema combina
+        un pipeline de agentes de IA con curaduría humana para mantener un inventario actualizado
         y generar entradas de blog informativas.
     </p>
     <p style="margin-top: 0.75rem;">
-        Desarrollado por <strong>Smart Centrum</strong>, el radar opera de forma autonoma
-        con actualizaciones periodicas, manteniendo a la comunidad informada sobre nuevas
-        herramientas y cambios relevantes en las existentes.
+        Desarrollado por <strong>Smart Centrum</strong>, el radar opera de forma autónoma
+        con actualizaciones periódicas, manteniendo a la comunidad informada sobre nuevas
+        herramientas y cambios relevantes en las ya catalogadas.
     </p>
 </div>
 
 <!-- Agent Pipeline -->
 <div class="about-section">
     <h2><i class="fas fa-robot"></i> Pipeline de Agentes IA</h2>
-    <p>El proceso de generacion de contenido utiliza un pipeline de 5 etapas, cada una con un modelo especializado:</p>
+    <p>El proceso de generación de contenido utiliza un pipeline de 5 etapas, cada una con un modelo especializado:</p>
 
     <div class="pipeline">
         <div class="pipeline-step">
@@ -205,7 +222,7 @@
             <div class="pipeline-title">Investigador</div>
             <div class="pipeline-model">claude-sonnet-4</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Busca nuevas herramientas y novedades via Tavily API
+                Busca nuevas herramientas y novedades vía Tavily API
             </p>
         </div>
         <div class="pipeline-step">
@@ -214,7 +231,7 @@
             <div class="pipeline-title">Clasificador</div>
             <div class="pipeline-model">claude-sonnet-4</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Categoriza y asigna campos cientificos
+                Categoriza y asigna campos científicos
             </p>
         </div>
         <div class="pipeline-step">
@@ -223,7 +240,7 @@
             <div class="pipeline-title">Redactor</div>
             <div class="pipeline-model">claude-opus-4</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Genera editorial HTML profesional en formato JSON
+                Genera el editorial profesional en formato JSON
             </p>
         </div>
         <div class="pipeline-step">
@@ -241,7 +258,7 @@
             <div class="pipeline-title">Evaluador</div>
             <div class="pipeline-model">claude-sonnet-4</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Evalua calidad 0-10 y proporciona feedback
+                Evalúa la calidad (0–10) y proporciona retroalimentación
             </p>
         </div>
     </div>
@@ -249,24 +266,24 @@
 
 <!-- Schedule -->
 <div class="about-section">
-    <h2><i class="fas fa-clock"></i> Automatizacion</h2>
+    <h2><i class="fas fa-clock"></i> Automatización</h2>
     <p>
-        El pipeline se ejecuta de forma automatica segun un calendario configurado. Cada ejecucion
+        El pipeline se ejecuta de forma automática según un calendario configurado. Cada ejecución
         investiga nuevas herramientas, detecta actualizaciones en las existentes, genera un editorial
-        profesional y evalua la calidad del contenido.
+        profesional y evalúa la calidad del contenido.
     </p>
     <div class="schedule-box">
         <i class="fas fa-calendar-check"></i>
         <div class="schedule-box-info">
             <strong>Martes y Jueves a las 07:00 UTC</strong>
-            <span>Dos ejecuciones semanales para mantener el radar actualizado sin sobrecargar los recursos.</span>
+            <span>Dos ejecuciones semanales para mantener el radar actualizado sin sobrecargar los recursos de la plataforma.</span>
         </div>
     </div>
 </div>
 
 <!-- Technology Stack -->
 <div class="about-section">
-    <h2><i class="fas fa-layer-group"></i> Stack Tecnologico</h2>
+    <h2><i class="fas fa-layer-group"></i> Stack Tecnológico</h2>
     <div class="tech-grid">
         <div class="tech-item"><i class="fab fa-python"></i> Flask 3.1</div>
         <div class="tech-item"><i class="fas fa-database"></i> SQLAlchemy</div>
@@ -282,16 +299,16 @@
 
 <!-- Credits -->
 <div class="about-section">
-    <h2><i class="fas fa-users"></i> Creditos</h2>
+    <h2><i class="fas fa-users"></i> Créditos</h2>
     <p>
-        Este proyecto fue desarrollado como parte de las herramientas de investigacion de
-        <strong>Smart Centrum</strong>. El sistema es de codigo abierto y esta disponible
-        para que la comunidad academica lo utilice y contribuya.
+        Este proyecto fue desarrollado como parte de las herramientas de investigación de
+        <strong>Smart Centrum</strong>. El sistema es de código abierto y está disponible
+        para que la comunidad académica lo utilice y contribuya.
     </p>
     <ul>
-        <li><strong>Diseno y arquitectura:</strong> Pipeline multi-agente con especializacion por etapa</li>
-        <li><strong>Modelos IA:</strong> CometAPI (compatible con OpenAI SDK)</li>
-        <li><strong>Infraestructura:</strong> Railway (produccion) / SQLite (desarrollo)</li>
+        <li><strong>Diseño y arquitectura:</strong> Pipeline multiagente con especialización por etapa</li>
+        <li><strong>Modelos de IA:</strong> CometAPI (compatible con OpenAI SDK)</li>
+        <li><strong>Infraestructura:</strong> Railway (producción) / SQLite (desarrollo)</li>
     </ul>
 </div>
 {% endblock %}

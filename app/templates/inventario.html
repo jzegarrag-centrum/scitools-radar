@@ -204,6 +204,22 @@
         color: var(--gris-medio);
         font-weight: 500;
     }
+    /* Responsive */
+    @media (max-width: 768px) {
+        .inv-header h1 { font-size: 1.25rem; }
+        .search-form { flex-direction: column; }
+        .search-input-wrap { min-width: 100%; }
+        .filter-select { min-width: 100%; }
+        .tools-grid { grid-template-columns: 1fr; gap: 1rem; }
+        .tool-card { padding: 1.25rem; }
+        .pagination-bar { flex-wrap: wrap; gap: 0.5rem; }
+    }
+    @media (max-width: 480px) {
+        .search-card { padding: 1rem; }
+        .tool-icon { width: 36px; height: 36px; font-size: 0.95rem; border-radius: 8px; }
+        .tool-card-header h3 { font-size: 0.95rem; }
+        .tool-badges { gap: 0.3rem; }
+    }
 </style>
 {% endblock %}
 
@@ -215,7 +231,7 @@
             {% if query or field or category %}
                 Resultados filtrados
             {% else %}
-                {{ tools|length }}+ herramientas cientificas catalogadas
+                {{ tools|length }}+ herramientas científicas catalogadas
             {% endif %}
         </div>
     </div>
@@ -226,7 +242,7 @@
     <form method="get" class="search-form">
         <div class="search-input-wrap">
             <i class="fas fa-search"></i>
-            <input type="text" name="q" value="{{ query }}" placeholder="Buscar herramientas por nombre o descripcion...">
+            <input type="text" name="q" value="{{ query }}" placeholder="Buscar herramientas por nombre o descripción...">
         </div>
         <select name="field" class="filter-select">
             <option value="">Todos los campos</option>
@@ -274,7 +290,7 @@
             {% endif %}
         </div>
         <div class="tool-summary">
-            {{ tool.summary|truncate(140) if tool.summary else 'Herramienta en proceso de catalogacion.' }}
+            {{ tool.summary|truncate(140) if tool.summary else 'Herramienta en proceso de catalogación.' }}
         </div>
         <div class="tool-card-footer">
             <a href="{{ url_for('main.herramienta_detalle', slug=tool.slug) }}" class="tool-detail-link">
@@ -297,7 +313,7 @@
         <i class="fas fa-chevron-left"></i> Anterior
     </a>
     {% endif %}
-    <span class="page-info">Pagina {{ page }}</span>
+    <span class="page-info">Página {{ page }}</span>
     {% if has_next %}
     <a href="{{ url_for('main.inventario', page=page+1, q=query, field=field, category=category) }}" class="btn btn-outline btn-sm">
         Siguiente <i class="fas fa-chevron-right"></i>
@@ -308,7 +324,7 @@
 <div class="card card-lg" style="text-align: center; padding: 4rem;">
     <i class="fas fa-search" style="font-size: 2.5rem; color: var(--borde); margin-bottom: 1rem;"></i>
     <h2 style="color: var(--gris-medio); font-size: 1.1rem; margin-bottom: 0.5rem;">No se encontraron herramientas</h2>
-    <p style="color: var(--gris-medio); font-size: 0.92rem;">Intenta con otros filtros o terminos de busqueda.</p>
+    <p style="color: var(--gris-medio); font-size: 0.92rem;">Intenta con otros filtros o términos de búsqueda.</p>
 </div>
 {% endif %}
 {% endblock %}

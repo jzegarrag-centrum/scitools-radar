@@ -89,7 +89,13 @@
             display: flex; align-items: center; gap: 0.4rem;
         }
         nav a:hover { background: rgba(255,255,255,0.12); color: white; }
-        .mobile-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .nav-admin-link {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .nav-admin-link:hover { background: rgba(255,107,0,0.3) !important; border-color: var(--naranja); }
+        .mobile-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; z-index: 250; }
+        .mobile-close-wrap { display: none; }
         /* CONTAINER */
         .container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
         main { min-height: calc(100vh - 64px - 200px); padding: 2rem 0; }
@@ -157,7 +163,7 @@
         footer li { margin-bottom: 0.4rem; }
         footer a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.9rem; transition: var(--transition); }
         footer a:hover { color: var(--naranja); }
-        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; flex-wrap: wrap; gap: 0.5rem; }
         /* ALERTS */
         .flash-messages { margin: 1rem 0; }
         .alert {
@@ -265,18 +271,49 @@
         }
         .chat-suggestion:hover { background: var(--azul); color: white; }
         /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .container { padding: 0 1.5rem; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
         @media (max-width: 768px) {
-            .header-inner { padding: 0 1rem; }
+            .header-inner { padding: 0 1rem; height: 56px; }
+            .logo { font-size: 1.1rem; gap: 0.5rem; }
+            .logo-icon { width: 32px; height: 32px; font-size: 0.95rem; border-radius: 8px; }
+            .logo-sub { display: none; }
             .container { padding: 0 1rem; }
-            nav ul { display: none; }
-            nav ul.mobile-open {
-                display: flex; flex-direction: column; position: absolute;
-                top: 64px; left: 0; right: 0; background: var(--azul); padding: 1rem;
-                box-shadow: var(--sombra-lg);
+            main { padding: 1.25rem 0; }
+            nav ul {
+                display: none; flex-direction: column;
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,56,101,0.98);
+                backdrop-filter: blur(8px);
+                padding: 5rem 2rem 2rem;
+                z-index: 200; gap: 0.5rem;
             }
+            nav ul.mobile-open { display: flex; }
+            nav ul a { font-size: 1.1rem; padding: 0.9rem 1.25rem; border-radius: 12px; }
+            nav ul a:hover { background: rgba(255,255,255,0.15); }
             .mobile-toggle { display: block; }
-            .footer-grid { grid-template-columns: 1fr; }
-            .chat-panel { width: calc(100vw - 2rem); right: 1rem; bottom: 1rem; max-height: 80vh; }
+            .mobile-close-wrap { display: block; position: absolute; top: 1rem; right: 1rem; }
+            .mobile-close-wrap button {
+                background: rgba(255,255,255,0.15); border: none; color: white;
+                width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+                font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
+            }
+            .footer-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+            .footer-bottom { flex-direction: column; text-align: center; }
+            .chat-fab { width: 52px; height: 52px; bottom: 1rem; right: 1rem; }
+            .fab-robot { width: 32px; height: 32px; }
+            .chat-panel { width: calc(100vw - 1rem); right: 0.5rem; bottom: 0.5rem; max-height: 85vh; border-radius: 12px; }
+            .chat-messages { max-height: 50vh; }
+            .card { padding: 1.25rem; margin-bottom: 1rem; }
+            .card-lg { padding: 1.25rem; }
+        }
+        @media (max-width: 480px) {
+            .header-inner { padding: 0 0.75rem; }
+            .container { padding: 0 0.75rem; }
+            .btn { padding: 0.55rem 1rem; font-size: 0.82rem; }
+            .badge { font-size: 0.72rem; padding: 0.2rem 0.5rem; }
         }
         {% block styles %}{% endblock %}
     </style>
@@ -288,18 +325,25 @@
                 <div class="logo-icon"><i class="fas fa-satellite-dish"></i></div>
                 <div>SciTools Radar<span class="logo-sub">by CENTRUM PUCP</span></div>
             </a>
-            <button class="mobile-toggle" onclick="document.querySelector('nav ul').classList.toggle('mobile-open')">
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Menú">
                 <i class="fas fa-bars"></i>
             </button>
             <nav>
-                <ul>
+                <ul id="navMenu">
+                    <li class="mobile-close-wrap">
+                        <button onclick="closeMobileMenu()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </li>
                     <li><a href="{{ url_for('main.index') }}"><i class="fas fa-newspaper"></i> Blog</a></li>
                     <li><a href="{{ url_for('main.inventario') }}"><i class="fas fa-th-large"></i> Inventario</a></li>
-                    <li><a href="{{ url_for('main.estadisticas') }}"><i class="fas fa-chart-bar"></i> Estadisticas</a></li>
+                    <li><a href="{{ url_for('main.estadisticas') }}"><i class="fas fa-chart-bar"></i> Estadísticas</a></li>
                     <li><a href="{{ url_for('main.about') }}"><i class="fas fa-info-circle"></i> Acerca de</a></li>
                     {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-cog"></i> Admin</a></li>
+                    <li><a href="{{ url_for('admin.dashboard') }}" class="nav-admin-link"><i class="fas fa-tachometer-alt"></i> Panel Admin</a></li>
                     <li><a href="{{ url_for('admin.logout') }}"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+                    {% else %}
+                    <li><a href="{{ url_for('admin.login') }}" class="nav-admin-link"><i class="fas fa-user-shield"></i> Admin</a></li>
                     {% endif %}
                 </ul>
             </nav>
@@ -327,10 +371,10 @@
             <div class="footer-grid">
                 <div>
                     <div class="footer-brand"><i class="fas fa-satellite-dish"></i> SciTools Radar</div>
-                    <p style="font-size:0.9rem;margin-top:0.5rem;">Sistema autonomo de monitoreo de herramientas cientificas impulsado por IA. Actualizado automaticamente 2 veces por semana.</p>
+                    <p style="font-size:0.9rem;margin-top:0.5rem;">Sistema autónomo de monitoreo de herramientas científicas impulsado por IA. Actualizado automáticamente dos veces por semana.</p>
                 </div>
                 <div>
-                    <h4>Navegacion</h4>
+                    <h4>Navegación</h4>
                     <ul>
                         <li><a href="{{ url_for('main.index') }}">Blog de novedades</a></li>
                         <li><a href="{{ url_for('main.inventario') }}">Inventario completo</a></li>
@@ -339,11 +383,14 @@
                     </ul>
                 </div>
                 <div>
-                    <h4>Tecnologia</h4>
+                    <h4>Administración</h4>
                     <ul>
-                        <li><a href="#">CometAPI Gateway</a></li>
-                        <li><a href="#">Claude Opus 4 + Sonnet 4</a></li>
-                        <li><a href="#">Flask 3.1</a></li>
+                        {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt" style="margin-right:0.3rem;"></i> Panel de control</a></li>
+                        <li><a href="{{ url_for('admin.logout') }}"><i class="fas fa-sign-out-alt" style="margin-right:0.3rem;"></i> Cerrar sesión</a></li>
+                        {% else %}
+                        <li><a href="{{ url_for('admin.login') }}"><i class="fas fa-user-shield" style="margin-right:0.3rem;"></i> Acceso administrador</a></li>
+                        {% endif %}
                         <li><a href="https://www.centrum.pucp.edu.pe" target="_blank">CENTRUM PUCP</a></li>
                     </ul>
                 </div>
@@ -389,7 +436,7 @@
             </svg>
             <div class="chat-header-info">
                 <h3>SciBot <span style="font-size:0.7rem;opacity:0.7">v1.0</span></h3>
-                <p>Asistente de herramientas cientificas</p>
+                <p>Asistente de herramientas científicas</p>
             </div>
             <button class="chat-close" onclick="toggleChat()"><i class="fas fa-times"></i></button>
         </div>
@@ -397,7 +444,7 @@
             <div class="chat-msg bot">
                 <div class="chat-msg-avatar"><i class="fas fa-robot"></i></div>
                 <div class="chat-msg-bubble">
-                    Hola! Soy <strong>SciBot</strong>, tu asistente de herramientas cientificas. Puedo ayudarte a encontrar herramientas, explicar funcionalidades o recomendar opciones para tu investigacion. Que necesitas?
+                    ¡Hola! Soy <strong>SciBot</strong>, tu asistente de herramientas científicas. Puedo ayudarte a encontrar herramientas, explicar funcionalidades o recomendar opciones para tu investigación. ¿Qué necesitas?
                 </div>
             </div>
         </div>
@@ -414,6 +461,30 @@
     </div>
 
     <script>
+    /* Mobile menu */
+    const mobileToggle = document.getElementById('mobileToggle');
+    const navMenu = document.getElementById('navMenu');
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('mobile-open');
+            const icon = this.querySelector('i');
+            if (navMenu.classList.contains('mobile-open')) {
+                icon.className = 'fas fa-times';
+                document.body.style.overflow = 'hidden';
+            } else {
+                icon.className = 'fas fa-bars';
+                document.body.style.overflow = '';
+            }
+        });
+    }
+    function closeMobileMenu() {
+        if (navMenu) navMenu.classList.remove('mobile-open');
+        if (mobileToggle) mobileToggle.querySelector('i').className = 'fas fa-bars';
+        document.body.style.overflow = '';
+    }
+    if (navMenu) navMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
+
+    /* Chat */
     let chatOpen = false;
     let chatHistory = [];
     function toggleChat() {
@@ -459,7 +530,7 @@
         } catch(err) {
             typingEl.remove();
             robot.classList.remove('thinking');
-            appendMessage('bot', 'Error de conexion. Verifica que el servidor este activo.');
+            appendMessage('bot', 'Error de conexión. Verifica que el servidor esté activo.');
         }
         document.getElementById('chatSend').disabled = false;
     }
