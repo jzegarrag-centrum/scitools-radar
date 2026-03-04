@@ -3,6 +3,7 @@
   buildCommand = "pip install -r requirements.txt"
 
 [deploy]
+  releaseCommand = "flask db upgrade"
   startCommand = "gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
   healthcheckPath = "/"
   healthcheckTimeout = 30
