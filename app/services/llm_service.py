@@ -93,49 +93,57 @@ class LLMService:
     
     def research_call(self, messages: List[Dict], **kwargs) -> Dict:
         """Llamada para Research Agent (Claude Sonnet 4)"""
+        temperature = kwargs.pop('temperature', 0.3)
         return self.chat_completion(
             messages=messages,
             model=self.models['research'],
-            temperature=kwargs.get('temperature', 0.3),
+            temperature=temperature,
             **kwargs
         )
     
     def classifier_call(self, messages: List[Dict], **kwargs) -> Dict:
         """Llamada para Classifier Agent (Claude Sonnet 4)"""
+        temperature = kwargs.pop('temperature', 0.2)
         return self.chat_completion(
             messages=messages,
             model=self.models['classifier'],
-            temperature=kwargs.get('temperature', 0.2),
+            temperature=temperature,
             **kwargs
         )
     
     def writer_call(self, messages: List[Dict], **kwargs) -> Dict:
         """Llamada para Writer Agent (Claude Opus 4 JSON mode)"""
+        temperature = kwargs.pop('temperature', 0.4)
+        response_format = kwargs.pop('response_format', {"type": "json_object"})
         return self.chat_completion(
             messages=messages,
             model=self.models['writer'],
-            temperature=kwargs.get('temperature', 0.4),
-            response_format={"type": "json_object"},
+            temperature=temperature,
+            response_format=response_format,
             **kwargs
         )
     
     def evaluator_call(self, messages: List[Dict], **kwargs) -> Dict:
         """Llamada para Quality Evaluator (Claude Sonnet 4)"""
+        temperature = kwargs.pop('temperature', 0.1)
+        response_format = kwargs.pop('response_format', {"type": "json_object"})
         return self.chat_completion(
             messages=messages,
             model=self.models['evaluator'],
-            temperature=kwargs.get('temperature', 0.1),
-            response_format={"type": "json_object"},
+            temperature=temperature,
+            response_format=response_format,
             **kwargs
         )
     
     def chat_call(self, messages: List[Dict], **kwargs) -> Dict:
         """Llamada para Chat Agent conversacional (Claude Sonnet 4)"""
+        temperature = kwargs.pop('temperature', 0.5)
+        max_tokens = kwargs.pop('max_tokens', 1024)
         return self.chat_completion(
             messages=messages,
             model=self.models['chat'],
-            temperature=kwargs.get('temperature', 0.5),
-            max_tokens=kwargs.get('max_tokens', 1024),
+            temperature=temperature,
+            max_tokens=max_tokens,
             **kwargs
         )
 

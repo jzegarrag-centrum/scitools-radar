@@ -60,6 +60,7 @@ class Config:
     AGENT_SCHEDULE_DAYS = os.environ.get('AGENT_SCHEDULE_DAYS', 'tue,thu')
     AGENT_MAX_NEW_TOOLS = int(os.environ.get('AGENT_MAX_NEW_TOOLS', 6))
     AGENT_MAX_UPDATES = int(os.environ.get('AGENT_MAX_UPDATES', 5))
+    AGENT_MAX_REFRESH = int(os.environ.get('AGENT_MAX_REFRESH', 10))
     AGENT_ENABLED = os.environ.get('AGENT_ENABLED', 'True').lower() == 'true'
     
     # API

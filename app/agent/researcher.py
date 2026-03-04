@@ -1,10 +1,10 @@
 """
 Research Agent - Paso 1
-Busca novedades en categorías científicas via Tavily
+Descubre nuevas herramientas científicas usando conocimiento LLM + Tavily (opcional)
 """
 import logging
-from typing import List, Dict
-from tavily import TavilyClient
+import json
+from typing import List, Dict, Optional
 from flask import current_app
 from app.services.llm_service import get_llm_service, log_llm_call
 
@@ -31,36 +31,31 @@ CATEGORIES = [
 ]
 
 
-def research_daily_tools(existing_slugs: List[str]) -> List[Dict]:
+def _tavily_search(categories: List[str], existing_slugs: List[str]) -> List[Dict]:
     """
-    Paso 1: Busca novedades en las 16 categorías
-    
-    Args:
-        existing_slugs: Lista de slugs de herramientas ya existentes
-        
-    Returns:
-        Lista de hallazgos crudos con fuentes
+    Búsqueda web via Tavily (opcional, solo si hay API key real).
     """
-    logger.info("Starting Research Agent...")
-    
-    tavily_key = current_app.config.get('TAVILY_API_KEY')
-    if not tavily_key:
-        logger.warning("TAVILY_API_KEY not configured, skipping web search")
+    tavily_key = current_app.config.get('TAVILY_API_KEY', '')
+    if not tavily_key or tavily_key.startswith('tvly-your') or len(tavily_key) < 20:
+        logger.info("Tavily API key not configured or is placeholder — skipping web search")
         return []
-    
-    tavily = TavilyClient(api_key=tavily_key)
-    
-    # 1. Web search en cada categoría
+
+    try:
+        from tavily import TavilyClient
+        tavily = TavilyClient(api_key=tavily_key)
+    except ImportError:
+        logger.warning("tavily-python not installed — skipping web search")
+        return []
+
     search_results = []
-    for category in CATEGORIES:
+    for category in categories:
         try:
             results = tavily.search(
-                query=f"new scientific research tool {category} last 48 hours",
+                query=f"new scientific research tool {category} 2025 2026",
                 search_depth="advanced",
                 max_results=3,
                 include_answer=False
             )
-            
             for result in results.get('results', []):
                 search_results.append({
                     'category': category,
@@ -69,87 +64,185 @@ def research_daily_tools(existing_slugs: List[str]) -> List[Dict]:
                     'content': result.get('content'),
                     'score': result.get('score', 0),
                 })
-            
-            logger.info(f"Category '{category}': {len(results.get('results', []))} results")
-        
+            logger.info(f"Tavily '{category}': {len(results.get('results', []))} results")
         except Exception as e:
             logger.error(f"Tavily search failed for '{category}': {e}")
             continue
-    
-    logger.info(f"Total raw results: {len(search_results)}")
-    
-    # 2. LLM sintetiza hallazgos
-    if not search_results:
-        logger.warning("No search results to analyze")
-        return []
-    
+
+    return search_results
+
+
+def _llm_discover_tools(
+    existing_tools_summary: str,
+    category_gaps: List[str],
+    tavily_context: Optional[str] = None
+) -> List[Dict]:
+    """
+    Usa el LLM para descubrir herramientas científicas nuevas/emergentes
+    basándose en su conocimiento y, opcionalmente, resultados de búsqueda web.
+    """
     llm = get_llm_service()
-    
-    # Preparar prompt
-    search_summary = "\n\n".join([
-        f"**{r['category']}**\n"
-        f"Title: {r['title']}\n"
-        f"URL: {r['url']}\n"
-        f"Content: {r['content'][:500]}..."
-        for r in search_results[:30]  # Limitar para no exceder context
-    ])
-    
-    system_prompt = f"""Eres un asistente experto en identificar nuevas herramientas científicas.
 
-Analiza los siguientes resultados de búsqueda web y extrae SOLO herramientas científicas reales que sean:
-- Software, plataformas web, o servicios específicos
-- Útiles para investigadores académicos
-- Mencionados con nombre concreto (no conceptos genéricos)
+    web_context = ""
+    if tavily_context:
+        web_context = f"""
 
-IMPORTANTE: NO incluyas herramientas que ya conocemos: {', '.join(existing_slugs[:50])}
+RESULTADOS DE BÚSQUEDA WEB RECIENTES:
+{tavily_context}
 
-Para cada herramienta encontrada, extrae:
-- Nombre exacto de la herramienta
-- URL si está disponible
-- Resumen corto (1-2 líneas)
-- Categoría que mejor le corresponde
-- Fuente URL de donde la encontraste
+Usa estos resultados para complementar tu conocimiento. Prioriza herramientas
+mencionadas en fuentes recientes."""
 
-Responde en formato JSON array:
+    system_prompt = f"""Eres un investigador experto en herramientas digitales para investigación científica y académica.
+
+Tu misión: Identificar herramientas científicas REALES que NO estén en el inventario actual.
+
+INVENTARIO ACTUAL (herramientas que ya tenemos — NO las repitas):
+{existing_tools_summary}
+
+CATEGORÍAS CON MENOS COBERTURA (priorizar):
+{', '.join(category_gaps) if category_gaps else 'Todas las categorías tienen cobertura similar'}
+{web_context}
+
+INSTRUCCIONES:
+1. Identifica 5-8 herramientas REALES y VERIFICABLES que falten en nuestro inventario
+2. Prioriza herramientas:
+   - Lanzadas o actualizadas significativamente en 2024-2026
+   - Con impacto real en investigación académica
+   - De diferentes categorías (diversidad)
+   - Tanto de ciencias duras como sociales/humanidades
+3. CADA herramienta debe ser un software/plataforma/servicio REAL con URL verificable
+4. NO inventes herramientas — solo menciona las que realmente existen
+
+Responde SOLO con un JSON array válido (sin texto adicional):
 [
   {{
-    "name": "Nombre Tool",
-    "url": "https://...",
-    "summary": "Breve descripción",
-    "category": "categoria-principal",
-    "source_url": "url-donde-se-menciona"
+    "name": "Nombre Exacto de la Herramienta",
+    "url": "https://url-oficial.com",
+    "summary": "Descripción precisa en español (2-3 oraciones). Qué hace, para qué sirve, qué la diferencia.",
+    "category": "una de las 16 categorías",
+    "field": "campo disciplinar principal (ej: multidisciplinar, ciencias sociales, biomedicina, etc.)",
+    "source_url": "https://fuente-donde-se-puede-verificar.com",
+    "pricing": "free|freemium|paid|open-source",
+    "platform": "web|desktop|mobile|API|extension"
   }}
-]
-
-Si no encuentras herramientas nuevas válidas, responde con array vacío []."""
+]"""
 
     try:
         response = llm.research_call(
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Resultados de búsqueda:\n\n{search_summary}"}
+                {"role": "user", "content": (
+                    "Identifica herramientas científicas reales que no estén "
+                    "en nuestro inventario. Enfócate en herramientas emergentes, "
+                    "con buena tracción, y que cubran las categorías menos representadas. "
+                    "Incluye herramientas tanto para ciencias duras como para ciencias sociales."
+                )}
             ],
-            temperature=0.3
+            temperature=0.4
         )
-        
-        log_llm_call('research', response, {'results_count': len(search_results)})
-        
-        # Parse JSON response
-        import json
-        findings_text = response.choices[0].message.content
-        
-        # Limpiar markdown si existe
-        if '```json' in findings_text:
-            findings_text = findings_text.split('```json')[1].split('```')[0]
-        elif '```' in findings_text:
-            findings_text = findings_text.split('```')[1].split('```')[0]
-        
-        findings = json.loads(findings_text.strip())
-        
-        logger.info(f"Research Agent found {len(findings)} potential tools")
-        
+
+        log_llm_call('research_discover', response, {'mode': 'llm_knowledge'})
+
+        result_text = response.choices[0].message.content
+
+        if '```json' in result_text:
+            result_text = result_text.split('```json')[1].split('```')[0]
+        elif '```' in result_text:
+            result_text = result_text.split('```')[1].split('```')[0]
+
+        findings = json.loads(result_text.strip())
+
+        if not isinstance(findings, list):
+            logger.error("LLM returned non-list response")
+            return []
+
+        logger.info(f"LLM discovered {len(findings)} potential new tools")
         return findings
-    
+
     except Exception as e:
-        logger.error(f"LLM synthesis failed: {e}")
+        logger.error(f"LLM discovery failed: {e}")
         return []
+
+
+def _analyze_category_gaps(existing_tools_summary: str) -> List[str]:
+    """Identifica categorías con poca cobertura en el inventario actual."""
+    category_counts = {}
+    lower_summary = existing_tools_summary.lower()
+
+    for cat in CATEGORIES:
+        keywords = cat.lower().split()
+        count = sum(1 for kw in keywords if kw in lower_summary)
+        category_counts[cat] = count
+
+    sorted_cats = sorted(category_counts.items(), key=lambda x: x[1])
+    gaps = [cat for cat, _ in sorted_cats[:5]]
+
+    logger.info(f"Category gaps identified: {gaps}")
+    return gaps
+
+
+def research_daily_tools(existing_slugs: List[str]) -> List[Dict]:
+    """
+    Paso 1: Descubre herramientas nuevas usando LLM + Tavily (opcional)
+    
+    Args:
+        existing_slugs: Lista de slugs de herramientas ya existentes
+        
+    Returns:
+        Lista de hallazgos estructurados con fuentes
+    """
+    logger.info("=" * 50)
+    logger.info("Starting Research Agent (LLM + optional Tavily)")
+    logger.info("=" * 50)
+
+    # 1. Construir resumen del inventario actual
+    from app.models import Tool
+    existing_tools = Tool.query.filter_by(status='active').all()
+
+    existing_summary = "\n".join([
+        f"- {t.slug}: {t.name} | {t.category or 'sin categoría'} | {(t.summary or '')[:80]}"
+        for t in existing_tools
+    ])
+
+    logger.info(f"Current inventory: {len(existing_tools)} tools")
+
+    # 2. Identificar categorías con brechas
+    category_gaps = _analyze_category_gaps(existing_summary)
+
+    # 3. Búsqueda web opcional (Tavily)
+    tavily_results = _tavily_search(category_gaps, existing_slugs)
+    tavily_context = None
+    if tavily_results:
+        tavily_context = "\n\n".join([
+            f"**{r['category']}**\n"
+            f"Title: {r['title']}\n"
+            f"URL: {r['url']}\n"
+            f"Content: {r['content'][:400]}"
+            for r in tavily_results[:20]
+        ])
+        logger.info(f"Tavily provided {len(tavily_results)} results as context")
+
+    # 4. Descubrimiento principal via LLM
+    findings = _llm_discover_tools(existing_summary, category_gaps, tavily_context)
+
+    # 5. Filtrar herramientas que ya existen
+    existing_names_lower = {t.name.lower() for t in existing_tools}
+    existing_slugs_set = set(existing_slugs)
+
+    filtered = []
+    for f in findings:
+        slug_candidate = f.get('name', '').lower().replace(' ', '-').replace('.', '-')
+        name_lower = f.get('name', '').lower()
+
+        if slug_candidate in existing_slugs_set:
+            logger.info(f"Filtered out (slug exists): {f['name']}")
+            continue
+        if name_lower in existing_names_lower:
+            logger.info(f"Filtered out (name exists): {f['name']}")
+            continue
+
+        filtered.append(f)
+
+    logger.info(f"Research Agent: {len(filtered)} new tools after filtering (from {len(findings)} candidates)")
+    return filtered

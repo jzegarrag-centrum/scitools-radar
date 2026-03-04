@@ -202,7 +202,7 @@ def generate_entry():
             _agent_status.update({
                 'running': True,
                 'step': 'Generando entrada del blog...',
-                'progress': 10,
+                'progress': 5,
                 'log': ['Iniciando generacion de entrada...'],
                 'started_at': datetime.utcnow().isoformat(),
             })
@@ -214,9 +214,9 @@ def generate_entry():
 
             try:
                 # Step 1: Research
-                _agent_status['step'] = 'Paso 1/5: Investigando nuevas herramientas...'
-                _agent_status['progress'] = 20
-                _agent_status['log'].append('[STEP 1] Research Agent')
+                _agent_status['step'] = 'Paso 1/6: Investigando nuevas herramientas...'
+                _agent_status['progress'] = 15
+                _agent_status['log'].append('[STEP 1] Research Agent (LLM + Tavily)')
 
                 existing_tools = Tool.query.filter_by(status='active').all()
                 existing_slugs = [t.slug for t in existing_tools]
@@ -226,45 +226,81 @@ def generate_entry():
                 run.tools_found = len(findings)
                 db.session.commit()
 
-                _agent_status['log'].append(f'  Encontradas {len(findings)} herramientas')
+                _agent_status['log'].append(f'  Encontradas {len(findings)} herramientas potenciales')
 
-                if not findings:
-                    _agent_status['log'].append('Sin resultados de investigacion')
+                # Step 2: Classify
+                _agent_status['step'] = 'Paso 2/6: Clasificando hallazgos...'
+                _agent_status['progress'] = 30
+                _agent_status['log'].append('[STEP 2] Classifier Agent')
+
+                if findings:
+                    from app.agent.classifier import classify_findings
+                    classified = classify_findings(findings, existing_tools)
+                else:
+                    classified = {'new_tools': [], 'updates': []}
+
+                new_tools_data = classified.get('new_tools', [])[:current_app.config.get('AGENT_MAX_NEW_TOOLS', 6)]
+                updates_from_classifier = classified.get('updates', [])[:current_app.config.get('AGENT_MAX_UPDATES', 5)]
+
+                run.tools_new = len(new_tools_data)
+                db.session.commit()
+
+                _agent_status['log'].append(f'  {len(new_tools_data)} nuevas, {len(updates_from_classifier)} updates del clasificador')
+
+                # Step 2B: Tool Updater — refrescar herramientas existentes
+                _agent_status['step'] = 'Paso 3/6: Actualizando herramientas existentes...'
+                _agent_status['progress'] = 45
+                _agent_status['log'].append('[STEP 2B] Tool Updater')
+
+                from app.agent.updater import refresh_existing_tools, apply_tool_updates
+                from app.agent.scheduler import _select_tools_for_refresh
+                max_refresh = current_app.config.get('AGENT_MAX_REFRESH', 10)
+                tools_to_refresh = _select_tools_for_refresh(existing_tools, max_refresh)
+
+                updater_results = []
+                if tools_to_refresh:
+                    updater_results = refresh_existing_tools(tools_to_refresh)
+                    update_stats = apply_tool_updates(updater_results)
+                    _agent_status['log'].append(f'  {update_stats["updated"]} herramientas actualizadas')
+                else:
+                    _agent_status['log'].append('  Sin herramientas para refrescar')
+
+                # Combinar updates para el writer
+                all_updates = list(updates_from_classifier)
+                for ur in updater_results:
+                    for change in ur.get('changes', []):
+                        all_updates.append({
+                            'tool_slug': ur['tool_slug'],
+                            'field_updated': change.get('field', 'summary'),
+                            'new_value': change.get('new_value', ''),
+                            'description': f"{ur.get('tool_name', ur['tool_slug'])}: {change.get('reason', 'actualizacion')}"
+                        })
+
+                run.updates_count = len(all_updates)
+                db.session.commit()
+
+                # Si no hay nada, terminar
+                if not new_tools_data and not all_updates:
+                    _agent_status['log'].append('Sin resultados nuevos ni actualizaciones')
                     run.status = 'success'
                     run.finished_at = datetime.utcnow()
                     db.session.commit()
-                    _agent_status.update({'running': False, 'step': 'Completado (sin resultados)', 'progress': 100})
+                    _agent_status.update({'running': False, 'step': 'Completado (sin novedades)', 'progress': 100})
                     return
 
-                # Step 2: Classify
-                _agent_status['step'] = 'Paso 2/5: Clasificando hallazgos...'
-                _agent_status['progress'] = 40
-                _agent_status['log'].append('[STEP 2] Classifier Agent')
-
-                from app.agent.classifier import classify_findings
-                classified = classify_findings(findings, existing_tools)
-                new_tools_data = classified.get('new_tools', [])[:current_app.config.get('AGENT_MAX_NEW_TOOLS', 6)]
-                updates_data = classified.get('updates', [])[:current_app.config.get('AGENT_MAX_UPDATES', 5)]
-
-                run.tools_new = len(new_tools_data)
-                run.updates_count = len(updates_data)
-                db.session.commit()
-
-                _agent_status['log'].append(f'  {len(new_tools_data)} nuevas, {len(updates_data)} updates')
-
                 # Step 3: Write
-                _agent_status['step'] = 'Paso 3/5: Redactando entrada...'
+                _agent_status['step'] = 'Paso 4/6: Redactando entrada...'
                 _agent_status['progress'] = 60
                 _agent_status['log'].append('[STEP 3] Writer Agent')
 
                 from app.agent.writer import write_daily_entry
                 entry_data = write_daily_entry(
-                    {'new_tools': new_tools_data, 'updates': updates_data},
+                    {'new_tools': new_tools_data, 'updates': all_updates},
                     date.today()
                 )
 
                 # Step 4: Create in DB (as draft)
-                _agent_status['step'] = 'Paso 4/5: Creando entrada en BD...'
+                _agent_status['step'] = 'Paso 5/6: Creando entrada en BD...'
                 _agent_status['progress'] = 80
                 _agent_status['log'].append('[STEP 4] Entry Creator')
 
@@ -277,7 +313,7 @@ def generate_entry():
                 _agent_status['log'].append(f'  Entrada creada: ID={entry.id}, date={entry.date}')
 
                 # Step 5: Evaluate quality
-                _agent_status['step'] = 'Paso 5/5: Evaluando calidad...'
+                _agent_status['step'] = 'Paso 6/6: Evaluando calidad...'
                 _agent_status['progress'] = 90
                 _agent_status['log'].append('[STEP 5] Quality Evaluator')
 
@@ -299,6 +335,7 @@ def generate_entry():
                 db.session.commit()
 
                 _agent_status['log'].append(f'Completado exitosamente en {run.duration_seconds:.1f}s')
+                _agent_status['log'].append(f'  Nuevas: {len(new_tools_data)}, Actualizaciones: {len(all_updates)}')
                 _agent_status.update({'running': False, 'step': 'Completado', 'progress': 100})
 
             except Exception as e:
@@ -396,7 +433,7 @@ def search_new_tools():
             _agent_status.update({
                 'running': True,
                 'step': 'Buscando nuevas herramientas...',
-                'progress': 10,
+                'progress': 5,
                 'log': ['Busqueda de herramientas iniciada'],
                 'started_at': datetime.utcnow().isoformat(),
             })
@@ -405,25 +442,52 @@ def search_new_tools():
                 existing_tools = Tool.query.filter_by(status='active').all()
                 existing_slugs = [t.slug for t in existing_tools]
 
-                _agent_status['step'] = 'Investigando fuentes...'
-                _agent_status['progress'] = 30
+                # Paso 1: Investigar nuevas herramientas
+                _agent_status['step'] = 'Investigando fuentes (LLM + Tavily)...'
+                _agent_status['progress'] = 20
 
                 from app.agent.researcher import research_daily_tools
                 findings = research_daily_tools(existing_slugs)
 
-                _agent_status['log'].append(f'Encontradas {len(findings)} herramientas en fuentes')
-                _agent_status['step'] = 'Clasificando resultados...'
-                _agent_status['progress'] = 60
+                _agent_status['log'].append(f'Encontradas {len(findings)} herramientas potenciales')
 
-                from app.agent.classifier import classify_findings
-                classified = classify_findings(findings, existing_tools)
+                # Paso 2: Clasificar
+                _agent_status['step'] = 'Clasificando resultados...'
+                _agent_status['progress'] = 40
+
+                if findings:
+                    from app.agent.classifier import classify_findings
+                    classified = classify_findings(findings, existing_tools)
+                else:
+                    classified = {'new_tools': [], 'updates': []}
 
                 new_count = len(classified.get('new_tools', []))
                 upd_count = len(classified.get('updates', []))
-
                 _agent_status['log'].append(f'Clasificacion: {new_count} nuevas, {upd_count} actualizaciones')
 
+                # Paso 2B: Refrescar herramientas existentes
+                _agent_status['step'] = 'Actualizando herramientas existentes...'
+                _agent_status['progress'] = 60
+
+                from app.agent.updater import refresh_existing_tools, apply_tool_updates
+                from app.agent.scheduler import _select_tools_for_refresh
+                max_refresh = current_app.config.get('AGENT_MAX_REFRESH', 10)
+                tools_to_refresh = _select_tools_for_refresh(existing_tools, max_refresh)
+
+                refresh_count = 0
+                if tools_to_refresh:
+                    updater_results = refresh_existing_tools(tools_to_refresh)
+                    if updater_results:
+                        update_stats = apply_tool_updates(updater_results)
+                        refresh_count = update_stats['updated']
+                        _agent_status['log'].append(f'  {refresh_count} herramientas actualizadas')
+                        for detail in update_stats.get('details', [])[:10]:
+                            _agent_status['log'].append(f'    - {detail["tool"]}: {detail["reason"][:60]}')
+
                 # Insertar nuevas herramientas directamente
+                _agent_status['step'] = 'Insertando nuevas herramientas...'
+                _agent_status['progress'] = 80
+
                 added = 0
                 for tool_data in classified.get('new_tools', [])[:current_app.config.get('AGENT_MAX_NEW_TOOLS', 6)]:
                     existing = Tool.query.filter_by(slug=tool_data.get('slug', '')).first()
@@ -435,6 +499,8 @@ def search_new_tools():
                             url=tool_data.get('url'),
                             field=tool_data.get('field'),
                             category=tool_data.get('category'),
+                            pricing=tool_data.get('pricing'),
+                            platform=tool_data.get('platform'),
                             status='active',
                         )
                         db.session.add(new_tool)
@@ -443,10 +509,10 @@ def search_new_tools():
 
                 db.session.commit()
 
-                _agent_status['log'].append(f'Busqueda completada: {added} herramientas agregadas')
+                _agent_status['log'].append(f'Completado: {added} nuevas, {refresh_count} actualizadas')
                 _agent_status.update({
                     'running': False,
-                    'step': f'Completado: {added} nuevas agregadas',
+                    'step': f'Completado: {added} nuevas, {refresh_count} actualizadas',
                     'progress': 100,
                 })
 
