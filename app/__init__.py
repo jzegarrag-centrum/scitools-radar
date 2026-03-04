@@ -59,6 +59,37 @@ def create_app(config_name=None):
     def health():
         return {'status': 'ok'}, 200
     
+    # ── Diagnóstico temporal (quitar después) ─────────────────
+    @app.route('/health/db')
+    def health_db():
+        import traceback
+        info = {
+            'db_url': app.config['SQLALCHEMY_DATABASE_URI'][:40] + '***',
+            'env': app.config.get('FLASK_ENV', os.environ.get('FLASK_ENV', '?')),
+        }
+        try:
+            from sqlalchemy import text
+            result = db.session.execute(text('SELECT 1'))
+            result.close()
+            info['db'] = 'connected'
+        except Exception as e:
+            info['db'] = 'FAIL'
+            info['db_error'] = traceback.format_exc()
+        try:
+            from app.models import Tool
+            count = Tool.query.count()
+            info['tools_count'] = count
+        except Exception as e:
+            info['tools_error'] = traceback.format_exc()
+        try:
+            from app.models import Entry
+            count = Entry.query.count()
+            info['entries_count'] = count
+        except Exception as e:
+            info['entries_error'] = traceback.format_exc()
+        db.session.rollback()
+        return info, 200
+    
     # Error handlers
     @app.errorhandler(404)
     def not_found(e):
