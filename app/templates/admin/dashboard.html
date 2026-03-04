@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin - SciTools Radar{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 2rem; color: var(--azul);">⚙️ Panel de Administración</h1>
+
+<!-- Stats Overview -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 2.5rem; color: var(--azul); font-weight: 700;">{{ stats.total_tools }}</div>
+        <div style="color: #666;">Herramientas Activas</div>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 2.5rem; color: var(--naranja); font-weight: 700;">{{ stats.total_entries }}</div>
+        <div style="color: #666;">Entradas del Blog</div>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 2.5rem; color: var(--azul); font-weight: 700;">{{ stats.total_updates }}</div>
+        <div style="color: #666;">Actualizaciones</div>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        {% if stats.last_agent_run %}
+        <div style="font-size: 1.5rem; font-weight: 700;" 
+             class="{% if stats.last_agent_run.status == 'success' %}success{% else %}danger{% endif %}">
+            {{ '✅' if stats.last_agent_run.status == 'success' else '❌' }}
+        </div>
+        <div style="color: #666; font-size: 0.9rem;">
+            Último agente:<br>
+            {{ stats.last_agent_run.status }}
+        </div>
+        {% else %}
+        <div style="color: #666;">Sin ejecuciones</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card" style="margin-bottom: 2rem;">
+    <h2 style="color: var(--azul); margin-bottom: 1rem;">Acciones Rápidas</h2>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ url_for('admin.tools') }}" class="btn">Ver Herramientas</a>
+        <a href="{{ url_for('admin.entries') }}" class="btn">Ver Entradas</a>
+        <a href="{{ url_for('admin.agent_control') }}" class="btn btn-secondary">Control del Agente</a>
+        <a href="{{ url_for('admin.quality_metrics') }}" class="btn btn-secondary">Métricas de Calidad</a>
+    </div>
+</div>
+
+<!-- Recent Entries -->
+<div class="card" style="margin-bottom: 2rem;">
+    <h2 style="color: var(--azul); margin-bottom: 1rem;">Últimas Entradas</h2>
+    {% if recent_entries %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--borde);">
+                <th style="text-align: left; padding: 0.75rem;">Fecha</th>
+                <th style="text-align: left; padding: 0.75rem;">Herramientas</th>
+                <th style="text-align: left; padding: 0.75rem;">Updates</th>
+                <th style="text-align: left; padding: 0.75rem;">Por</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in recent_entries %}
+            <tr style="border-bottom: 1px solid var(--borde);">
+                <td style="padding: 0.75rem;">
+                    <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}" 
+                       style="color: var(--azul); text-decoration: none;">
+                        {{ entry.date.strftime('%Y-%m-%d') }}
+                    </a>
+                </td>
+                <td style="padding: 0.75rem;">{{ entry.tools|length }}</td>
+                <td style="padding: 0.75rem;">{{ entry.updates|length }}</td>
+                <td style="padding: 0.75rem;">{{ entry.created_by }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #666;">No hay entradas todavía.</p>
+    {% endif %}
+</div>
+
+<!-- Recent Agent Runs -->
+<div class="card">
+    <h2 style="color: var(--azul); margin-bottom: 1rem;">Últimas Ejecuciones del Agente</h2>
+    {% if recent_runs %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--borde);">
+                <th style="text-align: left; padding: 0.75rem;">Inicio</th>
+                <th style="text-align: left; padding: 0.75rem;">Status</th>
+                <th style="text-align: left; padding: 0.75rem;">Tools</th>
+                <th style="text-align: left; padding: 0.75rem;">Calidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for run in recent_runs %}
+            <tr style="border-bottom: 1px solid var(--borde);">
+                <td style="padding: 0.75rem;">{{ run.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td style="padding: 0.75rem;">
+                    <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;
+                                 background: {% if run.status == 'success' %}#d4edda{% elif run.status == 'failed' %}#f8d7da{% else %}#fff3cd{% endif%};
+                                 color: {% if run.status == 'success' %}#155724{% elif run.status == 'failed' %}#721c24{% else %}#856404{% endif %};">
+                        {{ run.status }}
+                    </span>
+                </td>
+                <td style="padding: 0.75rem;">{{ run.tools_new }}/{{ run.tools_found }}</td>
+                <td style="padding: 0.75rem;">
+                    {% if run.completeness %}
+                        {{ (run.completeness * 100)|round|int }}%
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #666;">No hay ejecuciones todavía.</p>
+    {% endif %}
+</div>
+{% endblock %}

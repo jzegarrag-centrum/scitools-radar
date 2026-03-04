@@ -1,0 +1,35 @@
+# Web framework
+Flask==3.1.*
+Flask-SQLAlchemy==3.1.*
+Flask-Migrate==4.0.*
+Flask-Login==0.6.*
+Flask-WTF==1.2.*
+Flask-Caching==2.1.*
+gunicorn==22.*
+
+# Database
+psycopg2-binary==2.9.*
+redis==5.*
+
+# Serialization
+marshmallow==3.21.*
+python-dotenv==1.0.*
+
+# CometAPI (único SDK necesario — formato OpenAI-compatible)
+# Apunta a https://api.cometapi.com/v1 con una sola API key
+# Accede a GPT-5.3, Gemini 3.1, DeepSeek, y 500+ modelos
+openai==1.60.*
+
+# Agent tooling
+APScheduler==3.10.*
+tavily-python==0.5.*
+
+# Utilities
+jsonschema==4.23.*
+tenacity==9.*
+Werkzeug==3.0.*
+email-validator==2.1.*
+
+# Development
+pytest==8.*
+pytest-flask==1.3.*

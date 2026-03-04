@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Herramientas - Admin{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1rem;">
+    <a href="{{ url_for('admin.dashboard') }}" style="color: var(--azul); text-decoration: none;">
+        ← Volver al panel
+    </a>
+</div>
+
+<h1 style="margin-bottom: 2rem; color: var(--azul);">🔧 Gestión de Herramientas</h1>
+
+<!-- Search Bar -->
+<div class="card" style="margin-bottom: 2rem;">
+    <form method="get" style="display: flex; gap: 1rem;">
+        <input type="text" name="q" value="{{ query }}" placeholder="Buscar herramientas..." 
+               style="flex: 1; padding: 0.75rem; border: 1px solid var(--borde); 
+                      border-radius: 8px; font-family: inherit;">
+        <button type="submit" class="btn">Buscar</button>
+        {% if query %}
+        <a href="{{ url_for('admin.tools') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Tools Table -->
+<div class="card">
+    <div style="margin-bottom: 1rem; color: #666;">
+        Total: {{ tools.total }} herramientas (mostrando {{ tools.items|length }})
+    </div>
+    
+    {% if tools.items %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--borde);">
+                    <th style="text-align: left; padding: 0.75rem;">Nombre</th>
+                    <th style="text-align: left; padding: 0.75rem;">Categoría</th>
+                    <th style="text-align: left; padding: 0.75rem;">Campo</th>
+                    <th style="text-align: left; padding: 0.75rem;">Status</th>
+                    <th style="text-align: left; padding: 0.75rem;">Primera detección</th>
+                    <th style="text-align: left; padding: 0.75rem;">Actualizaciones</th>
+                    <th style="text-align: left; padding: 0.75rem;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tool in tools.items %}
+                <tr style="border-bottom: 1px solid var(--borde);">
+                    <td style="padding: 0.75rem;">
+                        <a href="{{ url_for('main.herramienta_detalle', slug=tool.slug) }}" 
+                           style="color: var(--azul); text-decoration: none; font-weight: 600;">
+                            {{ tool.name }}
+                        </a>
+                    </td>
+                    <td style="padding: 0.75rem; font-size: 0.9rem;">{{ tool.category or '-' }}</td>
+                    <td style="padding: 0.75rem; font-size: 0.9rem;">{{ tool.field or '-' }}</td>
+                    <td style="padding: 0.75rem;">
+                        <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;
+                                     background: {% if tool.status == 'active' %}#d4edda{% else %}#f8d7da{% endif%};
+                                     color: {% if tool.status == 'active' %}#155724{% else %}#721c24{% endif %};">
+                            {{ tool.status }}
+                        </span>
+                    </td>
+                    <td style="padding: 0.75rem; font-size: 0.9rem;">
+                        {{ tool.first_seen.strftime('%Y-%m-%d') if tool.first_seen else '-' }}
+                    </td>
+                    <td style="padding: 0.75rem; text-align: center;">{{ tool.updates|length }}</td>
+                    <td style="padding: 0.75rem;">
+                        <a href="{{ url_for('main.herramienta_detalle', slug=tool.slug) }}" 
+                           style="color: var(--naranja); text-decoration: none; font-size: 0.9rem;">
+                            Ver →
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--borde);">
+        {% if tools.has_prev %}
+        <a href="{{ url_for('admin.tools', page=tools.prev_num, q=query) }}" class="btn btn-secondary">
+            ← Anterior
+        </a>
+        {% else %}
+        <span></span>
+        {% endif %}
+        
+        <span style="color: #666;">Página {{ tools.page }} de {{ tools.pages }}</span>
+        
+        {% if tools.has_next %}
+        <a href="{{ url_for('admin.tools', page=tools.next_num, q=query) }}" class="btn btn-secondary">
+            Siguiente →
+        </a>
+        {% else %}
+        <span></span>
+        {% endif %}
+    </div>
+    {% else %}
+    <p style="color: #666; padding: 2rem; text-align: center;">No se encontraron herramientas.</p>
+    {% endif %}
+</div>
+{% endblock %}

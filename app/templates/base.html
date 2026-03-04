@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SciTools Radar{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --azul: #003865;
+            --azul-light: #0a4d8c;
+            --azul-pale: #e8f0f8;
+            --naranja: #FF6B00;
+            --naranja-dark: #E55D00;
+            --naranja-light: #FFF0E5;
+            --gris-oscuro: #1a1a2e;
+            --gris-medio: #555;
+            --gris-claro: #F7F8FC;
+            --borde: #E2E8F0;
+            --blanco: #FFFFFF;
+            --exito: #10B981;
+            --peligro: #EF4444;
+            --info: #3B82F6;
+            --sombra-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --sombra-md: 0 4px 12px rgba(0,0,0,0.08);
+            --sombra-lg: 0 12px 40px rgba(0,0,0,0.12);
+            --sombra-xl: 0 20px 60px rgba(0,0,0,0.15);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--gris-oscuro);
+            line-height: 1.7;
+            background: var(--gris-claro);
+            min-height: 100vh;
+        }
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, var(--azul) 0%, var(--azul-light) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--sombra-md);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: white;
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: var(--naranja);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 8px rgba(255,107,0,0.3);
+        }
+        .logo-sub { font-size: 0.7rem; font-weight: 400; opacity: 0.7; display: block; letter-spacing: 0.05em; }
+        nav ul { list-style: none; display: flex; gap: 0.25rem; }
+        nav a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: var(--transition);
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        nav a:hover { background: rgba(255,255,255,0.12); color: white; }
+        .mobile-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        /* CONTAINER */
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
+        main { min-height: calc(100vh - 64px - 200px); padding: 2rem 0; }
+        /* CARDS */
+        .card {
+            background: var(--blanco);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--sombra-sm);
+            border: 1px solid var(--borde);
+            transition: var(--transition);
+        }
+        .card:hover { box-shadow: var(--sombra-md); transform: translateY(-2px); }
+        .card-lg { padding: 2rem; border-radius: var(--radius-lg); }
+        .card-flat { box-shadow: none; }
+        .card-flat:hover { transform: none; }
+        /* BUTTONS */
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.65rem 1.4rem;
+            background: var(--naranja);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600; font-size: 0.88rem;
+            border: none; cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn:hover { background: var(--naranja-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,0,0.3); }
+        .btn-secondary { background: var(--azul); }
+        .btn-secondary:hover { background: var(--azul-light); box-shadow: 0 4px 12px rgba(0,56,101,0.3); }
+        .btn-outline { background: transparent; color: var(--azul); border: 2px solid var(--borde); }
+        .btn-outline:hover { border-color: var(--azul); background: var(--azul-pale); box-shadow: none; }
+        .btn-sm { padding: 0.4rem 0.9rem; font-size: 0.82rem; border-radius: 8px; }
+        /* BADGES */
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+        }
+        .badge-azul { background: var(--azul-pale); color: var(--azul); }
+        .badge-naranja { background: var(--naranja-light); color: var(--naranja-dark); }
+        .badge-verde { background: #D1FAE5; color: #065F46; }
+        .badge-gris { background: #F1F5F9; color: #475569; }
+        /* TAG */
+        .tag {
+            display: inline-block; padding: 0.2rem 0.6rem;
+            background: var(--gris-claro); border: 1px solid var(--borde);
+            border-radius: 6px; font-size: 0.78rem; color: var(--gris-medio);
+            text-decoration: none; transition: var(--transition);
+        }
+        .tag:hover { border-color: var(--azul); color: var(--azul); background: var(--azul-pale); }
+        /* FOOTER */
+        footer {
+            background: linear-gradient(135deg, var(--azul) 0%, #001a33 100%);
+            color: rgba(255,255,255,0.8);
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        .footer-brand { font-size: 1.1rem; font-weight: 700; color: white; margin-bottom: 0.5rem; }
+        footer h4 { color: var(--naranja); margin-bottom: 0.75rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        footer ul { list-style: none; }
+        footer li { margin-bottom: 0.4rem; }
+        footer a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.9rem; transition: var(--transition); }
+        footer a:hover { color: var(--naranja); }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; }
+        /* ALERTS */
+        .flash-messages { margin: 1rem 0; }
+        .alert {
+            padding: 0.85rem 1.25rem; border-radius: var(--radius); margin-bottom: 0.75rem;
+            display: flex; align-items: center; gap: 0.75rem; font-size: 0.92rem;
+            animation: slideDown 0.3s ease;
+        }
+        .alert-success { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+        .alert-danger { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+        .alert-info { background: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE; }
+        .alert-warning { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* ===== CHAT WIDGET ===== */
+        .chat-fab {
+            position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+            width: 64px; height: 64px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--naranja) 0%, var(--naranja-dark) 100%);
+            border: none; cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255,107,0,0.4);
+            transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .chat-fab:hover { transform: scale(1.08); box-shadow: 0 8px 28px rgba(255,107,0,0.5); }
+        .chat-fab.open { transform: scale(0); pointer-events: none; }
+        .fab-robot { width: 40px; height: 40px; }
+        .chat-panel {
+            position: fixed; bottom: 2rem; right: 2rem;
+            width: 400px; max-height: 600px;
+            background: var(--blanco); border-radius: var(--radius-lg);
+            box-shadow: var(--sombra-xl); z-index: 1000;
+            display: flex; flex-direction: column;
+            transform: scale(0.8) translateY(20px); opacity: 0; pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: bottom right; border: 1px solid var(--borde);
+        }
+        .chat-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+        .chat-header {
+            background: linear-gradient(135deg, var(--azul) 0%, var(--azul-light) 100%);
+            color: white; padding: 1rem 1.25rem;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .chat-header-info { flex: 1; }
+        .chat-header h3 { font-size: 0.95rem; font-weight: 700; }
+        .chat-header p { font-size: 0.75rem; opacity: 0.8; }
+        .chat-close {
+            background: rgba(255,255,255,0.15); border: none; color: white;
+            width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+            transition: var(--transition); font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .chat-close:hover { background: rgba(255,255,255,0.25); }
+        .robot-avatar { width: 42px; height: 42px; flex-shrink: 0; }
+        .robot-pupil { animation: lookAround 4s ease-in-out infinite; }
+        .robot-antenna-tip { animation: antennaGlow 2s ease-in-out infinite; }
+        @keyframes lookAround { 0%,100%{transform:translate(0,0)}25%{transform:translate(1.5px,-0.5px)}50%{transform:translate(-1px,0.5px)}75%{transform:translate(0.5px,1px)} }
+        @keyframes antennaGlow { 0%,100%{opacity:0.6}50%{opacity:1} }
+        @keyframes botBounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)} }
+        .robot-avatar.thinking { animation: botBounce 0.6s ease-in-out infinite; }
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 1rem;
+            display: flex; flex-direction: column; gap: 0.75rem;
+            max-height: 380px; min-height: 250px; background: #FAFBFD;
+        }
+        .chat-messages::-webkit-scrollbar { width: 5px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--borde); border-radius: 10px; }
+        .chat-msg { display: flex; gap: 0.6rem; align-items: flex-start; animation: msgAppear 0.3s ease; }
+        @keyframes msgAppear { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+        .chat-msg.user { flex-direction: row-reverse; }
+        .chat-msg-avatar {
+            width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700;
+        }
+        .chat-msg.bot .chat-msg-avatar { background: var(--azul-pale); color: var(--azul); }
+        .chat-msg.user .chat-msg-avatar { background: var(--naranja-light); color: var(--naranja); }
+        .chat-msg-bubble { max-width: 80%; padding: 0.7rem 1rem; border-radius: 12px; font-size: 0.88rem; line-height: 1.5; }
+        .chat-msg.bot .chat-msg-bubble { background: white; border: 1px solid var(--borde); border-bottom-left-radius: 4px; }
+        .chat-msg.user .chat-msg-bubble { background: var(--azul); color: white; border-bottom-right-radius: 4px; }
+        .typing-indicator { display: flex; gap: 4px; padding: 0.5rem 0; }
+        .typing-indicator span { width: 7px; height: 7px; background: var(--borde); border-radius: 50%; animation: typingDot 1.4s ease-in-out infinite; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingDot { 0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-5px);opacity:1} }
+        .chat-input-area { padding: 0.75rem; border-top: 1px solid var(--borde); display: flex; gap: 0.5rem; }
+        .chat-input {
+            flex: 1; border: 1px solid var(--borde); border-radius: 10px;
+            padding: 0.6rem 1rem; font-family: inherit; font-size: 0.88rem;
+            outline: none; transition: var(--transition); resize: none; min-height: 40px; max-height: 80px;
+        }
+        .chat-input:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,56,101,0.1); }
+        .chat-send {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: var(--naranja); border: none; color: white; cursor: pointer;
+            transition: var(--transition); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .chat-send:hover { background: var(--naranja-dark); }
+        .chat-send:disabled { background: var(--borde); cursor: not-allowed; }
+        .chat-suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0 1rem 0.75rem; }
+        .chat-suggestion {
+            background: var(--azul-pale); color: var(--azul); border: 1px solid transparent;
+            padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.78rem;
+            cursor: pointer; transition: var(--transition); font-family: inherit;
+        }
+        .chat-suggestion:hover { background: var(--azul); color: white; }
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header-inner { padding: 0 1rem; }
+            .container { padding: 0 1rem; }
+            nav ul { display: none; }
+            nav ul.mobile-open {
+                display: flex; flex-direction: column; position: absolute;
+                top: 64px; left: 0; right: 0; background: var(--azul); padding: 1rem;
+                box-shadow: var(--sombra-lg);
+            }
+            .mobile-toggle { display: block; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .chat-panel { width: calc(100vw - 2rem); right: 1rem; bottom: 1rem; max-height: 80vh; }
+        }
+        {% block styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <a href="{{ url_for('main.index') }}" class="logo">
+                <div class="logo-icon"><i class="fas fa-satellite-dish"></i></div>
+                <div>SciTools Radar<span class="logo-sub">by CENTRUM PUCP</span></div>
+            </a>
+            <button class="mobile-toggle" onclick="document.querySelector('nav ul').classList.toggle('mobile-open')">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('main.index') }}"><i class="fas fa-newspaper"></i> Blog</a></li>
+                    <li><a href="{{ url_for('main.inventario') }}"><i class="fas fa-th-large"></i> Inventario</a></li>
+                    <li><a href="{{ url_for('main.estadisticas') }}"><i class="fas fa-chart-bar"></i> Estadisticas</a></li>
+                    <li><a href="{{ url_for('main.about') }}"><i class="fas fa-info-circle"></i> Acerca de</a></li>
+                    {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-cog"></i> Admin</a></li>
+                    <li><a href="{{ url_for('admin.logout') }}"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand"><i class="fas fa-satellite-dish"></i> SciTools Radar</div>
+                    <p style="font-size:0.9rem;margin-top:0.5rem;">Sistema autonomo de monitoreo de herramientas cientificas impulsado por IA. Actualizado automaticamente 2 veces por semana.</p>
+                </div>
+                <div>
+                    <h4>Navegacion</h4>
+                    <ul>
+                        <li><a href="{{ url_for('main.index') }}">Blog de novedades</a></li>
+                        <li><a href="{{ url_for('main.inventario') }}">Inventario completo</a></li>
+                        <li><a href="{{ url_for('main.estadisticas') }}">Estadisticas</a></li>
+                        <li><a href="{{ url_for('main.about') }}">Acerca de</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Tecnologia</h4>
+                    <ul>
+                        <li><a href="#">CometAPI Gateway</a></li>
+                        <li><a href="#">GPT-5.3 + Gemini 3.1</a></li>
+                        <li><a href="#">Flask 3.1</a></li>
+                        <li><a href="https://www.centrum.pucp.edu.pe" target="_blank">CENTRUM PUCP</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 SciTools Radar &mdash; CENTRUM PUCP</span>
+                <span>Powered by CometAPI | GPT-5.3, Gemini 3.1, DeepSeek v3.2</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chat FAB -->
+    <button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Hablar con SciBot">
+        <svg class="fab-robot" viewBox="0 0 40 40">
+            <rect x="8" y="12" width="24" height="20" rx="5" fill="white"/>
+            <circle cx="16" cy="22" r="3" fill="#003865"/>
+            <circle cx="24" cy="22" r="3" fill="#003865"/>
+            <path d="M15 28 Q20 31 25 28" stroke="#003865" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <line x1="20" y1="12" x2="20" y2="6" stroke="white" stroke-width="2"/>
+            <circle cx="20" cy="5" r="2.5" fill="#FFD700"/>
+            <rect x="4" y="19" width="4" height="6" rx="2" fill="white"/>
+            <rect x="32" y="19" width="4" height="6" rx="2" fill="white"/>
+        </svg>
+    </button>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">
+            <svg class="robot-avatar" id="robotAvatar" viewBox="0 0 42 42">
+                <rect x="7" y="14" width="28" height="22" rx="6" fill="var(--naranja)"/>
+                <ellipse cx="16" cy="24" rx="4" ry="4" fill="white"/>
+                <ellipse cx="26" cy="24" rx="4" ry="4" fill="white"/>
+                <circle class="robot-pupil" cx="16" cy="24" r="2" fill="var(--azul)"/>
+                <circle class="robot-pupil" cx="26" cy="24" r="2" fill="var(--azul)"/>
+                <path d="M14 30 Q21 34 28 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <line x1="21" y1="14" x2="21" y2="6" stroke="var(--naranja)" stroke-width="2.5"/>
+                <circle class="robot-antenna-tip" cx="21" cy="5" r="3" fill="#FFD700"/>
+                <rect x="2" y="20" width="5" height="8" rx="2.5" fill="var(--naranja)" opacity="0.8"/>
+                <rect x="35" y="20" width="5" height="8" rx="2.5" fill="var(--naranja)" opacity="0.8"/>
+                <circle cx="21" cy="32" r="2" fill="#FFD700" opacity="0.7">
+                    <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+            <div class="chat-header-info">
+                <h3>SciBot <span style="font-size:0.7rem;opacity:0.7">v1.0</span></h3>
+                <p>Asistente de herramientas cientificas</p>
+            </div>
+            <button class="chat-close" onclick="toggleChat()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg bot">
+                <div class="chat-msg-avatar"><i class="fas fa-robot"></i></div>
+                <div class="chat-msg-bubble">
+                    Hola! Soy <strong>SciBot</strong>, tu asistente de herramientas cientificas. Puedo ayudarte a encontrar herramientas, explicar funcionalidades o recomendar opciones para tu investigacion. Que necesitas?
+                </div>
+            </div>
+        </div>
+        <div class="chat-suggestions" id="chatSuggestions">
+            <button class="chat-suggestion" onclick="sendSuggestion(this)">Herramientas de IA para investigar</button>
+            <button class="chat-suggestion" onclick="sendSuggestion(this)">Gestores de referencias</button>
+            <button class="chat-suggestion" onclick="sendSuggestion(this)">Herramientas open source</button>
+            <button class="chat-suggestion" onclick="sendSuggestion(this)">Novedades recientes</button>
+        </div>
+        <div class="chat-input-area">
+            <textarea class="chat-input" id="chatInput" placeholder="Escribe tu pregunta..." rows="1" onkeydown="handleChatKey(event)"></textarea>
+            <button class="chat-send" id="chatSend" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+    let chatOpen = false;
+    let chatHistory = [];
+    function toggleChat() {
+        chatOpen = !chatOpen;
+        document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+        document.getElementById('chatFab').classList.toggle('open', chatOpen);
+        if (chatOpen) setTimeout(() => document.getElementById('chatInput').focus(), 350);
+    }
+    function handleChatKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+    function sendSuggestion(btn) {
+        document.getElementById('chatInput').value = btn.textContent;
+        document.getElementById('chatSuggestions').style.display = 'none';
+        sendMessage();
+    }
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+        appendMessage('user', msg);
+        chatHistory.push({role:'user',content:msg});
+        input.value = '';
+        input.style.height = 'auto';
+        document.getElementById('chatSend').disabled = true;
+        document.getElementById('chatSuggestions').style.display = 'none';
+        const typingEl = showTyping();
+        const robot = document.getElementById('robotAvatar');
+        robot.classList.add('thinking');
+        try {
+            const response = await fetch('/api/v1/chat', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({message:msg, history:chatHistory.slice(-8)})
+            });
+            const data = await response.json();
+            typingEl.remove();
+            robot.classList.remove('thinking');
+            if (data.reply) {
+                appendMessage('bot', data.reply);
+                chatHistory.push({role:'assistant',content:data.reply});
+            } else {
+                appendMessage('bot', 'Lo siento, hubo un error. Intenta de nuevo.');
+            }
+        } catch(err) {
+            typingEl.remove();
+            robot.classList.remove('thinking');
+            appendMessage('bot', 'Error de conexion. Verifica que el servidor este activo.');
+        }
+        document.getElementById('chatSend').disabled = false;
+    }
+    function appendMessage(type, text) {
+        const messages = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = 'chat-msg ' + type;
+        const icon = type === 'bot' ? 'fa-robot' : 'fa-user';
+        div.innerHTML = '<div class="chat-msg-avatar"><i class="fas ' + icon + '"></i></div><div class="chat-msg-bubble">' + escapeHtml(text) + '</div>';
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+    function showTyping() {
+        const messages = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = 'chat-msg bot';
+        div.innerHTML = '<div class="chat-msg-avatar"><i class="fas fa-robot"></i></div><div class="chat-msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+        return div;
+    }
+    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+    document.getElementById('chatInput').addEventListener('input', function() { this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,80)+'px'; });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

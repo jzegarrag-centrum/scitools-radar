@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}Acerca de - SciTools Radar{% endblock %}
+
+{% block styles %}
+<style>
+    .about-hero {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, var(--azul) 0%, #00527a 100%);
+        color: white;
+        border-radius: var(--radius-lg);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .about-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -40px; right: -40px;
+        width: 200px; height: 200px;
+        background: var(--naranja);
+        border-radius: 50%;
+        opacity: 0.08;
+    }
+    .about-hero h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+    }
+    .about-hero p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        max-width: 640px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    .about-section {
+        background: var(--blanco);
+        border-radius: var(--radius);
+        padding: 2rem;
+        box-shadow: var(--sombra-sm);
+        border: 1px solid var(--borde);
+        margin-bottom: 1.5rem;
+    }
+    .about-section h2 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--azul);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .about-section h2 i { color: var(--naranja); }
+    .about-section p, .about-section li {
+        font-size: 0.95rem;
+        line-height: 1.75;
+        color: var(--gris-oscuro);
+    }
+    .about-section ul {
+        margin-left: 1.5rem;
+        margin-top: 0.75rem;
+    }
+    .about-section li { margin-bottom: 0.5rem; }
+
+    /* Pipeline */
+    .pipeline {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.5rem;
+        margin: 1.5rem 0;
+    }
+    @media (max-width: 768px) {
+        .pipeline { grid-template-columns: 1fr; }
+    }
+    .pipeline-step {
+        background: var(--gris-claro);
+        border-radius: 12px;
+        padding: 1.2rem 0.75rem;
+        text-align: center;
+        position: relative;
+        border: 1px solid var(--borde);
+        transition: var(--transition);
+    }
+    .pipeline-step:hover {
+        border-color: var(--azul);
+        transform: translateY(-2px);
+        box-shadow: var(--sombra-sm);
+    }
+    .pipeline-num {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: var(--azul);
+        color: white;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 0.78rem; font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .pipeline-icon {
+        font-size: 1.3rem;
+        color: var(--naranja);
+        margin-bottom: 0.35rem;
+    }
+    .pipeline-title {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--gris-oscuro);
+        margin-bottom: 0.3rem;
+    }
+    .pipeline-model {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        color: var(--gris-medio);
+        background: var(--blanco);
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    .tech-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 0.8rem;
+        background: var(--gris-claro);
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--gris-oscuro);
+    }
+    .tech-item i {
+        color: var(--azul);
+        width: 20px;
+        text-align: center;
+    }
+
+    .schedule-box {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background: var(--naranja-light);
+        border: 1px solid var(--naranja);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-top: 1rem;
+    }
+    .schedule-box i {
+        font-size: 2rem;
+        color: var(--naranja-dark);
+    }
+    .schedule-box-info strong {
+        color: var(--gris-oscuro);
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    .schedule-box-info span {
+        font-size: 0.88rem;
+        color: var(--gris-medio);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="about-hero">
+    <h1><i class="fas fa-satellite-dish"></i> SciTools Radar</h1>
+    <p>
+        Plataforma de monitoreo automatizado de herramientas de investigacion cientifica,
+        impulsada por agentes de inteligencia artificial.
+    </p>
+</div>
+
+<!-- What is it -->
+<div class="about-section">
+    <h2><i class="fas fa-info-circle"></i> Que es SciTools Radar?</h2>
+    <p>
+        SciTools Radar es un sistema inteligente que rastrea, clasifica y reporta herramientas
+        digitales relevantes para la investigacion academica y cientifica. El sistema combina
+        un pipeline de agentes de IA con curaduria humana para mantener un inventario actualizado
+        y generar entradas de blog informativas.
+    </p>
+    <p style="margin-top: 0.75rem;">
+        Desarrollado por <strong>Smart Centrum</strong>, el radar opera de forma autonoma
+        con actualizaciones periodicas, manteniendo a la comunidad informada sobre nuevas
+        herramientas y cambios relevantes en las existentes.
+    </p>
+</div>
+
+<!-- Agent Pipeline -->
+<div class="about-section">
+    <h2><i class="fas fa-robot"></i> Pipeline de Agentes IA</h2>
+    <p>El proceso de generacion de contenido utiliza un pipeline de 5 etapas, cada una con un modelo especializado:</p>
+
+    <div class="pipeline">
+        <div class="pipeline-step">
+            <div class="pipeline-num">1</div>
+            <div class="pipeline-icon"><i class="fas fa-search"></i></div>
+            <div class="pipeline-title">Investigador</div>
+            <div class="pipeline-model">gpt-5.3-chat</div>
+            <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
+                Busca nuevas herramientas y novedades via Tavily API
+            </p>
+        </div>
+        <div class="pipeline-step">
+            <div class="pipeline-num">2</div>
+            <div class="pipeline-icon"><i class="fas fa-tags"></i></div>
+            <div class="pipeline-title">Clasificador</div>
+            <div class="pipeline-model">gemini-3.1-flash</div>
+            <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
+                Categoriza y asigna campos cientificos
+            </p>
+        </div>
+        <div class="pipeline-step">
+            <div class="pipeline-num">3</div>
+            <div class="pipeline-icon"><i class="fas fa-pen-nib"></i></div>
+            <div class="pipeline-title">Redactor</div>
+            <div class="pipeline-model">gpt-5.3-chat</div>
+            <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
+                Genera editorial HTML profesional en formato JSON
+            </p>
+        </div>
+        <div class="pipeline-step">
+            <div class="pipeline-num">4</div>
+            <div class="pipeline-icon"><i class="fas fa-database"></i></div>
+            <div class="pipeline-title">Creador</div>
+            <div class="pipeline-model">Flask/SQLAlchemy</div>
+            <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
+                Persiste la entrada en la base de datos
+            </p>
+        </div>
+        <div class="pipeline-step">
+            <div class="pipeline-num">5</div>
+            <div class="pipeline-icon"><i class="fas fa-check-double"></i></div>
+            <div class="pipeline-title">Evaluador</div>
+            <div class="pipeline-model">gpt-5-nano</div>
+            <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
+                Evalua calidad 0-10 y proporciona feedback
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule -->
+<div class="about-section">
+    <h2><i class="fas fa-clock"></i> Automatizacion</h2>
+    <p>
+        El pipeline se ejecuta de forma automatica segun un calendario configurado. Cada ejecucion
+        investiga nuevas herramientas, detecta actualizaciones en las existentes, genera un editorial
+        profesional y evalua la calidad del contenido.
+    </p>
+    <div class="schedule-box">
+        <i class="fas fa-calendar-check"></i>
+        <div class="schedule-box-info">
+            <strong>Martes y Jueves a las 07:00 UTC</strong>
+            <span>Dos ejecuciones semanales para mantener el radar actualizado sin sobrecargar los recursos.</span>
+        </div>
+    </div>
+</div>
+
+<!-- Technology Stack -->
+<div class="about-section">
+    <h2><i class="fas fa-layer-group"></i> Stack Tecnologico</h2>
+    <div class="tech-grid">
+        <div class="tech-item"><i class="fab fa-python"></i> Flask 3.1</div>
+        <div class="tech-item"><i class="fas fa-database"></i> SQLAlchemy</div>
+        <div class="tech-item"><i class="fas fa-brain"></i> OpenAI SDK</div>
+        <div class="tech-item"><i class="fas fa-server"></i> PostgreSQL</div>
+        <div class="tech-item"><i class="fas fa-search"></i> Tavily API</div>
+        <div class="tech-item"><i class="fas fa-clock"></i> APScheduler</div>
+        <div class="tech-item"><i class="fab fa-html5"></i> Jinja2</div>
+        <div class="tech-item"><i class="fas fa-train"></i> Railway</div>
+        <div class="tech-item"><i class="fas fa-chart-bar"></i> Chart.js</div>
+    </div>
+</div>
+
+<!-- Credits -->
+<div class="about-section">
+    <h2><i class="fas fa-users"></i> Creditos</h2>
+    <p>
+        Este proyecto fue desarrollado como parte de las herramientas de investigacion de
+        <strong>Smart Centrum</strong>. El sistema es de codigo abierto y esta disponible
+        para que la comunidad academica lo utilice y contribuya.
+    </p>
+    <ul>
+        <li><strong>Diseno y arquitectura:</strong> Pipeline multi-agente con especializacion por etapa</li>
+        <li><strong>Modelos IA:</strong> CometAPI (compatible con OpenAI SDK)</li>
+        <li><strong>Infraestructura:</strong> Railway (produccion) / SQLite (desarrollo)</li>
+    </ul>
+</div>
+{% endblock %}

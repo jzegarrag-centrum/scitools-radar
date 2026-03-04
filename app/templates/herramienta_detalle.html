@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tool.name }} - SciTools Radar{% endblock %}
+
+{% block styles %}
+<style>
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.88rem;
+        color: var(--gris-medio);
+    }
+    .breadcrumb a {
+        color: var(--azul);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    .breadcrumb a:hover {
+        color: var(--naranja);
+    }
+    .tool-hero {
+        background: var(--blanco);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--sombra-sm);
+        border: 1px solid var(--borde);
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .tool-hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--azul), var(--naranja));
+    }
+    .tool-hero-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .tool-hero-icon {
+        width: 64px; height: 64px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--azul) 0%, var(--azul-light) 100%);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; color: white; flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(0,56,101,0.2);
+    }
+    .tool-hero-info {
+        flex: 1;
+    }
+    .tool-hero-info h1 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--gris-oscuro);
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+    }
+    .tool-hero-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    .tool-hero-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .tool-description {
+        line-height: 1.8;
+        font-size: 1rem;
+        color: var(--gris-oscuro);
+        margin-bottom: 1.5rem;
+    }
+    .tool-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--borde);
+    }
+    .tool-meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .tool-meta-label {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--gris-medio);
+        font-weight: 600;
+    }
+    .tool-meta-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--gris-oscuro);
+    }
+    .detail-section {
+        background: var(--blanco);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: var(--sombra-sm);
+        border: 1px solid var(--borde);
+        margin-bottom: 1.5rem;
+    }
+    .detail-section h2 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--azul);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .detail-section h2 i {
+        color: var(--naranja);
+    }
+    .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    .timeline-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--borde);
+        position: relative;
+    }
+    .timeline-item:last-child {
+        border-bottom: none;
+    }
+    .timeline-dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: var(--naranja);
+        flex-shrink: 0;
+        margin-top: 0.5rem;
+        box-shadow: 0 0 0 4px var(--naranja-light);
+    }
+    .timeline-content {
+        flex: 1;
+    }
+    .timeline-date {
+        font-size: 0.8rem;
+        color: var(--gris-medio);
+        margin-bottom: 0.25rem;
+    }
+    .timeline-field {
+        font-size: 0.82rem;
+        color: var(--azul);
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    .timeline-desc {
+        font-size: 0.9rem;
+        color: var(--gris-oscuro);
+    }
+    .change-diff {
+        background: var(--gris-claro);
+        padding: 0.6rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        margin-top: 0.5rem;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .change-old { color: var(--peligro); }
+    .change-new { color: var(--exito); }
+    .entry-list-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--borde);
+    }
+    .entry-list-item:last-child { border-bottom: none; }
+    .entry-list-date {
+        background: var(--naranja-light);
+        color: var(--naranja-dark);
+        padding: 0.3rem 0.7rem;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+    .entry-list-info {
+        flex: 1;
+    }
+    .entry-list-info a {
+        color: var(--azul);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.92rem;
+    }
+    .entry-list-info a:hover { color: var(--naranja); }
+    .entry-list-stats {
+        font-size: 0.8rem;
+        color: var(--gris-medio);
+    }
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .two-col { grid-template-columns: 1fr; }
+        .tool-hero-top { flex-direction: column; }
+    }
+    .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{{ url_for('main.inventario') }}"><i class="fas fa-th-large"></i> Inventario</a>
+    <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+    <span>{{ tool.name }}</span>
+</div>
+
+<!-- Tool Hero Card -->
+<div class="tool-hero">
+    <div class="tool-hero-top">
+        <div class="tool-hero-icon">
+            <i class="fas fa-cube"></i>
+        </div>
+        <div class="tool-hero-info">
+            <h1>{{ tool.name }}</h1>
+            <div class="tool-hero-badges">
+                {% if tool.category %}
+                <span class="badge badge-azul"><i class="fas fa-folder"></i> {{ tool.category }}</span>
+                {% endif %}
+                {% if tool.field %}
+                <span class="badge badge-naranja"><i class="fas fa-flask"></i> {{ tool.field }}</span>
+                {% endif %}
+                {% if tool.pricing %}
+                <span class="badge badge-verde"><i class="fas fa-tag"></i> {{ tool.pricing }}</span>
+                {% endif %}
+                {% if tool.platform %}
+                <span class="badge badge-gris"><i class="fas fa-desktop"></i> {{ tool.platform }}</span>
+                {% endif %}
+                <span class="badge badge-{% if tool.status == 'active' %}verde{% else %}gris{% endif %}">
+                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i> {{ tool.status|capitalize }}
+                </span>
+            </div>
+            <div class="tool-hero-actions">
+                {% if tool.url %}
+                <a href="{{ tool.url }}" target="_blank" rel="noopener" class="btn">
+                    <i class="fas fa-external-link-alt"></i> Visitar sitio web
+                </a>
+                {% endif %}
+                <a href="{{ url_for('main.inventario') }}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Volver al inventario
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description -->
+    {% if tool.description_html %}
+    <div class="tool-description">
+        {{ tool.description_html|safe }}
+    </div>
+    {% elif tool.summary %}
+    <div class="tool-description">
+        {{ tool.summary }}
+    </div>
+    {% endif %}
+
+    <!-- Tags -->
+    {% if tool.tags %}
+    <div class="tag-list">
+        {% for tag in tool.tags.split(',') %}
+        <span class="tag">{{ tag.strip() }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Meta Grid -->
+    <div class="tool-meta-grid">
+        <div class="tool-meta-item">
+            <span class="tool-meta-label">Primera deteccion</span>
+            <span class="tool-meta-value">{{ tool.first_seen.strftime('%d %b %Y') if tool.first_seen else 'No registrada' }}</span>
+        </div>
+        <div class="tool-meta-item">
+            <span class="tool-meta-label">Ultima actualizacion</span>
+            <span class="tool-meta-value">{{ tool.last_updated.strftime('%d %b %Y') if tool.last_updated else 'Sin actualizaciones' }}</span>
+        </div>
+        {% if tool.developer %}
+        <div class="tool-meta-item">
+            <span class="tool-meta-label">Desarrollador</span>
+            <span class="tool-meta-value">{{ tool.developer }}</span>
+        </div>
+        {% endif %}
+        {% if tool.priority_source %}
+        <div class="tool-meta-item">
+            <span class="tool-meta-label">Fuente prioritaria</span>
+            <span class="tool-meta-value">{{ tool.priority_source }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="two-col">
+    <!-- Updates Timeline -->
+    <div class="detail-section">
+        <h2><i class="fas fa-history"></i> Historial de Cambios ({{ updates|length }})</h2>
+        {% if updates %}
+        <div class="timeline">
+            {% for update in updates %}
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">{{ update.created_at.strftime('%d %b %Y') if update.created_at else '' }}</div>
+                    <div class="timeline-field">Campo: {{ update.field_updated }}</div>
+                    {% if update.description %}
+                    <div class="timeline-desc">{{ update.description }}</div>
+                    {% endif %}
+                    {% if update.old_value and update.new_value %}
+                    <div class="change-diff">
+                        <div class="change-old">- {{ update.old_value|truncate(120) }}</div>
+                        <div class="change-new">+ {{ update.new_value|truncate(120) }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--gris-medio); font-size: 0.92rem; text-align: center; padding: 2rem;">
+            <i class="fas fa-check-circle" style="color: var(--exito);"></i> Sin cambios registrados aun.
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Blog Mentions -->
+    <div class="detail-section">
+        <h2><i class="fas fa-newspaper"></i> Mencionada en ({{ entries|length }} entradas)</h2>
+        {% if entries %}
+        <div>
+            {% for entry in entries %}
+            <div class="entry-list-item">
+                <span class="entry-list-date">{{ entry.date.strftime('%d %b') }}</span>
+                <div class="entry-list-info">
+                    <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}">
+                        Radar del {{ entry.date.strftime('%d de %B, %Y') }}
+                    </a>
+                    <div class="entry-list-stats">
+                        {{ entry.tools|length }} herramientas &middot; {{ entry.updates|length }} actualizaciones
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--gris-medio); font-size: 0.92rem; text-align: center; padding: 2rem;">
+            Sin menciones en el blog aun.
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

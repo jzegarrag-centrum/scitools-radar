@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+
+{% block title %}Radar del {{ entry.date.strftime('%d de %B, %Y') }} - SciTools Radar{% endblock %}
+
+{% block styles %}
+<style>
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.88rem;
+        color: var(--gris-medio);
+    }
+    .breadcrumb a {
+        color: var(--azul);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    .breadcrumb a:hover { color: var(--naranja); }
+
+    .entry-hero {
+        background: var(--blanco);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--sombra-sm);
+        border: 1px solid var(--borde);
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .entry-hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--naranja), var(--azul));
+    }
+    .entry-hero-header {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    .entry-date-display {
+        background: linear-gradient(135deg, var(--naranja) 0%, var(--naranja-dark) 100%);
+        color: white; 
+        border-radius: 14px;
+        padding: 0.8rem 1rem;
+        text-align: center; 
+        min-width: 70px;
+        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+    }
+    .entry-date-day {
+        font-size: 1.8rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+    .entry-date-month {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+    .entry-date-year {
+        font-size: 0.7rem;
+        opacity: 0.85;
+    }
+    .entry-hero-info h1 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--gris-oscuro);
+        letter-spacing: -0.02em;
+        margin-bottom: 0.4rem;
+    }
+    .entry-hero-stats {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.88rem;
+        color: var(--gris-medio);
+    }
+    .entry-hero-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .entry-hero-stat i {
+        color: var(--naranja);
+    }
+
+    /* Agent Quality info */
+    .quality-bar {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--borde);
+    }
+    .quality-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .quality-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--gris-medio);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .quality-meter {
+        flex: 1;
+        height: 8px;
+        background: var(--gris-claro);
+        border-radius: 4px;
+        overflow: hidden;
+        min-width: 120px;
+    }
+    .quality-meter-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+    .quality-score {
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+    /* Editorial Content */
+    .editorial-card {
+        background: var(--blanco);
+        border-radius: var(--radius);
+        padding: 1.5rem 2rem;
+        box-shadow: var(--sombra-sm);
+        border: 1px solid var(--borde);
+        margin-bottom: 1.5rem;
+    }
+    .editorial-card h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--azul);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .editorial-card h2 i { color: var(--naranja); }
+    .editorial-body {
+        line-height: 1.9;
+        font-size: 0.97rem;
+        color: var(--gris-oscuro);
+    }
+    .editorial-body h3,
+    .editorial-body h4 {
+        color: var(--azul);
+        margin: 1.5rem 0 0.75rem;
+    }
+    .editorial-body ul, .editorial-body ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .editorial-body li { margin-bottom: 0.4rem; }
+    .editorial-body a {
+        color: var(--naranja);
+        font-weight: 600;
+    }
+
+    /* Two Column Layout */
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* Tool Pills grid */
+    .tool-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.75rem;
+    }
+    .tool-pill {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.65rem 0.9rem;
+        background: var(--gris-claro);
+        border-radius: 10px;
+        text-decoration: none;
+        color: var(--gris-oscuro);
+        font-size: 0.88rem;
+        font-weight: 600;
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+    .tool-pill:hover {
+        border-color: var(--azul);
+        background: var(--azul-light);
+        color: var(--azul);
+        transform: translateY(-1px);
+    }
+    .tool-pill i {
+        color: var(--naranja);
+    }
+    .tool-pill .badge-sm {
+        margin-left: auto;
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
+        background: var(--borde);
+        border-radius: 4px;
+        color: var(--gris-medio);
+    }
+
+    /* Update items */
+    .update-item {
+        display: flex;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--borde);
+    }
+    .update-item:last-child { border-bottom: none; }
+    .update-icon {
+        width: 32px; height: 32px;
+        background: var(--naranja-light);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        color: var(--naranja-dark);
+        font-size: 0.8rem;
+    }
+    .update-info { flex: 1; }
+    .update-tool-name {
+        font-weight: 700;
+        color: var(--azul);
+        font-size: 0.9rem;
+    }
+    .update-tool-name a {
+        color: var(--azul);
+        text-decoration: none;
+    }
+    .update-tool-name a:hover { color: var(--naranja); }
+    .update-field {
+        font-size: 0.82rem;
+        color: var(--gris-medio);
+    }
+    .update-desc {
+        font-size: 0.88rem;
+        color: var(--gris-oscuro);
+        margin-top: 0.25rem;
+    }
+
+    /* Navigation */
+    .entry-nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+        gap: 1rem;
+    }
+    .entry-nav a {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.65rem 1.2rem;
+        background: var(--blanco);
+        border: 1px solid var(--borde);
+        border-radius: 10px;
+        text-decoration: none;
+        color: var(--azul);
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+    .entry-nav a:hover {
+        border-color: var(--azul);
+        box-shadow: var(--sombra-sm);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Blog</a>
+    <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+    <span>{{ entry.date.strftime('%d %B %Y') }}</span>
+</div>
+
+<!-- Hero -->
+<div class="entry-hero">
+    <div class="entry-hero-header">
+        <div class="entry-date-display">
+            <div class="entry-date-day">{{ entry.date.strftime('%d') }}</div>
+            <div class="entry-date-month">{{ entry.date.strftime('%b') }}</div>
+            <div class="entry-date-year">{{ entry.date.strftime('%Y') }}</div>
+        </div>
+        <div class="entry-hero-info">
+            <h1>Radar del {{ entry.date.strftime('%d de %B, %Y') }}</h1>
+            <div class="entry-hero-stats">
+                <span class="entry-hero-stat">
+                    <i class="fas fa-cube"></i> {{ tools_count }} herramientas
+                </span>
+                <span class="entry-hero-stat">
+                    <i class="fas fa-sync-alt"></i> {{ updates_count }} actualizaciones
+                </span>
+                {% if agent_run %}
+                <span class="entry-hero-stat">
+                    <i class="fas fa-robot"></i> Generado por agente
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if agent_run and agent_run.quality_score is not none %}
+    <div class="quality-bar">
+        <div class="quality-row">
+            <span class="quality-label">Calidad</span>
+            <div class="quality-meter">
+                {% set score = agent_run.quality_score %}
+                {% set color = 'var(--exito)' if score >= 7 else ('var(--naranja)' if score >= 5 else 'var(--peligro)') %}
+                <div class="quality-meter-fill" style="width:{{ score * 10 }}%; background:{{ color }};"></div>
+            </div>
+            <span class="quality-score" style="color:{{ color }};">{{ score }}/10</span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Editorial -->
+<div class="editorial-card">
+    <h2><i class="fas fa-pen-fancy"></i> Editorial</h2>
+    <div class="editorial-body">
+        {{ entry.editorial_html|safe }}
+    </div>
+</div>
+
+<div class="two-col">
+    <!-- New Tools -->
+    <div class="editorial-card">
+        <h2><i class="fas fa-plus-circle"></i> Herramientas Destacadas ({{ tools_count }})</h2>
+        {% if tools|length > 0 %}
+        <div class="tool-grid">
+            {% for tool in tools %}
+            <a href="{{ url_for('main.herramienta_detalle', slug=tool.slug) }}" class="tool-pill">
+                <i class="fas fa-cube"></i>
+                {{ tool.name }}
+                {% if tool.category %}
+                <span class="badge-sm">{{ tool.category }}</span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--gris-medio); text-align: center; padding: 1.5rem;">
+            Sin herramientas nuevas en esta edicion.
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Updates -->
+    <div class="editorial-card">
+        <h2><i class="fas fa-bolt"></i> Actualizaciones ({{ updates_count }})</h2>
+        {% if updates|length > 0 %}
+        <div>
+            {% for update in updates %}
+            <div class="update-item">
+                <div class="update-icon"><i class="fas fa-arrow-up"></i></div>
+                <div class="update-info">
+                    <div class="update-tool-name">
+                        {% if update.tool %}
+                        <a href="{{ url_for('main.herramienta_detalle', slug=update.tool.slug) }}">{{ update.tool.name }}</a>
+                        {% else %}
+                        Herramienta desconocida
+                        {% endif %}
+                    </div>
+                    <div class="update-field">{{ update.field_updated }}</div>
+                    {% if update.description %}
+                    <div class="update-desc">{{ update.description }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--gris-medio); text-align: center; padding: 1.5rem;">
+            Sin actualizaciones registradas.
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="entry-nav">
+    {% if prev_entry %}
+    <a href="{{ url_for('main.entrada_detalle', date_str=prev_entry.date.isoformat()) }}">
+        <i class="fas fa-chevron-left"></i> {{ prev_entry.date.strftime('%d %b %Y') }}
+    </a>
+    {% else %}
+    <span></span>
+    {% endif %}
+    {% if next_entry %}
+    <a href="{{ url_for('main.entrada_detalle', date_str=next_entry.date.isoformat()) }}">
+        {{ next_entry.date.strftime('%d %b %Y') }} <i class="fas fa-chevron-right"></i>
+    </a>
+    {% else %}
+    <span></span>
+    {% endif %}
+</div>
+{% endblock %}

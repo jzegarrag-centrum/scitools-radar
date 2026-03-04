@@ -1,0 +1,12 @@
+# Railway Nixpacks Builder
+[build]
+  # Python 3.11
+  pythonVersion = "3.11"
+
+[deploy]
+  # Comando para producción
+  startCommand = "gunicorn wsgi:app"
+  
+[env]
+  # Variables de entorno (las sensibles se config uran en Railway UI)
+  FLASK_ENV = "production"

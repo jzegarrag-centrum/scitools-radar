@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+
+{% block title %}Estadisticas - SciTools Radar{% endblock %}
+
+{% block styles %}
+<style>
+    .stats-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .stats-header h1 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--gris-oscuro);
+        margin-bottom: 0.4rem;
+    }
+    .stats-header p {
+        color: var(--gris-medio);
+        font-size: 0.95rem;
+    }
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        background: var(--blanco);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: var(--sombra-sm);
+        border: 1px solid var(--borde);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+    }
+    .stat-card:nth-child(1)::before { background: var(--azul); }
+    .stat-card:nth-child(2)::before { background: var(--naranja); }
+    .stat-card:nth-child(3)::before { background: var(--exito); }
+    .stat-card:nth-child(4)::before { background: #6366f1; }
+    .stat-card:nth-child(5)::before { background: #ec4899; }
+    .stat-card:nth-child(6)::before { background: #14b8a6; }
+    .stat-icon {
+        width: 48px; height: 48px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 0.75rem;
+        font-size: 1.15rem;
+    }
+    .stat-card:nth-child(1) .stat-icon { background: var(--azul-light); color: var(--azul); }
+    .stat-card:nth-child(2) .stat-icon { background: var(--naranja-light); color: var(--naranja); }
+    .stat-card:nth-child(3) .stat-icon { background: rgba(16,185,129,0.12); color: var(--exito); }
+    .stat-card:nth-child(4) .stat-icon { background: rgba(99,102,241,0.12); color: #6366f1; }
+    .stat-card:nth-child(5) .stat-icon { background: rgba(236,72,153,0.12); color: #ec4899; }
+    .stat-card:nth-child(6) .stat-icon { background: rgba(20,184,166,0.12); color: #14b8a6; }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--gris-oscuro);
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+    .stat-label {
+        font-size: 0.82rem;
+        color: var(--gris-medio);
+        font-weight: 500;
+    }
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .charts-grid { grid-template-columns: 1fr; }
+    }
+    .chart-card {
+        background: var(--blanco);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: var(--sombra-sm);
+        border: 1px solid var(--borde);
+    }
+    .chart-card h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--azul);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .chart-card h3 i { color: var(--naranja); }
+    .chart-canvas-wrap {
+        position: relative;
+        height: 280px;
+    }
+    .top-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .top-table th {
+        text-align: left;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--gris-medio);
+        padding: 0.5rem 0.75rem;
+        border-bottom: 2px solid var(--borde);
+    }
+    .top-table td {
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid var(--borde);
+        font-size: 0.9rem;
+        color: var(--gris-oscuro);
+    }
+    .top-table tr:last-child td { border-bottom: none; }
+    .rank-badge {
+        width: 24px; height: 24px;
+        border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 0.75rem; font-weight: 700; color: white;
+    }
+    .rank-1 { background: #f59e0b; }
+    .rank-2 { background: #94a3b8; }
+    .rank-3 { background: #b45309; }
+    .rank-default { background: var(--gris-medio); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="stats-header">
+    <h1><i class="fas fa-chart-bar" style="color: var(--naranja);"></i> Estadisticas del Radar</h1>
+    <p>Metricas y tendencias sobre herramientas de investigacion monitoreadas</p>
+</div>
+
+<!-- KPI Cards -->
+<div class="stats-cards">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-cube"></i></div>
+        <div class="stat-value">{{ stats.total_tools }}</div>
+        <div class="stat-label">Herramientas</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-newspaper"></i></div>
+        <div class="stat-value">{{ stats.total_entries }}</div>
+        <div class="stat-label">Entradas</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-sync-alt"></i></div>
+        <div class="stat-value">{{ stats.total_updates }}</div>
+        <div class="stat-label">Actualizaciones</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-robot"></i></div>
+        <div class="stat-value">{{ stats.total_agent_runs }}</div>
+        <div class="stat-label">Ejecuciones IA</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-star"></i></div>
+        <div class="stat-value">{{ '%.1f'|format(stats.avg_quality) if stats.avg_quality else 'N/A' }}</div>
+        <div class="stat-label">Calidad Promedio</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+        <div class="stat-value">${{ '%.2f'|format(stats.total_cost) if stats.total_cost else '0.00' }}</div>
+        <div class="stat-label">Costo Total IA</div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3><i class="fas fa-chart-pie"></i> Herramientas por Categoria</h3>
+        <div class="chart-canvas-wrap">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <h3><i class="fas fa-chart-bar"></i> Herramientas por Campo</h3>
+        <div class="chart-canvas-wrap">
+            <canvas id="fieldChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3><i class="fas fa-trophy"></i> Top Categorias</h3>
+        <table class="top-table">
+            <thead>
+                <tr><th>#</th><th>Categoria</th><th>Herramientas</th></tr>
+            </thead>
+            <tbody>
+                {% for cat, count in stats.by_category[:8] %}
+                <tr>
+                    <td><span class="rank-badge {% if loop.index <= 3 %}rank-{{ loop.index }}{% else %}rank-default{% endif %}">{{ loop.index }}</span></td>
+                    <td style="font-weight:600;">{{ cat }}</td>
+                    <td>{{ count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="chart-card">
+        <h3><i class="fas fa-calendar-alt"></i> Ultima Actividad</h3>
+        {% if stats.last_entry %}
+        <div style="padding: 1rem; text-align: center;">
+            <div style="font-size: 2.5rem; font-weight: 800; color: var(--naranja);">
+                {{ stats.last_entry.date if stats.last_entry.date is string else stats.last_entry['date'] }}
+            </div>
+            <div style="color: var(--gris-medio); margin-top: 0.5rem;">Fecha de la ultima entrada del blog</div>
+            <a href="{{ url_for('main.index') }}" class="btn" style="margin-top: 1.5rem;">
+                <i class="fas fa-arrow-right"></i> Ver entradas
+            </a>
+        </div>
+        {% else %}
+        <p style="padding: 2rem; text-align: center; color: var(--gris-medio);">Sin entradas registradas.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const palette = [
+        '#003865','#FF6B00','#10b981','#6366f1','#ec4899',
+        '#14b8a6','#f59e0b','#8b5cf6','#ef4444','#06b6d4'
+    ];
+
+    // Category Doughnut Chart
+    const catLabels = {{ stats.by_category|map(attribute=0)|list|tojson }};
+    const catData   = {{ stats.by_category|map(attribute=1)|list|tojson }};
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catData,
+                backgroundColor: palette.slice(0, catLabels.length),
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { boxWidth: 12, padding: 10, font: { size: 11, family: 'Inter' } } }
+            }
+        }
+    });
+
+    // Field Bar Chart
+    const fieldLabels = {{ stats.by_field|map(attribute=0)|list|tojson }};
+    const fieldData   = {{ stats.by_field|map(attribute=1)|list|tojson }};
+    new Chart(document.getElementById('fieldChart'), {
+        type: 'bar',
+        data: {
+            labels: fieldLabels,
+            datasets: [{
+                label: 'Herramientas',
+                data: fieldData,
+                backgroundColor: palette.slice(0, fieldLabels.length),
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, grid: { display: false }, ticks: { font: { family: 'Inter' } } },
+                y: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Métricas de Calidad - Admin{% endblock %}
+
+{% block styles %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1rem;">
+    <a href="{{ url_for('admin.dashboard') }}" style="color: var(--azul); text-decoration: none;">
+        ← Volver al panel
+    </a>
+</div>
+
+<h1 style="margin-bottom: 2rem; color: var(--azul);">📊 Métricas de Calidad Detalladas</h1>
+
+<!-- Filter -->
+<div class="card" style="margin-bottom: 2rem;">
+    <form method="get" style="display: flex; gap: 1rem; align-items: center;">
+        <label for="days" style="font-weight: 600;">Período:</label>
+        <select name="days" id="days" style="padding: 0.75rem; border: 1px solid var(--borde); 
+                                              border-radius: 8px; font-family: inherit;"
+                onchange="this.form.submit()">
+            <option value="7" {% if days == 7 %}selected{% endif %}>Últimos 7 días</option>
+            <option value="30" {% if days == 30 %}selected{% endif %}>Últimos 30 días</option>
+            <option value="90" {% if days == 90 %}selected{% endif %}>Últimos 90 días</option>
+        </select>
+    </form>
+</div>
+
+<!-- Quality Metrics Overview -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 2.5rem; color: var(--azul); font-weight: 700;">
+            {{ (metrics.avg_completeness * 100)|round|int }}%
+        </div>
+        <div style="color: #666;">Completeness Promedio</div>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 2.5rem; color: var(--naranja); font-weight: 700;">
+            {{ (metrics.avg_field_diversity * 100)|round|int }}%
+        </div>
+        <div style="color: #666;">Field Diversity</div>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 2.5rem; color: #28a745; font-weight: 700;">
+            {{ (metrics.avg_social_coverage * 100)|round|int }}%
+        </div>
+        <div style="color: #666;">Social Coverage</div>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 2.5rem; color: #dc3545; font-weight: 700;">
+            {{ (metrics.avg_hallucination_risk * 100)|round|int }}%
+        </div>
+        <div style="color: #666;">Hallucination Risk</div>
+    </div>
+</div>
+
+<!-- Quality Trends Chart -->
+{% if trends %}
+<div class="card" style="margin-bottom: 2rem;">
+    <h2 style="color: var(--azul); margin-bottom: 1rem;">📈 Tendencias de Calidad</h2>
+    <canvas id="trendsChart" style="max-height: 400px;"></canvas>
+</div>
+{% endif %}
+
+<!-- Cost Analysis -->
+<div class="card" style="margin-bottom: 2rem;">
+    <h2 style="color: var(--azul); margin-bottom: 1rem;">💰 Análisis de Costos</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div style="border: 1px solid var(--borde); padding: 1rem; border-radius: 8px;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--azul);">
+                ${{ "%.4f"|format(costs.total_cost) }}
+            </div>
+            <div style="color: #666; font-size: 0.9rem;">Costo Total</div>
+        </div>
+        
+        <div style="border: 1px solid var(--borde); padding: 1rem; border-radius: 8px;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--naranja);">
+                {{ "{:,}".format(costs.total_tokens) }}
+            </div>
+            <div style="color: #666; font-size: 0.9rem;">Tokens Totales</div>
+        </div>
+        
+        <div style="border: 1px solid var(--borde); padding: 1rem; border-radius: 8px;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--azul);">
+                ${{ "%.4f"|format(costs.avg_cost_per_run) }}
+            </div>
+            <div style="color: #666; font-size: 0.9rem;">Costo por Ejecución</div>
+        </div>
+        
+        <div style="border: 1px solid var(--borde); padding: 1rem; border-radius: 8px;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--naranja);">
+                {{ costs.total_runs }}
+            </div>
+            <div style="color: #666; font-size: 0.9rem;">Ejecuciones</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Runs Details -->
+<div class="card">
+    <h2 style="color: var(--azul); margin-bottom: 1rem;">🔍 Detalle de Ejecuciones Recientes</h2>
+    {% if runs %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--borde);">
+                    <th style="text-align: left; padding: 0.5rem;">Fecha</th>
+                    <th style="text-align: center; padding: 0.5rem;">C</th>
+                    <th style="text-align: center; padding: 0.5rem;">FD</th>
+                    <th style="text-align: center; padding: 0.5rem;">SC</th>
+                    <th style="text-align: center; padding: 0.5rem;">HR</th>
+                    <th style="text-align: center; padding: 0.5rem;">Tools</th>
+                    <th style="text-align: center; padding: 0.5rem;">Updates</th>
+                    <th style="text-align: right; padding: 0.5rem;">Costo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for run in runs %}
+                <tr style="border-bottom: 1px solid var(--borde);">
+                    <td style="padding: 0.5rem;">{{ run.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td style="padding: 0.5rem; text-align: center;">
+                        {% if run.completeness %}{{ (run.completeness * 100)|round|int }}%{% else %}-{% endif %}
+                    </td>
+                    <td style="padding: 0.5rem; text-align: center;">
+                        {% if run.field_diversity %}{{ (run.field_diversity * 100)|round|int }}%{% else %}-{% endif %}
+                    </td>
+                    <td style="padding: 0.5rem; text-align: center;">
+                        {% if run.social_coverage %}{{ (run.social_coverage * 100)|round|int }}%{% else %}-{% endif %}
+                    </td>
+                    <td style="padding: 0.5rem; text-align: center;">
+                        {% if run.hallucination_risk %}{{ (run.hallucination_risk * 100)|round|int }}%{% else %}-{% endif %}
+                    </td>
+                    <td style="padding: 0.5rem; text-align: center;">{{ run.tools_new }}/{{ run.tools_found }}</td>
+                    <td style="padding: 0.5rem; text-align: center;">{{ run.updates_count }}</td>
+                    <td style="padding: 0.5rem; text-align: right;">
+                        {% if run.total_cost_usd %}${{ "%.4f"|format(run.total_cost_usd) }}{% else %}-{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: #666; padding: 2rem; text-align: center;">No hay datos de calidad todavía.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if trends %}
+<script>
+    const ctx = document.getElementById('trendsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ trends.dates|tojson }},
+            datasets: [
+                {
+                    label: 'Completeness',
+                    data: {{ trends.completeness|tojson }},
+                    borderColor: '#003865',
+                    backgroundColor: 'rgba(0, 56, 101, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Field Diversity',
+                    data: {{ trends.field_diversity|tojson }},
+                    borderColor: '#FF6B00',
+                    backgroundColor: 'rgba(255, 107, 0, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Social Coverage',
+                    data: {{ trends.social_coverage|tojson }},
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Hallucination Risk',
+                    data: {{ trends.hallucination_risk|tojson }},
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 1,
+                    ticks: {
+                        callback: function(value) {
+                            return (value * 100) + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + (context.parsed.y * 100).toFixed(0) + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

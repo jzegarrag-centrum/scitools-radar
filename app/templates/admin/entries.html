@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Entradas - Admin{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1rem;">
+    <a href="{{ url_for('admin.dashboard') }}" style="color: var(--azul); text-decoration: none;">
+        ← Volver al panel
+    </a>
+</div>
+
+<h1 style="margin-bottom: 2rem; color: var(--azul);">📰 Gestión de Entradas</h1>
+
+<div class="card">
+    <div style="margin-bottom: 1rem; color: #666;">
+        Total: {{ entries.total }} entradas
+    </div>
+    
+    {% if entries.items %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--borde);">
+                    <th style="text-align: left; padding: 0.75rem;">Fecha</th>
+                    <th style="text-align: left; padding: 0.75rem;">Herramientas</th>
+                    <th style="text-align: left; padding: 0.75rem;">Actualizaciones</th>
+                    <th style="text-align: left; padding: 0.75rem;">Creado por</th>
+                    <th style="text-align: left; padding: 0.75rem;">Editorial</th>
+                    <th style="text-align: left; padding: 0.75rem;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries.items %}
+                <tr style="border-bottom: 1px solid var(--borde);">
+                    <td style="padding: 0.75rem;">
+                        <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}" 
+                           style="color: var(--azul); text-decoration: none; font-weight: 600;">
+                            {{ entry.date.strftime('%Y-%m-%d') }}
+                        </a>
+                    </td>
+                    <td style="padding: 0.75rem; text-align: center;">{{ entry.tools|length }}</td>
+                    <td style="padding: 0.75rem; text-align: center;">{{ entry.updates|length }}</td>
+                    <td style="padding: 0.75rem;">
+                        <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;
+                                     background: {% if entry.created_by == 'agent' %}#d1ecf1{% else %}#fff3cd{% endif%};
+                                     color: {% if entry.created_by == 'agent' %}#0c5460{% else %}#856404{% endif %};">
+                            {{ entry.created_by }}
+                        </span>
+                    </td>
+                    <td style="padding: 0.75rem; max-width: 400px;">
+                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; color: #666;">
+                            {{ entry.editorial|truncate(80) }}
+                        </div>
+                    </td>
+                    <td style="padding: 0.75rem;">
+                        <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}" 
+                           style="color: var(--naranja); text-decoration: none; font-size: 0.9rem;">
+                            Ver →
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--borde);">
+        {% if entries.has_prev %}
+        <a href="{{ url_for('admin.entries', page=entries.prev_num) }}" class="btn btn-secondary">
+            ← Anterior
+        </a>
+        {% else %}
+        <span></span>
+        {% endif %}
+        
+        <span style="color: #666;">Página {{ entries.page }} de {{ entries.pages }}</span>
+        
+        {% if entries.has_next %}
+        <a href="{{ url_for('admin.entries', page=entries.next_num) }}" class="btn btn-secondary">
+            Siguiente →
+        </a>
+        {% else %}
+        <span></span>
+        {% endif %}
+    </div>
+    {% else %}
+    <p style="color: #666; padding: 2rem; text-align: center;">No hay entradas todavía.</p>
+    {% endif %}
+</div>
+{% endblock %}
