@@ -73,8 +73,8 @@ class Config:
     # Smart Centrum Design
     THEME_COLORS = {
         'azul': '#003865',
-        'naranja': '#FF6B00',
-        'naranja_dark': '#E55D00',
+        'dorado': '#C5922E',
+        'dorado_dark': '#A67B24',
         'gris_oscuro': '#333333',
         'gris_claro': '#F5F5F5',
         'borde': '#E5E5E5',

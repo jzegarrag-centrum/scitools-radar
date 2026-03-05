@@ -35,7 +35,7 @@
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--azul), var(--naranja));
+        background: linear-gradient(90deg, var(--azul), var(--azul-light));
     }
     .tool-hero-top {
         display: flex;
@@ -140,10 +140,10 @@
     .timeline-dot {
         width: 10px; height: 10px;
         border-radius: 50%;
-        background: var(--naranja);
+        background: var(--azul);
         flex-shrink: 0;
         margin-top: 0.5rem;
-        box-shadow: 0 0 0 4px var(--naranja-light);
+        box-shadow: 0 0 0 4px var(--azul-pale);
     }
     .timeline-content {
         flex: 1;
@@ -186,8 +186,8 @@
     }
     .entry-list-item:last-child { border-bottom: none; }
     .entry-list-date {
-        background: var(--naranja-light);
-        color: var(--naranja-dark);
+        background: var(--azul-pale);
+        color: var(--azul);
         padding: 0.3rem 0.7rem;
         border-radius: 6px;
         font-size: 0.82rem;
