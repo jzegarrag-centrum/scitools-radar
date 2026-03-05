@@ -58,6 +58,15 @@
     @media (max-width:768px) {
         .schedule-form { grid-template-columns:1fr; }
         .trigger-grid { grid-template-columns:1fr; }
+        .agent-header { flex-direction:column; align-items:flex-start; }
+        .agent-header h1 { font-size:1.25rem; }
+        .panel { padding:1rem; }
+        .trigger-card .btn-trigger { min-height:44px; }
+        .schedule-form input, .schedule-form select { min-height:44px; }
+        .log-area { font-size:0.72rem; max-height:160px; }
+    }
+    @media (max-width:480px) {
+        .runs-table th, .runs-table td { padding:0.4rem 0.5rem; font-size:0.8rem; }
     }
 </style>
 {% endblock %}

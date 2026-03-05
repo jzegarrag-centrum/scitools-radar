@@ -48,6 +48,22 @@
     .monitor-bar .progress-text { font-weight:700; font-size:0.85rem; }
     .progress-bar-track { height:6px; background:#E5E7EB; border-radius:3px; flex:1; overflow:hidden; }
     .progress-bar-fill { height:100%; border-radius:3px; background:var(--naranja); transition:width 0.5s ease; }
+    /* Responsive */
+    @media (max-width: 768px) {
+        .admin-header { flex-direction:column; align-items:flex-start; }
+        .admin-header h1 { font-size:1.3rem; }
+        .kpi-grid { grid-template-columns:repeat(2,1fr); gap:0.75rem; }
+        .kpi-val { font-size:1.8rem; }
+        .section-card { padding:1rem; }
+        .actions-grid { grid-template-columns:1fr; }
+        .action-btn { min-height:52px; }
+        .monitor-bar { flex-wrap:wrap; }
+    }
+    @media (max-width: 480px) {
+        .kpi-val { font-size:1.5rem; }
+        .mini-table { font-size:0.8rem; }
+        .mini-table th, .mini-table td { padding:0.4rem 0.5rem; }
+    }
 </style>
 {% endblock %}
 
@@ -149,10 +165,11 @@
 <div class="section-card">
     <h2><i class="fas fa-file-alt" style="color:var(--naranja);"></i> Ultimas Entradas</h2>
     {% if recent_entries %}
-    <table class="mini-table">
-        <thead>
-            <tr><th>Fecha</th><th>Herr.</th><th>Upd.</th><th>Creador</th><th>Estado</th></tr>
-        </thead>
+    <div style="overflow-x:auto;">
+        <table class="mini-table">
+            <thead>
+                <tr><th>Fecha</th><th>Herr.</th><th>Upd.</th><th>Creador</th><th>Estado</th></tr>
+            </thead>
         <tbody>
             {% for entry in recent_entries %}
             <tr>
@@ -179,6 +196,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p style="color:var(--gris-medio);padding:1rem;text-align:center;">No hay entradas todavia.</p>
     {% endif %}
@@ -188,11 +206,12 @@
 <div class="section-card">
     <h2><i class="fas fa-history" style="color:var(--azul);"></i> Ultimas Ejecuciones del Agente</h2>
     {% if recent_runs %}
-    <table class="mini-table">
-        <thead>
-            <tr><th>Fecha</th><th>Estado</th><th>Nuevas</th><th>Calidad</th></tr>
-        </thead>
-        <tbody>
+    <div style="overflow-x:auto;">
+        <table class="mini-table">
+            <thead>
+                <tr><th>Fecha</th><th>Estado</th><th>Nuevas</th><th>Calidad</th></tr>
+            </thead>
+            <tbody>
             {% for run in recent_runs %}
             <tr>
                 <td>{{ run.started_at.strftime('%d %b %Y %H:%M') }}</td>
@@ -208,6 +227,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p style="color:var(--gris-medio);padding:1rem;text-align:center;">No hay ejecuciones todavia.</p>
     {% endif %}
