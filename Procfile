@@ -1,1 +1,1 @@
-web: python -c "from app import create_app; app = create_app(); ctx = app.app_context(); ctx.push(); from flask_migrate import upgrade; upgrade()" && gunicorn wsgi:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+web: python start.py
