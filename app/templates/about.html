@@ -363,11 +363,12 @@
         digitales relevantes para la investigación académica y científica, con énfasis particular 
         en <strong>ciencias sociales</strong> (econometría, bibliometría, SEM, SNA, cienciometría, ML aplicado).
     </p>
-    <p style="margin-top: 0.75rem;">
-        El sistema combina un pipeline de 5 agentes de IA con curaduría humana para descubrir 
-        nuevas herramientas vía búsqueda automatizada, clasificarlas por campo científico, redactar 
-        entradas editoriales de calidad profesional, evaluar la calidad del contenido generado y 
-        publicarlas con un flujo editorial completo: borrador → aprobación → publicación.
+    <p>
+        El sistema combina un pipeline de 6 agentes de IA con curaduría humana para descubrir 
+        nuevas herramientas vía búsqueda automatizada, clasificarlas por campo científico, refrescar
+        herramientas existentes, redactar entradas editoriales extensas (800-1500 palabras), 
+        evaluar la calidad del contenido generado y publicarlas con un flujo editorial completo: 
+        borrador → aprobación → publicación.
     </p>
     <p style="margin-top: 0.75rem;">
         Desarrollado por la <strong>Unidad de Innovabilidad, Tecnologías de Frontera y Conocimiento 
@@ -380,16 +381,16 @@
 <!-- Agent Pipeline -->
 <div class="about-section">
     <h2><i class="fas fa-robot"></i> Pipeline de Agentes IA</h2>
-    <p>El proceso de generación de contenido utiliza un pipeline de 5 etapas, cada una con un modelo especializado:</p>
+    <p>El proceso de generación de contenido utiliza un pipeline de 6 etapas, cada una con un modelo especializado:</p>
 
-    <div class="pipeline">
+    <div class="pipeline" style="grid-template-columns: repeat(6, 1fr);">
         <div class="pipeline-step">
             <div class="pipeline-num">1</div>
             <div class="pipeline-icon"><i class="fas fa-search"></i></div>
             <div class="pipeline-title">Investigador</div>
             <div class="pipeline-model">claude-sonnet-4</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Busca nuevas herramientas y novedades vía Tavily API
+                Descubre herramientas nuevas vía Tavily + LLM con pricing, plataforma y features
             </p>
         </div>
         <div class="pipeline-step">
@@ -398,7 +399,16 @@
             <div class="pipeline-title">Clasificador</div>
             <div class="pipeline-model">claude-sonnet-4</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Categoriza y asigna campos científicos
+                Categoriza hallazgos como herramientas nuevas o actualizaciones de existentes
+            </p>
+        </div>
+        <div class="pipeline-step">
+            <div class="pipeline-num">2B</div>
+            <div class="pipeline-icon"><i class="fas fa-sync-alt"></i></div>
+            <div class="pipeline-title">Actualizador</div>
+            <div class="pipeline-model">claude-sonnet-4</div>
+            <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
+                Refresca herramientas existentes: pricing, features, novedades recientes
             </p>
         </div>
         <div class="pipeline-step">
@@ -407,7 +417,7 @@
             <div class="pipeline-title">Redactor</div>
             <div class="pipeline-model">claude-opus-4</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Genera el editorial profesional en formato JSON
+                Genera editorial de 800-1500 palabras con análisis profesional
             </p>
         </div>
         <div class="pipeline-step">
@@ -416,7 +426,7 @@
             <div class="pipeline-title">Media</div>
             <div class="pipeline-model">DALL-E 3</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Genera imagen de portada IA + obtiene logos de herramientas
+                Genera imagen de portada IA + logos vía Google Favicon API
             </p>
         </div>
         <div class="pipeline-step">
@@ -432,9 +442,9 @@
 
     <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--gris-medio);">
         <i class="fas fa-info-circle" style="color: var(--azul);"></i>
-        Adicionalmente, el sistema incluye un <strong>Tool Updater</strong> que refresca y enriquece
-        la información de herramientas ya registradas (descripción, pricing, funcionalidades) usando
-        investigación web automatizada.
+        Adicionalmente, el sistema incluye un <strong>Pipeline de Calidad</strong> independiente 
+        (activable desde Admin) que escanea todo el inventario, evalúa cada herramienta con un score 0-100, 
+        investiga información faltante (pricing, features, plataforma) y auto-corrige contenido incompleto.
     </p>
 
     <h3><i class="fas fa-image" style="color: var(--naranja); margin-right: 0.3rem;"></i> Generación de Imágenes con IA</h3>
@@ -446,7 +456,8 @@
     <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--gris-medio);">
         <i class="fas fa-wrench" style="color: var(--naranja);"></i>
         El evaluador de calidad verifica la cobertura de imágenes y ejecuta <strong>auto-repair</strong>
-        si detecta portadas o logos faltantes.
+        si detecta portadas o logos faltantes. El pipeline de calidad también asigna logos automáticamente
+        a herramientas que tengan URL pero no logo.
     </p>
 </div>
 
@@ -540,9 +551,17 @@
         <li><strong>Filtros por campo, categoría y pricing</strong> con auto-submit</li>
         <li><strong>Quick-filter tags</strong>: Open Source, Gratis, Freemium, Pago — con un clic</li>
         <li><strong>Vista Grid / Lista</strong> con toggle y preferencia guardada en localStorage</li>
-        <li><strong>Logos de herramientas</strong> con iconos de respaldo inteligentes por categoría</li>
+        <li><strong>Logos de herramientas</strong> vía Google Favicon API con iconos de respaldo por categoría</li>
         <li><strong>Filtros activos visibles</strong> con contador de resultados</li>
     </ul>
+
+    <h3><i class="fas fa-file-alt" style="color: var(--naranja); margin-right: 0.3rem;"></i> Página de Detalle de Herramienta</h3>
+    <p style="margin-top: 0.5rem;">
+        Cada herramienta tiene una página de detalle con logo, descripción, funcionalidades,
+        badges de categoría/campo/pricing/plataforma, y una <strong>sección de novedades agrupada 
+        por entrada temporal</strong> (e.g., "5 de Marzo: Scopus incorporó búsqueda semántica con IA").
+        También muestra en qué entradas del blog ha sido mencionada.
+    </p>
 </div>
 
 <!-- SciBot -->

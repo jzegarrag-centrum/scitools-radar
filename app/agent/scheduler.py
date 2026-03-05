@@ -180,8 +180,11 @@ def run_daily_agent(force=False):
         updater_results = []
         if tools_to_refresh:
             updater_results = refresh_existing_tools(tools_to_refresh)
-            update_stats = apply_tool_updates(updater_results)
-            logger.info(f"Tool Updater: {update_stats['updated']} tools refreshed")
+            # NOTE: No aplicamos apply_tool_updates() aquí. Los cambios se aplican
+            # más adelante en create_entry_from_data() para que old_value sea correcto
+            # y se generen Update records con el historial real.
+            total_updater_changes = sum(len(u.get('changes', [])) for u in updater_results)
+            logger.info(f"Tool Updater: {total_updater_changes} changes detected (will apply in entry creation)")
         
         # Combinar updates del classifier + updater para el editorial
         all_updates_for_writer = updates_from_classifier[:max_updates]
@@ -225,6 +228,23 @@ def run_daily_agent(force=False):
             {'new_tools': new_tools_data, 'updates': all_updates_for_writer},
             target_date
         )
+        
+        # Asegurar que los updater results estén en entry_data['updates']
+        # (el writer podría haberlos omitido o parafraseado)
+        existing_update_keys = {
+            (u.get('tool_slug'), u.get('field_updated'))
+            for u in entry_data.get('updates', [])
+        }
+        for ur in updater_results:
+            for change in ur.get('changes', []):
+                key = (ur['tool_slug'], change.get('field', 'summary'))
+                if key not in existing_update_keys:
+                    entry_data.setdefault('updates', []).append({
+                        'tool_slug': ur['tool_slug'],
+                        'field_updated': change.get('field', 'summary'),
+                        'new_value': change.get('new_value', ''),
+                        'description': f"{ur.get('tool_name', ur['tool_slug'])}: {change.get('reason', 'actualización')}"
+                    })
         
         # PASO 4: Insertar en DB
         logger.info("[STEP 4] Entry Creator")
@@ -432,13 +452,25 @@ def create_entry_from_data(entry_data: dict, force: bool = False) -> Entry:
         tool.last_updated = datetime.utcnow()
         
         # Crear Update record
+        # Generar descripción legible si no hay una
+        description = upd_data.get('description', '')
+        if not description:
+            field_labels = {
+                'summary': 'descripción', 'pricing': 'modelo de precios',
+                'platform': 'plataformas', 'url': 'sitio web',
+                'category': 'categoría', 'features': 'funcionalidades',
+                'editorial': 'novedades', 'field': 'campo disciplinar',
+            }
+            field_label = field_labels.get(field_name, field_name)
+            description = f"Se actualizó la {field_label} de {tool.name}"
+        
         update = Update(
             tool_id=tool.id,
             entry_id=entry.id,
             field_updated=field_name,
             old_value=old_value,
             new_value=upd_data['new_value'],
-            description=upd_data.get('description', ''),
+            description=description,
             created_at=datetime.utcnow()
         )
         db.session.add(update)

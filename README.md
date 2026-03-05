@@ -8,14 +8,16 @@ Desarrollado por [Smart Centrum](https://smartcentrum.edu.pe) — CENTRUM PUCP.
 
 ## Descripcion
 
-SciTools Radar rastrea, clasifica y reporta herramientas digitales para la investigacion academica y cientifica. Combina un pipeline de 5 agentes de IA con curaduria humana para:
+SciTools Radar rastrea, clasifica y reporta herramientas digitales para la investigacion academica y cientifica. Combina un pipeline de 6 agentes de IA con curaduria humana para:
 
-- **Descubrir** nuevas herramientas via busqueda automatizada (Tavily API)
-- **Clasificar** herramientas por campo cientifico y categoria
-- **Redactar** entradas de blog editoriales de calidad profesional
-- **Evaluar** la calidad del contenido generado con metricas cuantitativas
+- **Descubrir** nuevas herramientas via busqueda automatizada (Tavily API) con pricing, plataforma y features
+- **Clasificar** herramientas por campo cientifico y categoria (18 categorias descriptivas)
+- **Actualizar** herramientas existentes: pricing, funcionalidades, novedades recientes
+- **Redactar** entradas de blog editoriales extensas (800-1500 palabras) con analisis profesional
+- **Evaluar** la calidad del contenido generado con metricas cuantitativas + auto-repair de imagenes
 - **Publicar** con flujo editorial: borrador -> aprobacion -> publicacion
 - **Monitorear** ejecuciones del agente en tiempo real desde el panel admin
+- **Refrescar** calidad del inventario con pipeline independiente (Quality Reviewer + Research + Writer)
 
 ## Stack Tecnologico
 
@@ -24,7 +26,7 @@ SciTools Radar rastrea, clasifica y reporta herramientas digitales para la inves
 | Backend | Flask 3.1, SQLAlchemy, Flask-Migrate |
 | Base de datos | PostgreSQL (produccion) / SQLite (desarrollo) |
 | LLM Gateway | CometAPI (OpenAI SDK compatible, 500+ modelos) |
-| Modelos IA | Claude Opus 4, Claude Sonnet 4, Gemini 2.5 Flash |
+| Modelos IA | Claude Opus 4, Claude Sonnet 4, Gemini 2.5 Flash, DALL-E 3 |
 | Busqueda web | Tavily API |
 | Scheduler | APScheduler (configurable desde admin) |
 | Chat | SciBot (asistente conversacional integrado) |
@@ -49,8 +51,10 @@ scitools-flask/
 │   ├── agent/
 │   │   ├── researcher.py      # Agente investigador (Claude Sonnet 4 + Tavily)
 │   │   ├── classifier.py      # Agente clasificador (Claude Sonnet 4)
-│   │   ├── writer.py          # Agente redactor (Claude Opus 4, JSON mode)
-│   │   ├── evaluator.py       # Evaluador de calidad (Claude Sonnet 4)
+│   │   ├── updater.py         # Actualizador de herramientas existentes
+│   │   ├── writer.py          # Agente redactor (Claude Opus 4, 800-1500 palabras)
+│   │   ├── evaluator.py       # Evaluador de calidad + auto-repair imagenes
+│   │   ├── refresh_pipeline.py # Pipeline de calidad (Quality Reviewer + Research + Writer)
 │   │   └── scheduler.py       # Orquestador del pipeline + APScheduler
 │   └── templates/
 │       ├── base.html           # Layout maestro + SciBot chat widget
@@ -179,16 +183,22 @@ Las entradas generadas por el agente entran con `status=draft` y no son visibles
 | `/admin/entries/<id>/draft` | POST - Revertir a borrador |
 | `/admin/tools` | Gestion de herramientas |
 | `/admin/quality` | Metricas de calidad detalladas |
+| `/admin/refresh` | Pipeline de calidad: escaneo + actualizacion automatica |
 
 ## Pipeline de Agentes IA
 
-El sistema utiliza un pipeline de 5 etapas configurable desde el panel admin:
+El sistema utiliza un pipeline de 6 etapas configurable desde el panel admin:
 
 ```
-[1. Investigador] → [2. Clasificador] → [3. Redactor] → [4. Creador BD] → [5. Evaluador]
-   Sonnet 4          Sonnet 4             Opus 4          SQLAlchemy        Sonnet 4
-   + Tavily                                JSON mode
+[1. Investigador] → [2. Clasificador] → [2B. Actualizador] → [3. Redactor] → [4. Media] → [5. Evaluador]
+   Sonnet 4          Sonnet 4              Sonnet 4            Opus 4         DALL-E 3     Sonnet 4
+   + Tavily                                                    800-1500 pal.  + Favicon    + auto-repair
 ```
+
+Adicionalmente, existe un **Pipeline de Calidad** independiente (activable desde Admin > Refresh Pipeline):
+1. **Quality Reviewer** — escanea todo el inventario y asigna score 0-100 (descripcion, pricing, features, logo, plataforma)
+2. **Research Agent** — investiga informacion faltante para herramientas con score bajo
+3. **Content Writer** — genera contenido mejorado y auto-corrige logos, pricing y features
 
 **Schedule por defecto:** Martes y Jueves a las 07:00 UTC (configurable desde Admin > Agent Control).
 

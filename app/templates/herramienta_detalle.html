@@ -122,61 +122,52 @@
     .detail-section h2 i {
         color: var(--naranja);
     }
-    .timeline {
+    /* Timeline styles removed — now using entry-group layout */
+    .entry-group {
+        margin-bottom: 1.25rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid var(--borde);
+    }
+    .entry-group:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    .entry-group-header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.6rem;
+    }
+    .entry-group-date {
+        background: var(--azul-pale);
+        color: var(--azul);
+        padding: 0.3rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .entry-group-link {
+        font-size: 0.85rem;
+        color: var(--azul);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .entry-group-link:hover { color: var(--naranja); }
+    .entry-group-items {
         display: flex;
         flex-direction: column;
-        gap: 0;
+        gap: 0.4rem;
+        padding-left: 0.5rem;
     }
-    .timeline-item {
-        display: flex;
-        gap: 1rem;
-        padding: 1rem 0;
-        border-bottom: 1px solid var(--borde);
-        position: relative;
-    }
-    .timeline-item:last-child {
-        border-bottom: none;
-    }
-    .timeline-dot {
-        width: 10px; height: 10px;
-        border-radius: 50%;
-        background: var(--azul);
-        flex-shrink: 0;
-        margin-top: 0.5rem;
-        box-shadow: 0 0 0 4px var(--azul-pale);
-    }
-    .timeline-content {
-        flex: 1;
-    }
-    .timeline-date {
-        font-size: 0.8rem;
-        color: var(--gris-medio);
-        margin-bottom: 0.25rem;
-    }
-    .timeline-field {
-        font-size: 0.82rem;
-        color: var(--azul);
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-    }
-    .timeline-desc {
+    .entry-group-desc {
         font-size: 0.9rem;
         color: var(--gris-oscuro);
+        line-height: 1.6;
+        padding-left: 0.75rem;
+        border-left: 2px solid var(--azul-pale);
     }
-    .change-diff {
-        background: var(--gris-claro);
-        padding: 0.6rem 0.8rem;
-        border-radius: 8px;
-        font-size: 0.82rem;
-        margin-top: 0.5rem;
-        font-family: 'JetBrains Mono', monospace;
-        overflow-wrap: break-word;
-        word-break: break-word;
-        overflow-x: auto;
-        max-width: 100%;
-    }
-    .change-old { color: var(--peligro); }
-    .change-new { color: var(--exito); }
     .entry-list-item {
         display: flex;
         align-items: center;
@@ -223,8 +214,7 @@
         .tool-hero-actions .btn { justify-content: center; }
         .tool-meta-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
         .detail-section { padding: 1.25rem; }
-        .timeline-item { gap: 0.75rem; }
-        .change-diff { font-size: 0.75rem; padding: 0.5rem 0.6rem; }
+        .entry-group-header { flex-wrap: wrap; }
         .entry-list-item { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
     }
     @media (max-width: 480px) {
@@ -238,8 +228,6 @@
         .tool-hero-icon { width: 44px; height: 44px; font-size: 1.1rem; border-radius: 10px; }
         .detail-section { padding: 1rem; }
         .detail-section h2 { font-size: 0.95rem; }
-        .timeline-desc { font-size: 0.82rem; }
-        .change-diff { font-size: 0.7rem; padding: 0.4rem 0.5rem; }
         .entry-list-info a { font-size: 0.85rem; }
         .entry-list-stats { font-size: 0.75rem; }
     }
@@ -366,41 +354,37 @@
 </div>
 
 <div class="two-col">
-    <!-- Novedades (editorial) + Updates Timeline -->
+    <!-- Novedades agrupadas por entrada temporal -->
     <div class="detail-section">
-        <h2><i class="fas fa-star"></i> Novedades ({{ updates|length }} actualizaciones)</h2>
+        <h2><i class="fas fa-star"></i> Novedades{% if updates %} ({{ updates|length }} actualizaciones){% endif %}</h2>
 
-        {# Editorial: sección narrativa de novedades generada por IA o editorial #}
-        {% if tool.editorial %}
-        <div style="background: var(--naranja-light); border-left: 3px solid var(--naranja); padding: 0.9rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.93rem; line-height: 1.7; color: var(--gris-oscuro);">
-            {{ tool.editorial }}
-        </div>
-        {% endif %}
-
-        {% if updates %}
-        <div class="timeline">
-            {% for update in updates %}
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="timeline-date">{{ update.created_at.strftime('%d %b %Y') if update.created_at else '' }}</div>
-                    <div class="timeline-field">Campo: {{ update.field_updated }}</div>
-                    {% if update.description %}
-                    <div class="timeline-desc">{{ update.description }}</div>
-                    {% endif %}
-                    {% if update.old_value and update.new_value %}
-                    <div class="change-diff">
-                        <div class="change-old">- {{ update.old_value|truncate(120) }}</div>
-                        <div class="change-new">+ {{ update.new_value|truncate(120) }}</div>
+        {% if grouped_updates %}
+        <div>
+            {% for entry, entry_updates in grouped_updates %}
+            <div class="entry-group">
+                <div class="entry-group-header">
+                    <span class="entry-group-date">{{ entry.date.strftime('%d de %B, %Y') }}</span>
+                    <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}" class="entry-group-link">
+                        <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i> Ver entrada
+                    </a>
+                </div>
+                <div class="entry-group-items">
+                    {% for update in entry_updates %}
+                    <div class="entry-group-desc">
+                        {% if update.description %}
+                        {{ update.description }}
+                        {% else %}
+                        Actualización en {{ update.field_updated }}{% if update.new_value %}: {{ update.new_value|truncate(150) }}{% endif %}
+                        {% endif %}
                     </div>
-                    {% endif %}
+                    {% endfor %}
                 </div>
             </div>
             {% endfor %}
         </div>
-        {% elif not tool.editorial %}
+        {% else %}
         <p style="color: var(--gris-medio); font-size: 0.92rem; text-align: center; padding: 2rem;">
-            <i class="fas fa-check-circle" style="color: var(--exito);"></i> Sin novedades registradas aún.
+            <i class="fas fa-info-circle" style="color: var(--azul);"></i> Sin novedades registradas aún.
         </p>
         {% endif %}
     </div>

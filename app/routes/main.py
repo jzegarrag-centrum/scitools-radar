@@ -102,17 +102,28 @@ def herramienta_detalle(slug):
     except Exception:
         entries = sorted(tool.entries, key=lambda e: e.date, reverse=True)[:10]
     
-    # Actualizaciones
+    # Actualizaciones agrupadas por entrada temporal
     try:
-        updates = tool.updates.order_by(Update.created_at.desc()).limit(10).all()
+        updates = tool.updates.order_by(Update.created_at.desc()).limit(30).all()
     except Exception:
-        updates = sorted(tool.updates, key=lambda u: u.created_at, reverse=True)[:10]
+        updates = sorted(tool.updates, key=lambda u: u.created_at, reverse=True)[:30]
+    
+    # Agrupar updates por su entry (fecha temporal)
+    from collections import OrderedDict
+    grouped = OrderedDict()
+    for upd in updates:
+        if upd.entry:
+            if upd.entry not in grouped:
+                grouped[upd.entry] = []
+            grouped[upd.entry].append(upd)
+    grouped_updates = list(grouped.items())  # [(entry, [updates]), ...]
     
     return render_template(
         'herramienta_detalle.html',
         tool=tool,
         entries=entries,
-        updates=updates
+        updates=updates,
+        grouped_updates=grouped_updates
     )
 
 

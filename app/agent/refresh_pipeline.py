@@ -554,7 +554,7 @@ def _apply_content_update(tool, new_content: Dict) -> None:
     if pricing and pricing != tool.pricing:
         tool.pricing = pricing
 
-    if platform and not tool.platform:
+    if platform and platform != tool.platform:
         tool.platform = platform
 
     tool.auto_updated = True

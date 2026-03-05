@@ -99,13 +99,19 @@ Responde SOLO con un JSON array válido:
     "tool_name": "Nombre",
     "changes": [
       {{
-        "field": "summary|pricing|platform|url|category|description_html",
+        "field": "summary|pricing|platform|url|category|description_html|features|editorial",
         "new_value": "nuevo valor",
-        "reason": "Razón del cambio en español"
+        "reason": "Descripción narrativa del cambio en español, orientada al lector. Ej: 'Scopus incorporó búsqueda semántica con IA en su versión 2025'"
       }}
     ]
   }}
 ]
+
+IMPORTANTE sobre el campo 'reason':
+- El reason es la descripción pública que verá el lector en la sección de novedades.
+- Debe ser una oración completa y descriptiva, NO técnica.
+- Ejemplo bueno: "SciSpace integró generación automática de revisiones de literatura con modelos GPT-4o"
+- Ejemplo malo: "Actualización del campo summary"
 
 Si una herramienta NO tiene cambios que reportar, NO la incluyas en el array.
 Si ninguna herramienta tiene cambios, responde con array vacío []."""
@@ -202,7 +208,8 @@ def apply_tool_updates(updates: List[Dict]) -> Dict:
     
     # Campos que se pueden actualizar
     ALLOWED_FIELDS = {'summary', 'pricing', 'platform', 'url', 'category',
-                      'description_html', 'field', 'tags', 'developer'}
+                      'description_html', 'field', 'tags', 'developer',
+                      'features', 'editorial', 'logo_url'}
 
     for tool_update in updates:
         slug = tool_update.get('tool_slug', '')
