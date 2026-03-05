@@ -107,6 +107,7 @@ class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False, unique=True, index=True)
     editorial = db.Column(db.Text, nullable=False)
+    cover_image_url = db.Column(db.String(1000))  # DALL-E / Flux generated cover
     
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

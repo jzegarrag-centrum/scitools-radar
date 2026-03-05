@@ -412,11 +412,11 @@
         </div>
         <div class="pipeline-step">
             <div class="pipeline-num">4</div>
-            <div class="pipeline-icon"><i class="fas fa-database"></i></div>
-            <div class="pipeline-title">Creador</div>
-            <div class="pipeline-model">Flask / SQLAlchemy</div>
+            <div class="pipeline-icon"><i class="fas fa-image"></i></div>
+            <div class="pipeline-title">Media</div>
+            <div class="pipeline-model">DALL-E 3</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Persiste la entrada en la base de datos
+                Genera imagen de portada IA + obtiene logos de herramientas
             </p>
         </div>
         <div class="pipeline-step">
@@ -425,7 +425,7 @@
             <div class="pipeline-title">Evaluador</div>
             <div class="pipeline-model">claude-sonnet-4</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Evalúa calidad: completitud, diversidad, cobertura social, riesgo de alucinación
+                Evalúa calidad, imágenes, diversidad y auto-repara faltantes
             </p>
         </div>
     </div>
@@ -435,6 +435,18 @@
         Adicionalmente, el sistema incluye un <strong>Tool Updater</strong> que refresca y enriquece
         la información de herramientas ya registradas (descripción, pricing, funcionalidades) usando
         investigación web automatizada.
+    </p>
+
+    <h3><i class="fas fa-image" style="color: var(--naranja); margin-right: 0.3rem;"></i> Generación de Imágenes con IA</h3>
+    <p style="margin-top: 0.5rem;">
+        Cada entrada incluye una <strong>imagen de portada generada con DALL-E 3</strong> vía CometAPI,
+        con estilo editorial abstracto y la paleta institucional del proyecto. Los logos de herramientas
+        se obtienen automáticamente mediante Google Favicon API (128px).
+    </p>
+    <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--gris-medio);">
+        <i class="fas fa-wrench" style="color: var(--naranja);"></i>
+        El evaluador de calidad verifica la cobertura de imágenes y ejecuta <strong>auto-repair</strong>
+        si detecta portadas o logos faltantes.
     </p>
 </div>
 
@@ -517,6 +529,22 @@
     </div>
 </div>
 
+<!-- Inventario interactivo -->
+<div class="about-section">
+    <h2><i class="fas fa-th"></i> Inventario Interactivo</h2>
+    <p>
+        El inventario de herramientas ofrece una experiencia de búsqueda rápida e interactiva:
+    </p>
+    <ul>
+        <li><strong>Búsqueda instantánea</strong> con debounce (sin esperar Enter)</li>
+        <li><strong>Filtros por campo, categoría y pricing</strong> con auto-submit</li>
+        <li><strong>Quick-filter tags</strong>: Open Source, Gratis, Freemium, Pago — con un clic</li>
+        <li><strong>Vista Grid / Lista</strong> con toggle y preferencia guardada en localStorage</li>
+        <li><strong>Logos de herramientas</strong> con iconos de respaldo inteligentes por categoría</li>
+        <li><strong>Filtros activos visibles</strong> con contador de resultados</li>
+    </ul>
+</div>
+
 <!-- SciBot -->
 <div class="about-section">
     <h2><i class="fas fa-comment-dots"></i> SciBot — Asistente Conversacional</h2>
@@ -553,6 +581,7 @@
             <div class="tech-item"><i class="fas fa-icons"></i> Font Awesome 6</div>
             <div class="tech-item"><i class="fas fa-exchange-alt"></i> Flask-Migrate</div>
             <div class="tech-item"><i class="fas fa-shield-alt"></i> Gunicorn</div>
+            <div class="tech-item"><i class="fas fa-image"></i> DALL-E 3</div>
         </div>
     </div>
 

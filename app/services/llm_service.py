@@ -154,7 +154,27 @@ class LLMService:
             model=self.models['fallback'],
             **kwargs
         )
-    
+
+    def generate_image(self, prompt: str, size: str = '1792x1024', model: str = 'dall-e-3') -> Optional[str]:
+        """
+        Genera una imagen via DALL-E 3 o Flux.
+        Returns: URL de la imagen generada, o None si falla.
+        """
+        try:
+            response = self.client.images.generate(
+                model=model,
+                prompt=prompt,
+                n=1,
+                size=size,
+                quality='standard'
+            )
+            url = response.data[0].url
+            logger.info(f"Image generated: model={model} size={size} url={url[:80]}...")
+            return url
+        except Exception as e:
+            logger.error(f"Image generation failed: {e}")
+            return None
+
     def get_available_models(self) -> Dict[str, str]:
         """Retorna los modelos configurados"""
         return self.models.copy()

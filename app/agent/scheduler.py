@@ -2,7 +2,9 @@
 Scheduler del Agente - Orquesta los 6 pasos diarios
 """
 import logging
+import re
 from datetime import datetime, date
+from urllib.parse import urlparse
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from flask import current_app
@@ -13,6 +15,7 @@ from app.agent.classifier import classify_findings
 from app.agent.updater import refresh_existing_tools, apply_tool_updates
 from app.agent.writer import write_daily_entry
 from app.agent.evaluator import evaluate_entry_quality
+from app.services.llm_service import get_llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -215,6 +218,14 @@ def run_daily_agent():
         db.session.commit()
         logger.info(f"Entry created: ID={entry.id}, date={entry.date}")
         
+        # PASO 4B: Generar imagen de portada
+        logger.info("[STEP 4B] Cover Image Generation")
+        generate_cover_image(entry)
+        
+        # PASO 4C: Obtener logos de herramientas
+        logger.info("[STEP 4C] Tool Logo Fetching")
+        fetch_tool_logos(entry)
+        
         # PASO 5: Evaluar calidad
         logger.info("[STEP 5] Quality Evaluator")
         scores = evaluate_entry_quality(entry)
@@ -251,6 +262,72 @@ def run_daily_agent():
         run.error = str(e)
         run.finished_at = datetime.utcnow()
         db.session.commit()
+
+
+def generate_cover_image(entry: Entry):
+    """
+    Genera imagen de portada para la entrada usando DALL-E 3.
+    Construye un prompt basado en el editorial.
+    """
+    if entry.cover_image_url:
+        logger.info(f"Entry {entry.id} already has a cover image — skipping")
+        return
+
+    try:
+        llm = get_llm_service()
+
+        # Extraer primer párrafo del editorial como contexto
+        editorial_preview = (entry.editorial or '')[:300]
+
+        # Generar un prompt de imagen a partir del contenido editorial
+        prompt = (
+            f"A clean, modern, professional editorial illustration for a science & technology blog post. "
+            f"Abstract composition with subtle gradients in deep navy blue (#003865) and gold (#C5922E). "
+            f"Theme: {editorial_preview}. "
+            f"Style: minimalist, geometric shapes, data visualization motifs, interconnected nodes, "
+            f"digital research tools. No text, no words, no letters. Widescreen 16:9 aspect ratio."
+        )
+
+        url = llm.generate_image(prompt, size='1792x1024', model='dall-e-3')
+
+        if url:
+            entry.cover_image_url = url
+            db.session.commit()
+            logger.info(f"Cover image generated for entry {entry.id}: {url[:80]}...")
+        else:
+            logger.warning(f"Failed to generate cover image for entry {entry.id}")
+
+    except Exception as e:
+        logger.error(f"Cover image generation error: {e}")
+
+
+def fetch_tool_logos(entry: Entry):
+    """
+    Intenta obtener logos/favicons para las herramientas de la entrada.
+    Usa Google Favicon API como fuente confiable.
+    """
+    for tool in entry.tools:
+        if tool.logo_url:
+            continue  # Ya tiene logo
+
+        if not tool.url:
+            continue
+
+        try:
+            parsed = urlparse(tool.url)
+            domain = parsed.netloc or parsed.path.split('/')[0]
+            if not domain:
+                continue
+
+            # Google Favicon API — 128px, muy confiable
+            logo_url = f"https://www.google.com/s2/favicons?domain={domain}&sz=128"
+            tool.logo_url = logo_url
+            logger.info(f"Assigned logo for {tool.slug}: {logo_url}")
+
+        except Exception as e:
+            logger.warning(f"Logo fetch failed for {tool.slug}: {e}")
+
+    db.session.commit()
 
 
 def create_entry_from_data(entry_data: dict) -> Entry:

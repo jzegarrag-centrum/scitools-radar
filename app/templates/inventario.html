@@ -25,6 +25,559 @@
         font-size: 0.88rem;
         color: var(--gris-medio);
     }
+
+    /* Search Bar */
+    .search-card {
+        background: var(--blanco);
+        border-radius: var(--radius-lg);
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+        box-shadow: var(--sombra-sm);
+        border: 1px solid var(--borde);
+    }
+    .search-form {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .search-input-wrap {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+    }
+    .search-input-wrap i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gris-medio);
+        font-size: 0.9rem;
+    }
+    .search-input-wrap input {
+        width: 100%;
+        padding: 0.7rem 1rem 0.7rem 2.5rem;
+        border: 2px solid var(--borde);
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 0.92rem;
+        outline: none;
+        transition: var(--transition);
+    }
+    .search-input-wrap input:focus {
+        border-color: var(--azul);
+        box-shadow: 0 0 0 3px rgba(0,56,101,0.08);
+    }
+    .filter-select {
+        padding: 0.7rem 1rem;
+        border: 2px solid var(--borde);
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 0.88rem;
+        outline: none;
+        background: var(--blanco);
+        min-width: 160px;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    .filter-select:focus {
+        border-color: var(--azul);
+    }
+
+    /* Quick Filter Tags */
+    .quick-filters {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+    .quick-filter {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+        cursor: pointer;
+        border: 1.5px solid var(--borde);
+        background: var(--blanco);
+        color: var(--gris-medio);
+    }
+    .quick-filter:hover, .quick-filter.active {
+        border-color: var(--azul);
+        background: var(--azul-pale);
+        color: var(--azul);
+    }
+    .quick-filter i { font-size: 0.7rem; }
+    .quick-filter .qf-count {
+        background: var(--borde);
+        color: var(--gris-medio);
+        padding: 0.1rem 0.4rem;
+        border-radius: 8px;
+        font-size: 0.68rem;
+        font-weight: 700;
+    }
+    .quick-filter.active .qf-count,
+    .quick-filter:hover .qf-count {
+        background: var(--azul);
+        color: white;
+    }
+
+    /* View Toggle */
+    .view-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        justify-content: flex-end;
+    }
+    .view-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1.5px solid var(--borde);
+        background: var(--blanco);
+        color: var(--gris-medio);
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.85rem;
+    }
+    .view-btn.active, .view-btn:hover {
+        border-color: var(--azul);
+        background: var(--azul-pale);
+        color: var(--azul);
+    }
+
+    /* Tools Grid */
+    .tools-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.25rem;
+    }
+    .tools-grid.list-view {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    .tool-card {
+        background: var(--blanco);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: var(--sombra-sm);
+        border: 1px solid var(--borde);
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+    .tool-card:hover {
+        box-shadow: var(--sombra-md);
+        transform: translateY(-3px);
+        border-color: var(--azul);
+    }
+    .tool-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--azul), var(--azul-light));
+        opacity: 0;
+        transition: var(--transition);
+    }
+    .tool-card:hover::before {
+        opacity: 1;
+    }
+    .list-view .tool-card {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+    }
+    .list-view .tool-card:hover {
+        transform: translateX(3px);
+        transform: translateY(0);
+    }
+    .tool-card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    .list-view .tool-card-header {
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+    .tool-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: var(--azul-pale);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.1rem;
+        color: var(--azul);
+        overflow: hidden;
+    }
+    .tool-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 10px;
+    }
+    .tool-card-header h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--gris-oscuro);
+        line-height: 1.3;
+    }
+    .tool-card-header h3 a {
+        color: inherit;
+        text-decoration: none;
+    }
+    .tool-card-header h3 a:hover {
+        color: var(--naranja);
+    }
+    .tool-badges {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.75rem;
+    }
+    .list-view .tool-badges {
+        margin-bottom: 0;
+    }
+    .tool-summary {
+        color: var(--gris-medio);
+        font-size: 0.88rem;
+        line-height: 1.6;
+        flex: 1;
+        margin-bottom: 1rem;
+    }
+    .list-view .tool-summary {
+        flex: 1;
+        margin-bottom: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .tool-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--borde);
+        margin-top: auto;
+    }
+    .list-view .tool-card-footer {
+        padding-top: 0;
+        border-top: none;
+        margin-top: 0;
+        flex-shrink: 0;
+    }
+    .tool-card-footer a {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        transition: var(--transition);
+    }
+    .tool-detail-link {
+        color: var(--naranja);
+    }
+    .tool-detail-link:hover {
+        color: var(--naranja-dark);
+    }
+    .tool-web-link {
+        color: var(--azul);
+    }
+    .tool-web-link:hover {
+        color: var(--azul-light);
+    }
+    .pagination-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    .page-info {
+        font-size: 0.88rem;
+        color: var(--gris-medio);
+        font-weight: 500;
+    }
+    /* Results Count & Active Filters */
+    .results-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .results-count {
+        font-size: 0.88rem;
+        color: var(--gris-medio);
+    }
+    .active-filters {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+    .active-filter-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.25rem 0.6rem;
+        background: var(--azul-pale);
+        border: 1px solid var(--azul);
+        color: var(--azul);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .active-filter-tag i { cursor: pointer; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .inv-header h1 { font-size: 1.25rem; }
+        .search-form { flex-direction: column; }
+        .search-input-wrap { min-width: 100%; }
+        .filter-select { min-width: 100%; }
+        .tools-grid { grid-template-columns: 1fr; gap: 1rem; }
+        .tool-card { padding: 1.25rem; }
+        .pagination-bar { flex-wrap: wrap; gap: 0.5rem; }
+        .quick-filters { gap: 0.3rem; }
+        .view-controls { display: none; }
+    }
+    @media (max-width: 480px) {
+        .search-card { padding: 1rem; }
+        .tool-icon { width: 36px; height: 36px; font-size: 0.95rem; border-radius: 8px; }
+        .tool-card-header h3 { font-size: 0.95rem; }
+        .tool-badges { gap: 0.3rem; }
+    }
+    @media (max-width: 360px) {
+        .inv-header h1 { font-size: 1.05rem; }
+        .search-card { padding: 0.75rem; }
+        .search-input-wrap input { font-size: 0.85rem; padding: 0.6rem 0.8rem 0.6rem 2.2rem; }
+        .filter-select { font-size: 0.82rem; padding: 0.6rem 0.75rem; }
+        .tool-card { padding: 1rem; }
+        .tool-summary { font-size: 0.82rem; }
+        .tool-card-footer a { font-size: 0.8rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inv-header">
+    <div>
+        <h1><i class="fas fa-th-large"></i> Inventario de Herramientas</h1>
+        <div class="inv-count">
+            {% if query or field or category or pricing %}
+                Resultados filtrados
+            {% else %}
+                {{ tools|length }}+ herramientas científicas catalogadas
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="search-card">
+    <form method="get" class="search-form" id="filterForm">
+        <div class="search-input-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" name="q" id="searchInput" value="{{ query }}" placeholder="Buscar herramientas por nombre o descripción..." autocomplete="off">
+        </div>
+        <select name="field" class="filter-select" onchange="this.form.submit()">
+            <option value="">Todos los campos</option>
+            {% for f in fields %}
+            <option value="{{ f }}" {% if f == field %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+        </select>
+        <select name="category" class="filter-select" onchange="this.form.submit()">
+            <option value="">Todas las categorías</option>
+            {% for c in categories %}
+            <option value="{{ c }}" {% if c == category %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+        <select name="pricing" class="filter-select" onchange="this.form.submit()">
+            <option value="">Todos los precios</option>
+            {% for p in pricings %}
+            <option value="{{ p }}" {% if p == pricing %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn"><i class="fas fa-search"></i> Buscar</button>
+        {% if query or field or category or pricing %}
+        <a href="{{ url_for('main.inventario') }}" class="btn btn-outline"><i class="fas fa-times"></i> Limpiar</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Quick pricing filters -->
+<div class="quick-filters">
+    <a href="{{ url_for('main.inventario', pricing='open-source', q=query, field=field, category=category) }}"
+       class="quick-filter {% if pricing == 'open-source' %}active{% endif %}">
+        <i class="fas fa-code-branch"></i> Open Source
+    </a>
+    <a href="{{ url_for('main.inventario', pricing='free', q=query, field=field, category=category) }}"
+       class="quick-filter {% if pricing == 'free' %}active{% endif %}">
+        <i class="fas fa-gift"></i> Gratis
+    </a>
+    <a href="{{ url_for('main.inventario', pricing='freemium', q=query, field=field, category=category) }}"
+       class="quick-filter {% if pricing == 'freemium' %}active{% endif %}">
+        <i class="fas fa-star-half-alt"></i> Freemium
+    </a>
+    <a href="{{ url_for('main.inventario', pricing='paid', q=query, field=field, category=category) }}"
+       class="quick-filter {% if pricing == 'paid' %}active{% endif %}">
+        <i class="fas fa-credit-card"></i> Pago
+    </a>
+</div>
+
+<!-- Results info + View toggle -->
+<div class="results-info">
+    <div class="results-count">
+        {% if query or field or category or pricing %}
+            <strong>{{ tools|length }}</strong> resultados
+            <div class="active-filters" style="display:inline-flex; margin-left: 0.5rem;">
+                {% if query %}<span class="active-filter-tag"><i class="fas fa-search"></i> {{ query }}</span>{% endif %}
+                {% if field %}<span class="active-filter-tag"><i class="fas fa-flask"></i> {{ field }}</span>{% endif %}
+                {% if category %}<span class="active-filter-tag"><i class="fas fa-folder"></i> {{ category }}</span>{% endif %}
+                {% if pricing %}<span class="active-filter-tag"><i class="fas fa-tag"></i> {{ pricing }}</span>{% endif %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="view-controls">
+        <button class="view-btn active" onclick="setView('grid')" id="gridBtn" title="Vista grilla">
+            <i class="fas fa-th-large"></i>
+        </button>
+        <button class="view-btn" onclick="setView('list')" id="listBtn" title="Vista lista">
+            <i class="fas fa-list"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Tools Grid -->
+{% if tools %}
+<div class="tools-grid" id="toolsGrid">
+    {% for tool in tools %}
+    <div class="tool-card">
+        <div class="tool-card-header">
+            <div class="tool-icon">
+                {% if tool.logo_url %}
+                <img src="{{ tool.logo_url }}" alt="{{ tool.name }}" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\'fas fa-cube\'></i>';">
+                {% else %}
+                <i class="fas fa-{% if 'AI' in (tool.category or '') or 'ai' in (tool.category or '').lower() %}brain{% elif 'reference' in (tool.category or '').lower() %}book{% elif 'data' in (tool.category or '').lower() or 'statist' in (tool.category or '').lower() %}chart-line{% elif 'visual' in (tool.category or '').lower() %}palette{% elif 'writing' in (tool.category or '').lower() or 'escrit' in (tool.category or '').lower() %}pen-fancy{% elif 'open' in (tool.category or '').lower() %}lock-open{% elif 'review' in (tool.category or '').lower() %}tasks{% elif 'notebook' in (tool.category or '').lower() %}laptop-code{% elif 'qualitative' in (tool.category or '').lower() %}comments{% elif 'survey' in (tool.category or '').lower() %}poll{% elif 'bibliometr' in (tool.category or '').lower() %}project-diagram{% else %}cube{% endif %}"></i>
+                {% endif %}
+            </div>
+            <div>
+                <h3>
+                    <a href="{{ url_for('main.herramienta_detalle', slug=tool.slug) }}">{{ tool.name }}</a>
+                </h3>
+            </div>
+        </div>
+        <div class="tool-badges">
+            {% if tool.category %}
+            <span class="badge badge-azul"><i class="fas fa-folder"></i> {{ tool.category|truncate(30) }}</span>
+            {% endif %}
+            {% if tool.field %}
+            <span class="badge badge-naranja"><i class="fas fa-flask"></i> {{ tool.field }}</span>
+            {% endif %}
+            {% if tool.pricing %}
+            <span class="badge badge-verde"><i class="fas fa-tag"></i> {{ tool.pricing }}</span>
+            {% endif %}
+        </div>
+        <div class="tool-summary">
+            {{ tool.summary|truncate(140) if tool.summary else 'Herramienta en proceso de catalogación.' }}
+        </div>
+        <div class="tool-card-footer">
+            <a href="{{ url_for('main.herramienta_detalle', slug=tool.slug) }}" class="tool-detail-link">
+                Ver detalles <i class="fas fa-arrow-right"></i>
+            </a>
+            {% if tool.url %}
+            <a href="{{ tool.url }}" target="_blank" rel="noopener" class="tool-web-link">
+                <i class="fas fa-external-link-alt"></i> Web
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+<div class="pagination-bar">
+    {% if has_prev %}
+    <a href="{{ url_for('main.inventario', page=page-1, q=query, field=field, category=category, pricing=pricing) }}" class="btn btn-outline btn-sm">
+        <i class="fas fa-chevron-left"></i> Anterior
+    </a>
+    {% endif %}
+    <span class="page-info">Página {{ page }}</span>
+    {% if has_next %}
+    <a href="{{ url_for('main.inventario', page=page+1, q=query, field=field, category=category, pricing=pricing) }}" class="btn btn-outline btn-sm">
+        Siguiente <i class="fas fa-chevron-right"></i>
+    </a>
+    {% endif %}
+</div>
+{% else %}
+<div class="card card-lg" style="text-align: center; padding: 4rem;">
+    <i class="fas fa-search" style="font-size: 2.5rem; color: var(--borde); margin-bottom: 1rem;"></i>
+    <h2 style="color: var(--gris-medio); font-size: 1.1rem; margin-bottom: 0.5rem;">No se encontraron herramientas</h2>
+    <p style="color: var(--gris-medio); font-size: 0.92rem;">Intenta con otros filtros o términos de búsqueda.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setView(mode) {
+    const grid = document.getElementById('toolsGrid');
+    const gridBtn = document.getElementById('gridBtn');
+    const listBtn = document.getElementById('listBtn');
+    if (!grid) return;
+    if (mode === 'list') {
+        grid.classList.add('list-view');
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+    } else {
+        grid.classList.remove('list-view');
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+    }
+    localStorage.setItem('inventario_view', mode);
+}
+// Restore view preference
+(function(){
+    var v = localStorage.getItem('inventario_view');
+    if (v === 'list') setView('list');
+})();
+
+// Instant search debounce
+(function(){
+    var input = document.getElementById('searchInput');
+    var timer;
+    if (input) {
+        input.addEventListener('input', function(){
+            clearTimeout(timer);
+            timer = setTimeout(function(){
+                document.getElementById('filterForm').submit();
+            }, 600);
+        });
+    }
+})();
+</script>
+{% endblock %}
     /* Search Bar */
     .search-card {
         background: var(--blanco);

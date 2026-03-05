@@ -42,15 +42,17 @@ def inventario():
     query = request.args.get('q', '')
     field = request.args.get('field', '')
     category = request.args.get('category', '')
+    pricing = request.args.get('pricing', '')
     page = request.args.get('page', 1, type=int)
     per_page = 20
     
     # Búsqueda
-    if query or field or category:
+    if query or field or category or pricing:
         tools = SearchService.search_tools(
             query=query,
             field=field if field else None,
             category=category if category else None,
+            pricing=pricing if pricing else None,
             limit=per_page * 10  # Pre-filter para paginación manual
         )
         # Paginación manual simple para resultados filtrados
@@ -70,6 +72,7 @@ def inventario():
     # Opciones para filtros
     fields = SearchService.get_all_fields()
     categories = SearchService.get_all_categories()
+    pricings = SearchService.get_all_pricings()
     
     return render_template(
         'inventario.html',
@@ -77,8 +80,10 @@ def inventario():
         query=query,
         field=field,
         category=category,
+        pricing=pricing,
         fields=fields,
         categories=categories,
+        pricings=pricings,
         page=page,
         has_next=has_next,
         has_prev=has_prev

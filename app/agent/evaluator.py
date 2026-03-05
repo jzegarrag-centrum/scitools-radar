@@ -24,7 +24,8 @@ def evaluate_entry_quality(entry: Entry) -> Dict[str, float]:
             'completeness': 0.0-1.0,
             'field_diversity': 0.0-1.0,
             'social_coverage': 0.0-1.0,
-            'hallucination_risk': 0.0-1.0
+            'hallucination_risk': 0.0-1.0,
+            'image_coverage': 0.0-1.0
         }
     """
     logger.info(f"Evaluating entry quality: Entry {entry.id}")
@@ -41,20 +42,34 @@ def evaluate_entry_quality(entry: Entry) -> Dict[str, float]:
     # Métrica 4: Hallucination check (LLM-as-judge)
     hallucination_risk = check_hallucination_risk(entry)
     
+    # Métrica 5: Cobertura de imágenes
+    image_coverage = check_image_coverage(entry)
+    
     scores = {
         'completeness': completeness,
         'field_diversity': diversity,
         'social_coverage': social_coverage,
-        'hallucination_risk': hallucination_risk
+        'hallucination_risk': hallucination_risk,
+        'image_coverage': image_coverage,
     }
     
     logger.info(f"Quality scores: {scores}")
+    
+    # Auto-repair: si faltan imágenes y la cobertura es baja,
+    # intentar generar las faltantes
+    if image_coverage < 0.5:
+        logger.info("Image coverage low — triggering auto-repair")
+        repair_missing_images(entry)
+        # Recalcular
+        scores['image_coverage'] = check_image_coverage(entry)
+        scores['completeness'] = calculate_completeness(entry)
+        logger.info(f"Post-repair scores: image_coverage={scores['image_coverage']:.2f}")
     
     return scores
 
 
 def calculate_completeness(entry: Entry) -> float:
-    """Calcula completitud: todos los campos llenos"""
+    """Calcula completitud: todos los campos llenos, incluye imágenes"""
     total_fields = 0
     filled_fields = 0
     
@@ -63,9 +78,14 @@ def calculate_completeness(entry: Entry) -> float:
     if entry.editorial and len(entry.editorial) > 50:
         filled_fields += 1
     
+    # Cover image
+    total_fields += 1
+    if entry.cover_image_url:
+        filled_fields += 1
+    
     # Tools
     for tool in entry.tools:
-        total_fields += 4  # name, summary, url, category
+        total_fields += 5  # name, summary, url, category, logo
         if tool.name:
             filled_fields += 1
         if tool.summary and len(tool.summary) > 20:
@@ -73,6 +93,8 @@ def calculate_completeness(entry: Entry) -> float:
         if tool.url:
             filled_fields += 1
         if tool.category:
+            filled_fields += 1
+        if tool.logo_url:
             filled_fields += 1
     
     return filled_fields / total_fields if total_fields > 0 else 0.0
@@ -186,3 +208,74 @@ Donde:
     except Exception as e:
         logger.error(f"Hallucination check failed: {e}")
         return 0.5  # Default: medium risk if eval fails
+
+
+def check_image_coverage(entry: Entry) -> float:
+    """
+    Evalúa cobertura de imágenes: portada + logos de herramientas.
+    Score 0.0-1.0
+    """
+    total = 0
+    filled = 0
+
+    # Cover image de la entrada
+    total += 1
+    if entry.cover_image_url:
+        filled += 1
+
+    # Logos de herramientas
+    for tool in entry.tools:
+        total += 1
+        if tool.logo_url:
+            filled += 1
+
+    return filled / total if total > 0 else 0.0
+
+
+def repair_missing_images(entry: Entry):
+    """
+    Auto-repair: genera imágenes faltantes.
+    - Si falta cover_image_url, genera con DALL-E 3
+    - Si faltan logos de tools, usa Google Favicon API
+    """
+    from urllib.parse import urlparse
+    from app import db
+
+    repaired = 0
+
+    # Reparar cover image
+    if not entry.cover_image_url:
+        try:
+            llm = get_llm_service()
+            editorial_preview = (entry.editorial or '')[:300]
+            prompt = (
+                f"A clean, modern, professional editorial illustration for a science & technology blog. "
+                f"Abstract composition with deep navy blue (#003865) and gold (#C5922E) gradients. "
+                f"Theme: {editorial_preview}. "
+                f"Minimalist style, geometric shapes, data visualization motifs. "
+                f"No text, no words. Widescreen 16:9."
+            )
+            url = llm.generate_image(prompt, size='1792x1024', model='dall-e-3')
+            if url:
+                entry.cover_image_url = url
+                repaired += 1
+                logger.info(f"Repaired cover image for entry {entry.id}")
+        except Exception as e:
+            logger.error(f"Cover image repair failed: {e}")
+
+    # Reparar logos de herramientas
+    for tool in entry.tools:
+        if tool.logo_url or not tool.url:
+            continue
+        try:
+            parsed = urlparse(tool.url)
+            domain = parsed.netloc or parsed.path.split('/')[0]
+            if domain:
+                tool.logo_url = f"https://www.google.com/s2/favicons?domain={domain}&sz=128"
+                repaired += 1
+        except Exception as e:
+            logger.warning(f"Logo repair failed for {tool.slug}: {e}")
+
+    if repaired > 0:
+        db.session.commit()
+        logger.info(f"Image auto-repair: {repaired} images fixed")

@@ -69,6 +69,24 @@
         box-shadow: var(--sombra-md);
         transform: translateY(-3px);
     }
+    .entry-cover {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+    }
+    .entry-cover-placeholder {
+        width: 100%;
+        height: 120px;
+        background: linear-gradient(135deg, var(--azul) 0%, #00527a 50%, var(--azul-light) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .entry-cover-placeholder i {
+        font-size: 2rem;
+        color: rgba(255,255,255,0.15);
+    }
     .entry-card-header {
         padding: 1.5rem 1.5rem 0;
         display: flex;
@@ -246,6 +264,16 @@
 {% if entries.items %}
     {% for entry in entries.items %}
     <article class="entry-card">
+        {% if entry.cover_image_url %}
+        <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}">
+            <img class="entry-cover" src="{{ entry.cover_image_url }}" alt="Portada"
+                 onerror="this.parentElement.outerHTML='<div class=entry-cover-placeholder><i class=fas\ fa-satellite-dish></i></div>'">
+        </a>
+        {% else %}
+        <div class="entry-cover-placeholder">
+            <i class="fas fa-satellite-dish"></i>
+        </div>
+        {% endif %}
         <div class="entry-card-header">
             <div class="entry-date-badge">
                 <div class="day">{{ entry.date.strftime('%d') }}</div>
@@ -273,7 +301,12 @@
             <div class="entry-tools-strip">
                 {% for tool in entry.tools[:6] %}
                 <a href="{{ url_for('main.herramienta_detalle', slug=tool.slug) }}" class="tool-chip">
-                    <i class="fas fa-cube"></i> {{ tool.name }}
+                    {% if tool.logo_url %}
+                    <img src="{{ tool.logo_url }}" alt="" style="width:14px;height:14px;border-radius:2px;vertical-align:middle;">
+                    {% else %}
+                    <i class="fas fa-cube"></i>
+                    {% endif %}
+                    {{ tool.name }}
                 </a>
                 {% endfor %}
                 {% if entry.tools|length > 6 %}

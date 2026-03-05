@@ -15,6 +15,7 @@ class SearchService:
         query: str,
         field: Optional[str] = None,
         category: Optional[str] = None,
+        pricing: Optional[str] = None,
         limit: int = 20
     ) -> List[Tool]:
         """
@@ -23,7 +24,8 @@ class SearchService:
         Args:
             query: Término de búsqueda
             field: Filtrar por campo disciplinar
-            category: Filtrar por categoría A-P
+            category: Filtrar por categoría
+            pricing: Filtrar por modelo de pricing (free, open-source, freemium, paid)
             limit: Máximo resultados
             
         Returns:
@@ -46,6 +48,9 @@ class SearchService:
         
         if category:
             q = q.filter(Tool.category == category)
+
+        if pricing:
+            q = q.filter(Tool.pricing == pricing)
         
         # Orden por relevancia (nombre primero, luego summary)
         if query:
@@ -71,4 +76,10 @@ class SearchService:
     def get_all_categories() -> List[str]:
         """Retorna todas las categorías únicas"""
         result = db.session.query(Tool.category).distinct().filter(Tool.category.isnot(None)).all()
+        return sorted([r[0] for r in result])
+
+    @staticmethod
+    def get_all_pricings() -> List[str]:
+        """Retorna todos los modelos de pricing únicos"""
+        result = db.session.query(Tool.pricing).distinct().filter(Tool.pricing.isnot(None)).all()
         return sorted([r[0] for r in result])
