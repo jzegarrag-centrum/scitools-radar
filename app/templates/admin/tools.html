@@ -44,9 +44,15 @@
 {% block content %}
 <div class="tools-header">
     <h1><i class="fas fa-wrench" style="color:var(--naranja);"></i> Gestion de Herramientas</h1>
-    <a href="{{ url_for('admin.dashboard') }}" style="color:var(--azul);text-decoration:none;font-size:0.9rem;">
-        <i class="fas fa-arrow-left"></i> Volver al panel
-    </a>
+    <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+        <a href="{{ url_for('admin.refresh_all_view') }}"
+           style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.55rem 1rem; background:var(--naranja); color:white; border-radius:8px; font-size:0.85rem; font-weight:700; text-decoration:none;">
+            <i class="fas fa-sync-alt"></i> Actualizar contenido IA
+        </a>
+        <a href="{{ url_for('admin.dashboard') }}" style="color:var(--azul);text-decoration:none;font-size:0.9rem;">
+            <i class="fas fa-arrow-left"></i> Volver al panel
+        </a>
+    </div>
 </div>
 
 <!-- Search -->
@@ -73,7 +79,7 @@
             <thead>
                 <tr>
                     <th>Nombre</th><th>Cat.</th><th>Campo</th>
-                    <th>Estado</th><th>Detectada</th><th>Upd.</th><th></th>
+                    <th>Estado</th><th>Score</th><th>Detectada</th><th>Upd.</th><th></th>
                 </tr>
             </thead>
             <tbody>
@@ -84,6 +90,9 @@
                            style="color:var(--azul);text-decoration:none;font-weight:700;">
                             {{ tool.name }}
                         </a>
+                        {% if tool.auto_updated %}
+                        <span style="font-size:0.7rem;background:var(--azul-pale);color:var(--azul);padding:0.1rem 0.35rem;border-radius:3px;margin-left:0.3rem;vertical-align:middle;" title="Actualizada por IA">IA</span>
+                        {% endif %}
                     </td>
                     <td>
                         {% if tool.category %}
@@ -93,6 +102,16 @@
                     <td style="font-size:0.85rem;">{{ tool.field or '-' }}</td>
                     <td>
                         <span class="status-dot {{ tool.status }}"></span>{{ tool.status }}
+                    </td>
+                    <td style="text-align:center;">
+                        {% if tool.quality_score is not none %}
+                        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;font-weight:700;font-size:0.75rem;
+                            {% if tool.quality_score < 40 %}background:#FEE2E2;color:#DC2626;
+                            {% elif tool.quality_score < 70 %}background:#FEF3C7;color:#D97706;
+                            {% else %}background:#D1FAE5;color:#059669;{% endif %}">
+                            {{ tool.quality_score }}
+                        </span>
+                        {% else %}<span style="color:var(--gris-medio);font-size:0.8rem;">—</span>{% endif %}
                     </td>
                     <td style="font-size:0.85rem;">
                         {{ tool.first_seen.strftime('%d %b %Y') if tool.first_seen else '-' }}

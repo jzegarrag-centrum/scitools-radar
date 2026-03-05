@@ -129,6 +129,10 @@
             <i class="fas fa-newspaper"></i>
             <div>Gestionar Entradas<br><small style="font-weight:400;opacity:0.8;">Aprobar, rechazar, generar</small></div>
         </a>
+        <a href="{{ url_for('admin.refresh_all_view') }}" class="action-btn orange">
+            <i class="fas fa-sync-alt"></i>
+            <div>Actualizar Contenido<br><small style="font-weight:400;opacity:0.8;">Pipeline de calidad IA</small></div>
+        </a>
         <a href="{{ url_for('admin.tools') }}" class="action-btn outline">
             <i class="fas fa-wrench"></i>
             <div>Herramientas<br><small style="font-weight:400;opacity:0.8;">{{ stats.total_tools }} activas</small></div>

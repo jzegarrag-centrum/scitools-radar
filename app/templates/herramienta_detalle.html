@@ -309,6 +309,24 @@
     </div>
     {% endif %}
 
+    <!-- Features list -->
+    {% set features_list = tool.features_as_list() %}
+    {% if features_list %}
+    <div style="margin-bottom: 1.25rem;">
+        <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris-medio); font-weight: 600; margin-bottom: 0.5rem;">
+            <i class="fas fa-check-double" style="color: var(--naranja);"></i> Funcionalidades principales
+        </div>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem;">
+            {% for feature in features_list %}
+            <li style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem;">
+                <i class="fas fa-check-circle" style="color: var(--exito); margin-top: 0.2rem; flex-shrink: 0;"></i>
+                <span>{{ feature }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
     <!-- Tags -->
     {% if tool.tags %}
     <div class="tag-list">
@@ -344,9 +362,17 @@
 </div>
 
 <div class="two-col">
-    <!-- Updates Timeline -->
+    <!-- Novedades (editorial) + Updates Timeline -->
     <div class="detail-section">
-        <h2><i class="fas fa-history"></i> Historial de Cambios ({{ updates|length }})</h2>
+        <h2><i class="fas fa-star"></i> Novedades ({{ updates|length }} actualizaciones)</h2>
+
+        {# Editorial: sección narrativa de novedades generada por IA o editorial #}
+        {% if tool.editorial %}
+        <div style="background: var(--naranja-light); border-left: 3px solid var(--naranja); padding: 0.9rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.93rem; line-height: 1.7; color: var(--gris-oscuro);">
+            {{ tool.editorial }}
+        </div>
+        {% endif %}
+
         {% if updates %}
         <div class="timeline">
             {% for update in updates %}
@@ -368,9 +394,9 @@
             </div>
             {% endfor %}
         </div>
-        {% else %}
+        {% elif not tool.editorial %}
         <p style="color: var(--gris-medio); font-size: 0.92rem; text-align: center; padding: 2rem;">
-            <i class="fas fa-check-circle" style="color: var(--exito);"></i> Sin cambios registrados aún.
+            <i class="fas fa-check-circle" style="color: var(--exito);"></i> Sin novedades registradas aún.
         </p>
         {% endif %}
     </div>

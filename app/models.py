@@ -62,6 +62,12 @@ class Tool(db.Model):
     platform = db.Column(db.String(100))  # web, desktop, mobile, API
     developer = db.Column(db.String(200))  # Organización/desarrollador
     
+    # Contenido enriquecido
+    features = db.Column(db.Text)  # Lista JSON de funcionalidades clave
+    editorial = db.Column(db.Text)  # Contenido narrativo de "Novedades"
+    auto_updated = db.Column(db.Boolean, default=False)  # Actualizado por IA
+    quality_score = db.Column(db.Integer)  # Score del Quality Reviewer (0-100)
+
     # Metadata
     first_seen = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -76,7 +82,22 @@ class Tool(db.Model):
         db.Index('idx_tool_search', 'name', 'summary', postgresql_using='gin',
                  postgresql_ops={'name': 'gin_trgm_ops', 'summary': 'gin_trgm_ops'}),
     )
-    
+
+    def features_as_list(self):
+        """Retorna la lista de features parseada desde JSON o texto."""
+        import json as _json
+        if not self.features:
+            return []
+        try:
+            result = _json.loads(self.features)
+            if isinstance(result, list):
+                return [str(f).strip() for f in result if str(f).strip()]
+        except (ValueError, TypeError):
+            pass
+        # Fallback: split por líneas
+        items = [f.strip().lstrip('-').strip() for f in self.features.split('\n')]
+        return [f for f in items if f]
+
     def __repr__(self):
         return f'<Tool {self.slug}>'
 

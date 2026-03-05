@@ -580,6 +580,178 @@ def agent_status_api():
     return jsonify(_agent_status)
 
 
+# ==================== REFRESH PIPELINE ====================
+
+# Estado global del pipeline de actualización (in-memory)
+_refresh_status = {
+    'running': False,
+    'step': '',
+    'progress': 0,
+    'total': 0,
+    'current': 0,
+    'log': [],
+    'started_at': None,
+    'last_result': None,
+}
+
+
+def _reset_refresh_status():
+    _refresh_status.update({
+        'running': False,
+        'step': '',
+        'progress': 0,
+        'total': 0,
+        'current': 0,
+        'log': [],
+        'started_at': None,
+    })
+
+
+@admin_bp.route('/tools/refresh-all', methods=['GET'])
+@login_required
+def refresh_all_view():
+    """Vista del pipeline de actualización masiva de herramientas"""
+    from app.agent.refresh_pipeline import scan_all_tools, review_tool_quality
+    from app.models import Tool
+
+    # Estadísticas de calidad
+    all_tools = Tool.query.filter_by(status='active').all()
+    total_tools = len(all_tools)
+
+    tools_with_features = sum(1 for t in all_tools if t.features)
+    tools_with_editorial = sum(1 for t in all_tools if t.editorial)
+    tools_auto_updated = sum(1 for t in all_tools if t.auto_updated)
+    tools_complete = sum(
+        1 for t in all_tools
+        if t.summary and len(t.summary) >= 100 and t.features and t.editorial
+    )
+
+    # Herramientas que necesitan actualización (sin llamar al LLM)
+    pending = []
+    for t in all_tools:
+        review = review_tool_quality(t)
+        if review['needs_update']:
+            pending.append({'tool': t, 'review': review})
+    pending.sort(key=lambda x: x['review']['score'])
+
+    dashboard_stats = {
+        'total_tools': total_tools,
+        'tools_complete': tools_complete,
+        'pct_complete': round(tools_complete / total_tools * 100) if total_tools else 0,
+        'tools_with_features': tools_with_features,
+        'tools_with_editorial': tools_with_editorial,
+        'tools_auto_updated': tools_auto_updated,
+        'pending_count': len(pending),
+    }
+
+    categories = sorted({t.category for t in all_tools if t.category})
+
+    return render_template(
+        'admin/refresh_all.html',
+        dashboard_stats=dashboard_stats,
+        pending_tools=pending[:20],  # Mostrar máx 20 en la vista
+        categories=categories,
+        refresh_status=_refresh_status,
+        last_result=_refresh_status.get('last_result'),
+    )
+
+
+@admin_bp.route('/tools/refresh-all', methods=['POST'])
+@login_required
+def refresh_all_run():
+    """Ejecuta el pipeline de actualización masiva en background"""
+    if _refresh_status['running']:
+        flash('El pipeline ya está en ejecución. Espera a que termine.', 'warning')
+        return redirect(url_for('admin.refresh_all_view'))
+
+    # Parámetros opcionales
+    category_filter = request.form.get('category_filter', '').strip() or None
+    min_days_old = request.form.get('min_days_old', type=int)
+    only_empty = request.form.get('only_empty_fields') == 'on'
+    limit_str = request.form.get('limit', '').strip()
+    limit = int(limit_str) if limit_str and limit_str.isdigit() else current_app.config.get('AGENT_MAX_REFRESH', 10)
+
+    def _run_pipeline(app, params):
+        with app.app_context():
+            _refresh_status.update({
+                'running': True,
+                'step': 'Iniciando pipeline...',
+                'progress': 0,
+                'total': 0,
+                'current': 0,
+                'log': ['Pipeline de actualización iniciado'],
+                'started_at': datetime.utcnow().isoformat(),
+                'last_result': None,
+            })
+
+            def progress_cb(step, total, current, message):
+                pct = int(current / total * 100) if total else 0
+                _refresh_status.update({
+                    'step': message,
+                    'progress': pct,
+                    'total': total,
+                    'current': current,
+                })
+                _refresh_status['log'].append(message)
+                logger.info(f'[RefreshPipeline] {message}')
+
+            try:
+                from app.agent.refresh_pipeline import run_refresh_pipeline
+                result = run_refresh_pipeline(
+                    category_filter=params['category_filter'],
+                    min_days_old=params['min_days_old'],
+                    only_empty_fields=params['only_empty_fields'],
+                    limit=params['limit'],
+                    rate_limit_seconds=params.get('rate_limit_seconds', 2.0),
+                    progress_callback=progress_cb,
+                )
+
+                _refresh_status['last_result'] = result
+                _refresh_status['log'].append(
+                    f"Completado: {result['total_updated']} actualizadas, "
+                    f"{result['total_errors']} errores en {result['duration_seconds']:.1f}s"
+                )
+                for detail in result.get('details', []):
+                    status_icon = '✓' if detail['status'] == 'updated' else '✗'
+                    msg = (
+                        f"  {status_icon} {detail['tool_name']}: "
+                        f"score {detail['score_before']} → {detail['score_after']}"
+                    )
+                    if detail.get('error'):
+                        msg += f" [Error: {detail['error'][:60]}]"
+                    _refresh_status['log'].append(msg)
+
+            except Exception as e:
+                logger.error(f'Refresh pipeline failed: {e}', exc_info=True)
+                _refresh_status['log'].append(f'ERROR: {str(e)}')
+            finally:
+                _refresh_status['running'] = False
+                _refresh_status['step'] = 'Completado'
+                _refresh_status['progress'] = 100
+
+    params = {
+        'category_filter': category_filter,
+        'min_days_old': min_days_old,
+        'only_empty_fields': only_empty,
+        'limit': limit,
+        'rate_limit_seconds': 2.0,
+    }
+
+    app = current_app._get_current_object()
+    t = threading.Thread(target=_run_pipeline, args=(app, params), daemon=True)
+    t.start()
+
+    flash('Pipeline de actualización iniciado en background. Revisa el progreso abajo.', 'info')
+    return redirect(url_for('admin.refresh_all_view'))
+
+
+@admin_bp.route('/tools/refresh-status')
+@login_required
+def refresh_status_api():
+    """Endpoint JSON para polling del estado del pipeline de actualización"""
+    return jsonify(_refresh_status)
+
+
 # ==================== CALIDAD ====================
 
 @admin_bp.route('/quality')
