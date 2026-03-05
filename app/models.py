@@ -58,9 +58,9 @@ class Tool(db.Model):
     tags = db.Column(db.String(500))  # Tags CSV: "AI,NLP,open-source"
     
     # Detalles adicionales
-    pricing = db.Column(db.String(100))  # free, freemium, paid, open-source
-    platform = db.Column(db.String(100))  # web, desktop, mobile, API
-    developer = db.Column(db.String(200))  # Organización/desarrollador
+    pricing = db.Column(db.Text)  # Modelo de precios (texto descriptivo)
+    platform = db.Column(db.String(500))  # web, desktop, mobile, API
+    developer = db.Column(db.String(500))  # Organización/desarrollador
     
     # Contenido enriquecido
     features = db.Column(db.Text)  # Lista JSON de funcionalidades clave
