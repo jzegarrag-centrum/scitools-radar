@@ -120,6 +120,19 @@ def run_daily_agent():
     db.session.commit()
     
     try:
+        # Verificar si ya existe entrada para hoy
+        from datetime import date as date_cls
+        today = date_cls.today()
+        existing_entry = Entry.query.filter_by(date=today).first()
+        if existing_entry:
+            logger.warning(f"Entry for {today} already exists (id={existing_entry.id}) — skipping run")
+            run.status = 'success'
+            run.finished_at = datetime.utcnow()
+            run.entry_id = existing_entry.id
+            run.error = f'Entry for {today} already exists'
+            db.session.commit()
+            return
+
         # PASO 0: Obtener inventario actual
         logger.info("[STEP 0] Inventory Check")
         existing_tools = Tool.query.filter_by(status='active').all()
@@ -253,6 +266,12 @@ def create_entry_from_data(entry_data: dict) -> Entry:
     from datetime import datetime
     
     entry_date = datetime.strptime(entry_data['date'], '%Y-%m-%d').date()
+    
+    # Verificar si ya existe una entrada para esta fecha
+    existing = Entry.query.filter_by(date=entry_date).first()
+    if existing:
+        logger.warning(f"Entry for {entry_date} already exists (id={existing.id}) — returning existing")
+        return existing
     
     # Crear Entry
     entry = Entry(
