@@ -90,7 +90,7 @@ def create_app(config_name=None):
 
 
 def _ensure_schema(app):
-    """Ensure all required columns exist (safe for cold starts)."""
+    """Ensure all required columns exist and have correct sizes."""
     try:
         with app.app_context():
             from sqlalchemy import text, inspect as sa_inspect
@@ -111,6 +111,28 @@ def _ensure_schema(app):
                     ))
                     conn.commit()
                 app.logger.info('Added cover_image_url column to entry table')
+
+            # Ensure tool column widths are sufficient (PostgreSQL only)
+            dialect = db.engine.dialect.name
+            if dialect == 'postgresql':
+                tool_cols = {c['name']: c for c in inspector.get_columns('tool')}
+                with db.engine.connect() as conn:
+                    fixed = []
+                    p = tool_cols.get('pricing', {})
+                    if p and str(p.get('type', '')).startswith('VARCHAR'):
+                        conn.execute(text("ALTER TABLE tool ALTER COLUMN pricing TYPE TEXT"))
+                        fixed.append('pricing→TEXT')
+                    pl = tool_cols.get('platform', {})
+                    if pl and hasattr(pl.get('type'), 'length') and (pl['type'].length or 0) < 500:
+                        conn.execute(text("ALTER TABLE tool ALTER COLUMN platform TYPE VARCHAR(500)"))
+                        fixed.append('platform→500')
+                    dv = tool_cols.get('developer', {})
+                    if dv and hasattr(dv.get('type'), 'length') and (dv['type'].length or 0) < 500:
+                        conn.execute(text("ALTER TABLE tool ALTER COLUMN developer TYPE VARCHAR(500)"))
+                        fixed.append('developer→500')
+                    if fixed:
+                        conn.commit()
+                        app.logger.info('Widened tool columns: %s', ', '.join(fixed))
     except Exception as exc:
         app.logger.warning('Schema ensure skipped: %s', exc)
 
