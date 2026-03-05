@@ -77,6 +77,9 @@ def create_app(config_name=None):
     # ── Garantizar esquema de BD ────────────────────────────
     _ensure_schema(app)
 
+    # ── Limpiar AgentRuns atascados ──────────────────────────
+    _cleanup_stuck_runs(app)
+
     # ── Garantizar usuario admin ──────────────────────────────
     _ensure_admin(app)
     
@@ -107,6 +110,24 @@ def _ensure_schema(app):
                 app.logger.info('Added cover_image_url column to entry table')
     except Exception as exc:
         app.logger.warning('Schema ensure skipped: %s', exc)
+
+
+def _cleanup_stuck_runs(app):
+    """Marca AgentRuns atascados en 'running' como 'failed' al iniciar."""
+    try:
+        with app.app_context():
+            from app.models import AgentRun
+            from datetime import datetime
+            stuck = AgentRun.query.filter_by(status='running').all()
+            for run in stuck:
+                run.status = 'failed'
+                run.error = 'Stuck run cleaned up on startup'
+                run.finished_at = run.finished_at or datetime.utcnow()
+            if stuck:
+                db.session.commit()
+                app.logger.info('Cleaned up %d stuck AgentRun records', len(stuck))
+    except Exception:
+        pass
 
 
 def _ensure_admin(app):

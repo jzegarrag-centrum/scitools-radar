@@ -214,8 +214,8 @@ def generate_entry():
 
             try:
                 # Step 1: Research
-                _agent_status['step'] = 'Paso 1/6: Investigando nuevas herramientas...'
-                _agent_status['progress'] = 15
+                _agent_status['step'] = 'Paso 1/8: Investigando nuevas herramientas...'
+                _agent_status['progress'] = 10
                 _agent_status['log'].append('[STEP 1] Research Agent (LLM + Tavily)')
 
                 existing_tools = Tool.query.filter_by(status='active').all()
@@ -229,8 +229,8 @@ def generate_entry():
                 _agent_status['log'].append(f'  Encontradas {len(findings)} herramientas potenciales')
 
                 # Step 2: Classify
-                _agent_status['step'] = 'Paso 2/6: Clasificando hallazgos...'
-                _agent_status['progress'] = 30
+                _agent_status['step'] = 'Paso 2/8: Clasificando hallazgos...'
+                _agent_status['progress'] = 25
                 _agent_status['log'].append('[STEP 2] Classifier Agent')
 
                 if findings:
@@ -248,8 +248,8 @@ def generate_entry():
                 _agent_status['log'].append(f'  {len(new_tools_data)} nuevas, {len(updates_from_classifier)} updates del clasificador')
 
                 # Step 2B: Tool Updater — refrescar herramientas existentes
-                _agent_status['step'] = 'Paso 3/6: Actualizando herramientas existentes...'
-                _agent_status['progress'] = 45
+                _agent_status['step'] = 'Paso 3/8: Actualizando herramientas existentes...'
+                _agent_status['progress'] = 40
                 _agent_status['log'].append('[STEP 2B] Tool Updater')
 
                 from app.agent.updater import refresh_existing_tools, apply_tool_updates
@@ -289,31 +289,54 @@ def generate_entry():
                     return
 
                 # Step 3: Write
-                _agent_status['step'] = 'Paso 4/6: Redactando entrada...'
-                _agent_status['progress'] = 60
+                _agent_status['step'] = 'Paso 4/8: Redactando entrada...'
+                _agent_status['progress'] = 55
                 _agent_status['log'].append('[STEP 3] Writer Agent')
 
                 from app.agent.writer import write_daily_entry
+                from datetime import timedelta
+                target_date = date.today()
+                if Entry.query.filter_by(date=target_date).first():
+                    for offset in range(1, 30):
+                        candidate = target_date + timedelta(days=offset)
+                        if not Entry.query.filter_by(date=candidate).first():
+                            target_date = candidate
+                            _agent_status['log'].append(f'  Usando fecha: {target_date}')
+                            break
                 entry_data = write_daily_entry(
                     {'new_tools': new_tools_data, 'updates': all_updates},
-                    date.today()
+                    target_date
                 )
 
                 # Step 4: Create in DB (as draft)
-                _agent_status['step'] = 'Paso 5/6: Creando entrada en BD...'
-                _agent_status['progress'] = 80
+                _agent_status['step'] = 'Paso 5/8: Creando entrada en BD...'
+                _agent_status['progress'] = 70
                 _agent_status['log'].append('[STEP 4] Entry Creator')
 
                 from app.agent.scheduler import create_entry_from_data
-                entry = create_entry_from_data(entry_data)
+                entry = create_entry_from_data(entry_data, force=True)
                 entry.status = 'draft'  # Como borrador para aprobacion
                 run.entry_id = entry.id
                 db.session.commit()
 
                 _agent_status['log'].append(f'  Entrada creada: ID={entry.id}, date={entry.date}')
 
+                # Step 4B: Cover Image
+                _agent_status['step'] = 'Paso 6/8: Generando imagen de portada...'
+                _agent_status['progress'] = 82
+                _agent_status['log'].append('[STEP 4B] Cover Image Generation')
+
+                from app.agent.scheduler import generate_cover_image, fetch_tool_logos
+                generate_cover_image(entry)
+
+                # Step 4C: Tool Logos
+                _agent_status['step'] = 'Paso 7/8: Obteniendo logos de herramientas...'
+                _agent_status['progress'] = 86
+                _agent_status['log'].append('[STEP 4C] Tool Logo Fetching')
+                fetch_tool_logos(entry)
+
                 # Step 5: Evaluate quality
-                _agent_status['step'] = 'Paso 6/6: Evaluando calidad...'
+                _agent_status['step'] = 'Paso 8/8: Evaluando calidad...'
                 _agent_status['progress'] = 90
                 _agent_status['log'].append('[STEP 5] Quality Evaluator')
 
@@ -404,7 +427,7 @@ def run_agent():
             })
             try:
                 from app.agent.scheduler import run_daily_agent
-                run_daily_agent()
+                run_daily_agent(force=True)
                 _agent_status['log'].append('Pipeline completado exitosamente')
                 _agent_status.update({'running': False, 'step': 'Completado', 'progress': 100})
             except Exception as e:

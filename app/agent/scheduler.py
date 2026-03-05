@@ -98,9 +98,13 @@ def _select_tools_for_refresh(existing_tools, max_refresh=10):
     return selected
 
 
-def run_daily_agent():
+def run_daily_agent(force=False):
     """
     Ejecuta el pipeline completo del agente
+    
+    Args:
+        force: Si True, ignora la guarda de entrada duplicada y usa la
+               siguiente fecha disponible. Útil para ejecuciones manuales.
     
     Pasos:
     0. Inventory Check
@@ -112,7 +116,7 @@ def run_daily_agent():
     5. Quality Evaluator — evaluar calidad
     """
     logger.info("=" * 60)
-    logger.info("STARTING DAILY AGENT RUN")
+    logger.info("STARTING DAILY AGENT RUN" + (" (FORCED)" if force else ""))
     logger.info("=" * 60)
     
     run = AgentRun(
@@ -124,10 +128,10 @@ def run_daily_agent():
     
     try:
         # Verificar si ya existe entrada para hoy
-        from datetime import date as date_cls
+        from datetime import date as date_cls, timedelta
         today = date_cls.today()
         existing_entry = Entry.query.filter_by(date=today).first()
-        if existing_entry:
+        if existing_entry and not force:
             logger.warning(f"Entry for {today} already exists (id={existing_entry.id}) — skipping run")
             run.status = 'success'
             run.finished_at = datetime.utcnow()
@@ -205,14 +209,26 @@ def run_daily_agent():
         
         # PASO 3: Redactar
         logger.info("[STEP 3] Writer Agent")
+        # Determinar fecha para la nueva entrada
+        target_date = date.today()
+        if force and Entry.query.filter_by(date=target_date).first():
+            # Buscar siguiente fecha disponible
+            from datetime import timedelta
+            for offset in range(1, 30):
+                candidate = target_date + timedelta(days=offset)
+                if not Entry.query.filter_by(date=candidate).first():
+                    target_date = candidate
+                    logger.info(f"Force mode: using next available date {target_date}")
+                    break
+        
         entry_data = write_daily_entry(
             {'new_tools': new_tools_data, 'updates': all_updates_for_writer},
-            date.today()
+            target_date
         )
         
         # PASO 4: Insertar en DB
         logger.info("[STEP 4] Entry Creator")
-        entry = create_entry_from_data(entry_data)
+        entry = create_entry_from_data(entry_data, force=force)
         
         run.entry_id = entry.id
         db.session.commit()
@@ -330,25 +346,34 @@ def fetch_tool_logos(entry: Entry):
     db.session.commit()
 
 
-def create_entry_from_data(entry_data: dict) -> Entry:
+def create_entry_from_data(entry_data: dict, force: bool = False) -> Entry:
     """
     Crea Entry y Tools/Updates en la DB desde el JSON del Writer
     
     Args:
         entry_data: Dict con keys: date, editorial, new_tools, updates
+        force: Si True, busca siguiente fecha disponible en vez de retornar la existente
         
     Returns:
         Entry creada
     """
-    from datetime import datetime
+    from datetime import datetime, timedelta
     
     entry_date = datetime.strptime(entry_data['date'], '%Y-%m-%d').date()
     
     # Verificar si ya existe una entrada para esta fecha
     existing = Entry.query.filter_by(date=entry_date).first()
     if existing:
-        logger.warning(f"Entry for {entry_date} already exists (id={existing.id}) — returning existing")
-        return existing
+        if not force:
+            logger.warning(f"Entry for {entry_date} already exists (id={existing.id}) — returning existing")
+            return existing
+        # Force mode: buscar siguiente fecha disponible
+        for offset in range(1, 30):
+            candidate = entry_date + timedelta(days=offset)
+            if not Entry.query.filter_by(date=candidate).first():
+                entry_date = candidate
+                logger.info(f"Force mode: using next available date {entry_date}")
+                break
     
     # Crear Entry
     entry = Entry(
