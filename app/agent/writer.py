@@ -58,18 +58,37 @@ def write_daily_entry(classified: Dict, entry_date: date) -> Dict:
 
 Fecha: {entry_date.strftime('%d de %B de %Y')}
 
-Escribe un editorial breve (2-3 párrafos, estilo profesional pero accesible) que:
-1. Resuma las novedades del día
-2. Destaque 1-2 herramientas más relevantes
-3. Proporcione contexto sobre por qué son importantes
+Escribe un artículo completo de blog (estilo entrada de blog profesional, 800-1500 palabras) que:
+
+ESTRUCTURA DEL ARTÍCULO:
+1. **Bajada / Lead** (primer párrafo): Un resumen atractivo y conciso del contenido del día, que enganche al lector. Este párrafo aparecerá destacado visualmente.
+
+2. **Desarrollo** (3-5 párrafos): 
+   - Panorama general: contexto sobre las tendencias que se observan en las herramientas del día
+   - Para cada herramienta nueva destacada, un párrafo descriptivo que explique:
+     • Qué problema resuelve
+     • Cómo funciona y qué la diferencia
+     • Para qué tipo de investigador es útil
+     • Modelo de precios si es relevante
+   - Si hay actualizaciones de herramientas existentes, integrar en la narrativa
+
+3. **Cierre** (1 párrafo): Reflexión sobre la importancia de estas herramientas para la comunidad investigadora.
+
+ESTILO:
+- Español profesional pero accesible para investigadores
+- Tono informativo y analítico, como una columna de tecnología científica
+- Usa párrafos completos y bien desarrollados, NO bullet points
+- Separa párrafos con doble salto de línea (\\n\\n)
+- Incluye contexto y valor analítico, no solo listados
+- Mínimo 5 párrafos sustanciales
 
 Luego, estructura los datos en JSON válido:
 
 {{
   "date": "{entry_date.isoformat()}",
-  "editorial": "Tu editorial aquí...",
+  "editorial": "Tu artículo completo aquí (párrafos separados por \\n\\n)...",
   "new_tools": [
-    # Copia exacta de new_tools del input
+    # Copia exacta de new_tools del input, asegurándote de incluir pricing, platform y features
   ],
   "updates": [
     # Copia exacta de updates del input

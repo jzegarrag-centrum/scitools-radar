@@ -123,10 +123,19 @@ Responde SOLO con un JSON array válido (sin texto adicional):
     "category": "una de las 16 categorías",
     "field": "campo disciplinar principal (ej: multidisciplinar, ciencias sociales, biomedicina, etc.)",
     "source_url": "https://fuente-donde-se-puede-verificar.com",
-    "pricing": "free|freemium|paid|open-source",
-    "platform": "web|desktop|mobile|API|extension"
+    "pricing": "free|freemium|paid|open-source (si es freemium o paid, especifica brevemente planes y precios)",
+    "platform": "web|desktop|mobile|API|extension (puede ser combinación: web, API)",
+    "features": ["funcionalidad clave 1 en español", "funcionalidad clave 2", "funcionalidad clave 3", "funcionalidad clave 4", "funcionalidad clave 5"]
   }}
-]"""
+]
+
+IMPORTANTE:
+- El campo 'pricing' es OBLIGATORIO. Investiga el modelo de precios real de cada herramienta.
+  Ejemplos: "open-source", "free", "freemium: plan gratuito limitado, Pro $10/mes", "paid: desde $29/mes"
+- El campo 'platform' es OBLIGATORIO. Indica las plataformas reales.
+  Ejemplos: "web", "desktop (Windows, Mac)", "web, API", "extensión de navegador"
+- El campo 'features' es OBLIGATORIO. Lista 3-5 funcionalidades clave REALES y ESPECÍFICAS.
+  No uses descripciones genéricas. Sé concreto sobre qué hace exactamente la herramienta."""
 
     try:
         response = llm.research_call(

@@ -81,8 +81,9 @@ Responde en JSON:
       "field": "campo-disciplinar",
       "category": "nombre completo de la categoría (NO usar letras)",
       "source_url": "fuente",
-      "pricing": "free|freemium|paid|open-source",
-      "platform": "web|desktop|mobile|API|extension"
+      "pricing": "modelo de precios detallado (ej: freemium: plan Free, Pro $10/mes)",
+      "platform": "plataformas (ej: web, API, desktop)",
+      "features": ["funcionalidad 1", "funcionalidad 2", "funcionalidad 3"]
     }}
   ],
   "updates": [
@@ -93,7 +94,13 @@ Responde en JSON:
       "description": "Qué cambió y por qué"
     }}
   ]
-}}"""
+}}
+
+IMPORTANTE:
+- Incluye SIEMPRE los campos pricing, platform y features para herramientas nuevas.
+- pricing: Sé específico (ej: "freemium: plan gratuito, Pro $12/mes", "open-source", "paid: desde $29/mes")
+- platform: Indica plataformas reales (ej: "web", "web, API", "desktop (Windows, Mac, Linux)")
+- features: Lista 3-5 funcionalidades clave específicas y reales en español"""
 
     findings_text = json.dumps(findings, indent=2, ensure_ascii=False)
     

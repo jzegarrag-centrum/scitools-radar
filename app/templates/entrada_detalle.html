@@ -128,42 +128,7 @@
         color: var(--azul-light);
     }
 
-    /* Agent Quality info */
-    .quality-bar {
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--borde);
-    }
-    .quality-row {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-    .quality-label {
-        font-size: 0.82rem;
-        font-weight: 600;
-        color: var(--gris-medio);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-    .quality-meter {
-        flex: 1;
-        height: 8px;
-        background: var(--gris-claro);
-        border-radius: 4px;
-        overflow: hidden;
-        min-width: 120px;
-    }
-    .quality-meter-fill {
-        height: 100%;
-        border-radius: 4px;
-        transition: width 0.6s ease;
-    }
-    .quality-score {
-        font-size: 0.95rem;
-        font-weight: 700;
-    }
+    /* (quality bar removed) */
 
     /* Editorial Bajada (Lead / Excerpt) */
     .editorial-lead {
@@ -410,8 +375,6 @@
         .tool-card-grid { grid-template-columns: 1fr; }
         .entry-nav { flex-direction: column; }
         .entry-nav a { justify-content: center; font-size: 0.85rem; }
-        .quality-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-        .quality-meter { width: 100%; }
         .entry-cover, .entry-cover-placeholder { aspect-ratio: 16/7; }
     }
     @media (max-width: 480px) {
@@ -478,20 +441,6 @@
             </div>
         </div>
 
-        {% if agent_run and agent_run.completeness is not none %}
-        {% set score = ((agent_run.completeness or 0) + (agent_run.field_diversity or 0) + (agent_run.social_coverage or 0) + (1.0 - (agent_run.hallucination_risk or 0))) / 4.0 * 10 %}
-        {% set score = score|round(1) %}
-        <div class="quality-bar">
-            <div class="quality-row">
-                <span class="quality-label">Calidad</span>
-                <div class="quality-meter">
-                    {% set color = 'var(--exito)' if score >= 7 else ('var(--naranja)' if score >= 5 else 'var(--peligro)') %}
-                    <div class="quality-meter-fill" style="width:{{ [score * 10, 100]|min }}%; background:{{ color }};"></div>
-                </div>
-                <span class="quality-score" style="color:{{ color }};">{{ score }}/10</span>
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 

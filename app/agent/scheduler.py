@@ -387,6 +387,16 @@ def create_entry_from_data(entry_data: dict, force: bool = False) -> Entry:
     
     # Crear Tools nuevas
     for tool_data in entry_data.get('new_tools', []):
+        # Build features JSON from list if provided
+        features_json = None
+        features_raw = tool_data.get('features')
+        if features_raw:
+            import json
+            if isinstance(features_raw, list):
+                features_json = json.dumps(features_raw, ensure_ascii=False)
+            elif isinstance(features_raw, str):
+                features_json = features_raw
+
         tool = Tool(
             slug=tool_data['slug'],
             name=tool_data['name'],
@@ -394,6 +404,9 @@ def create_entry_from_data(entry_data: dict, force: bool = False) -> Entry:
             url=tool_data.get('url'),
             field=tool_data.get('field'),
             category=tool_data.get('category'),
+            pricing=tool_data.get('pricing'),
+            platform=tool_data.get('platform'),
+            features=features_json,
             priority_source=tool_data.get('source_url', '').split('/')[2] if tool_data.get('source_url') else None,
             first_seen=datetime.utcnow(),
             status='active'

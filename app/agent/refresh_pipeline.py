@@ -53,6 +53,10 @@ def review_tool_quality(tool) -> Dict:
         issues.append('Falta información de pricing')
         score -= 10
 
+    if not tool.platform:
+        issues.append('Falta información de plataforma')
+        score -= 5
+
     if not tool.features:
         issues.append('Falta lista de funcionalidades/features')
         score -= 15
@@ -68,6 +72,10 @@ def review_tool_quality(tool) -> Dict:
             score -= 20
     else:
         issues.append('Sin fecha de actualización registrada')
+        score -= 10
+
+    if not tool.logo_url:
+        issues.append('Falta imagen/logo de la herramienta')
         score -= 10
 
     score = max(0, score)
@@ -198,11 +206,17 @@ Recopila y sintetiza:
 Responde SOLO con JSON válido (sin texto adicional):
 {{
   "description": "descripción precisa en español (2-3 oraciones, 150-300 chars)",
-  "features": ["feature 1 en español", "feature 2 en español", "feature 3 en español"],
-  "pricing": "free|freemium|paid|open-source",
+  "features": ["feature 1 en español", "feature 2 en español", "feature 3 en español", "feature 4", "feature 5"],
+  "pricing": "modelo detallado (ej: 'freemium: plan Free, Pro $10/mes', 'open-source', 'paid: desde $29/mes')",
+  "platform": "plataformas reales (ej: 'web', 'web, API', 'desktop (Windows, Mac)')",
   "updates": "párrafo breve sobre novedades recientes (o null si no hay)",
   "use_cases": ["caso de uso 1", "caso de uso 2"]
-}}"""
+}}
+
+IMPORTANTE:
+- pricing: Sé ESPECÍFICO. No solo digas 'freemium'. Detalla los planes y precios reales.
+- features: Lista 3-5 funcionalidades CONCRETAS y REALES, no genéricas.
+- platform: Indica las plataformas reales donde se puede usar."""
 
     try:
         response = llm.research_call(
@@ -306,6 +320,7 @@ Casos de uso:
 {use_cases_str}
 Novedades recientes: {research_data.get('updates') or 'Sin novedades recientes documentadas'}
 Pricing: {research_data.get('pricing', 'Desconocido')}
+Platform: {research_data.get('platform', tool.platform or 'Desconocido')}
 
 ENTRADA ACTUAL EN LA BASE DE DATOS:
 Descripción: {tool.summary or 'Sin descripción'}
@@ -317,16 +332,18 @@ INSTRUCCIONES DE ESTILO:
 - Enfocado en beneficios para el usuario, no solo características técnicas
 - Evita jerga innecesaria
 - Descripción: 150-350 caracteres, clara y directa
-- Features: lista de 3-5 items concisos (máx 80 chars cada uno)
+- Features: lista de 3-5 items concisos (máx 80 chars cada uno), funcionalidades REALES y ESPECÍFICAS
 - Editorial (Novedades): 1-2 párrafos narrativos sobre qué hay de nuevo o por qué es relevante hoy
   Si no hay novedades recientes, escribe sobre el valor actual de la herramienta
+- Pricing: Sé ESPECÍFICO con planes y precios reales (ej: "freemium: Free, Pro $10/mes")
 
 Responde SOLO con JSON válido:
 {{
   "description": "descripción mejorada...",
   "features": ["funcionalidad 1", "funcionalidad 2", "funcionalidad 3"],
   "editorial": "párrafo narrativo de novedades...",
-  "pricing": "free|freemium|paid|open-source"
+  "pricing": "modelo de precios detallado",
+  "platform": "plataformas (ej: web, API, desktop)"
 }}"""
 
     try:
@@ -523,6 +540,7 @@ def _apply_content_update(tool, new_content: Dict) -> None:
     features = new_content.get('features', [])
     editorial = new_content.get('editorial', '')
     pricing = new_content.get('pricing', '')
+    platform = new_content.get('platform', '')
 
     if description and len(description) > len(tool.summary or ''):
         tool.summary = description
@@ -536,6 +554,21 @@ def _apply_content_update(tool, new_content: Dict) -> None:
     if pricing and pricing != tool.pricing:
         tool.pricing = pricing
 
+    if platform and not tool.platform:
+        tool.platform = platform
+
     tool.auto_updated = True
     tool.quality_score = review_tool_quality(tool)['score']
     tool.last_updated = datetime.utcnow()
+
+    # Auto-fix missing logo using Google Favicon API
+    if not tool.logo_url and tool.url:
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(tool.url)
+            domain = parsed.netloc or parsed.path.split('/')[0]
+            if domain:
+                tool.logo_url = f"https://www.google.com/s2/favicons?domain={domain}&sz=128"
+                logger.info(f'Auto-assigned logo for {tool.slug}: {tool.logo_url}')
+        except Exception:
+            pass
