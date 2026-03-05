@@ -80,6 +80,9 @@ def create_app(config_name=None):
     # ── Limpiar AgentRuns atascados ──────────────────────────
     _cleanup_stuck_runs(app)
 
+    # ── Corregir categorías con letras sueltas ───────────────
+    _fix_letter_categories(app)
+
     # ── Garantizar usuario admin ──────────────────────────────
     _ensure_admin(app)
     
@@ -126,6 +129,42 @@ def _cleanup_stuck_runs(app):
             if stuck:
                 db.session.commit()
                 app.logger.info('Cleaned up %d stuck AgentRun records', len(stuck))
+    except Exception:
+        pass
+
+
+def _fix_letter_categories(app):
+    """Reemplaza categorías de una sola letra (A-P) con nombres descriptivos."""
+    LETTER_MAP = {
+        'A': 'Bases de datos bibliográficas',
+        'B': 'IA para investigación',
+        'C': 'Mapeo por citaciones',
+        'D': 'Bibliometría y cienciometría',
+        'E': 'Métricas e impacto',
+        'F': 'Gestores de referencias',
+        'G': 'Escritura académica con IA',
+        'H': 'Edición y publicación',
+        'I': 'Ilustración y visualización',
+        'J': 'Revisiones sistemáticas',
+        'K': 'Gestión del conocimiento',
+        'L': 'Ciencia abierta y reproducibilidad',
+        'M': 'Búsqueda de financiamiento',
+        'N': 'Análisis cualitativo y métodos mixtos',
+        'O': 'Notebooks y ambientes de cómputo',
+        'P': 'Gestión de proyectos',
+    }
+    try:
+        with app.app_context():
+            from app.models import Tool
+            fixed = 0
+            for tool in Tool.query.all():
+                if tool.category and tool.category.strip() in LETTER_MAP:
+                    old = tool.category
+                    tool.category = LETTER_MAP[old.strip()]
+                    fixed += 1
+            if fixed:
+                db.session.commit()
+                app.logger.info('Fixed %d tools with letter categories', fixed)
     except Exception:
         pass
 

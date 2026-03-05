@@ -43,6 +43,26 @@ def classify_findings(findings: List[Dict], existing_tools: List[Tool]) -> Dict:
 INVENTARIO ACTUAL (primeras 200 herramientas):
 {inventory_summary}
 
+CATEGORÍAS DISPONIBLES (usar nombre completo, NO letras):
+- Bases de datos bibliográficas
+- IA para investigación
+- Mapeo por citaciones
+- Bibliometría y cienciometría
+- Métricas e impacto
+- Gestores de referencias
+- Escritura académica con IA
+- Edición y publicación
+- Ilustración y visualización
+- Revisiones sistemáticas
+- Gestión del conocimiento
+- Ciencia abierta y reproducibilidad
+- Búsqueda de financiamiento
+- Análisis cualitativo y métodos mixtos
+- Notebooks y ambientes de cómputo
+- Gestión de proyectos
+- Análisis de datos y estadística
+- Ciencias sociales
+
 Tu tarea: Clasifica cada hallazgo como:
 1. **NUEVA HERRAMIENTA**: Si no existe en el inventario o es significativamente distinta
 2. **ACTUALIZACIÓN**: Si es información nueva sobre una herramienta que YA existe
@@ -57,10 +77,12 @@ Responde en JSON:
       "slug": "nombre-herramienta",
       "name": "Nombre Oficial",
       "url": "https://...",
-      "summary": "Descripción",
+      "summary": "Descripción en español (2-3 oraciones)",
       "field": "campo-disciplinar",
-      "category": "letra-A-P",
-      "source_url": "fuente"
+      "category": "nombre completo de la categoría (NO usar letras)",
+      "source_url": "fuente",
+      "pricing": "free|freemium|paid|open-source",
+      "platform": "web|desktop|mobile|API|extension"
     }}
   ],
   "updates": [
@@ -95,6 +117,22 @@ Responde en JSON:
             result_text = result_text.split('```')[1].split('```')[0]
         
         classified = json.loads(result_text.strip())
+        
+        # Post-process: convert any remaining letter categories to descriptive names
+        LETTER_MAP = {
+            'A': 'Bases de datos bibliográficas', 'B': 'IA para investigación',
+            'C': 'Mapeo por citaciones', 'D': 'Bibliometría y cienciometría',
+            'E': 'Métricas e impacto', 'F': 'Gestores de referencias',
+            'G': 'Escritura académica con IA', 'H': 'Edición y publicación',
+            'I': 'Ilustración y visualización', 'J': 'Revisiones sistemáticas',
+            'K': 'Gestión del conocimiento', 'L': 'Ciencia abierta y reproducibilidad',
+            'M': 'Búsqueda de financiamiento', 'N': 'Análisis cualitativo y métodos mixtos',
+            'O': 'Notebooks y ambientes de cómputo', 'P': 'Gestión de proyectos',
+        }
+        for tool in classified.get('new_tools', []):
+            cat = (tool.get('category') or '').strip()
+            if cat in LETTER_MAP:
+                tool['category'] = LETTER_MAP[cat]
         
         logger.info(
             f"Classifier: {len(classified.get('new_tools', []))} new, "
