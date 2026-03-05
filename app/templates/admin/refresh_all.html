@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+
+{% block title %}Actualización Masiva - Admin{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+    .page-header h1 { color:var(--azul); font-size:1.5rem; display:flex; align-items:center; gap:0.6rem; }
+    .panel { background:white; border-radius:12px; padding:1.5rem 2rem; margin-bottom:1.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:1px solid var(--borde); }
+    .panel h2 { color:var(--azul); font-size:1.05rem; margin-bottom:1.2rem; display:flex; align-items:center; gap:0.5rem; }
+    .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+    .kpi-card { background:white; border-radius:10px; padding:1.2rem; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.06); border:1px solid var(--borde); position:relative; overflow:hidden; }
+    .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .kpi-card.blue::before { background:var(--azul); }
+    .kpi-card.orange::before { background:var(--naranja); }
+    .kpi-card.green::before { background:var(--exito); }
+    .kpi-card.red::before { background:var(--peligro); }
+    .kpi-val { font-size:2rem; font-weight:800; line-height:1.2; }
+    .kpi-label { font-size:0.78rem; color:var(--gris-medio); margin-top:0.25rem; text-transform:uppercase; letter-spacing:0.4px; }
+    .progress-bar-track { height:8px; background:#E5E7EB; border-radius:4px; overflow:hidden; margin-top:0.5rem; }
+    .progress-bar-fill { height:100%; border-radius:4px; background:var(--naranja); transition:width 0.5s ease; }
+    .params-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; }
+    .form-group { display:flex; flex-direction:column; gap:0.35rem; }
+    .form-group label { font-size:0.82rem; font-weight:600; color:var(--gris-medio); text-transform:uppercase; letter-spacing:0.3px; }
+    .form-group input, .form-group select { padding:0.6rem 0.8rem; border:2px solid var(--borde); border-radius:8px; font-family:inherit; font-size:0.9rem; transition:border-color 0.3s; }
+    .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--naranja); }
+    .form-group .check-label { display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-size:0.9rem; font-weight:500; color:var(--gris-oscuro); text-transform:none; letter-spacing:0; }
+    .btn-refresh { display:inline-flex; align-items:center; gap:0.6rem; padding:0.75rem 1.5rem; background:var(--naranja); color:white; border:none; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.3s; }
+    .btn-refresh:hover { background:var(--naranja-dark); transform:translateY(-2px); box-shadow:0 4px 12px rgba(255,107,0,0.3); }
+    .btn-refresh:disabled { opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none; }
+    .monitor-box { background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:1.2rem; }
+    .monitor-box.active { background:#FEF3C7; border-color:#FCD34D; }
+    .monitor-box.error { background:#FEF2F2; border-color:#FECACA; }
+    .log-container { max-height:280px; overflow-y:auto; background:#1E293B; border-radius:8px; padding:1rem; font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:#94A3B8; margin-top:1rem; }
+    .log-container .log-line { padding:0.1rem 0; }
+    .log-container .log-line.success { color:#4ADE80; }
+    .log-container .log-line.error { color:#F87171; }
+    .log-container .log-line.info { color:#60A5FA; }
+    .pending-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .pending-table th { text-align:left; padding:0.55rem 0.75rem; border-bottom:2px solid var(--borde); color:var(--gris-medio); font-weight:600; font-size:0.77rem; text-transform:uppercase; }
+    .pending-table td { padding:0.55rem 0.75rem; border-bottom:1px solid #f0f0f0; }
+    .pending-table tr:hover { background:var(--gris-claro); }
+    .score-badge { display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:50%; font-weight:800; font-size:0.85rem; }
+    .score-badge.high { background:#FEE2E2; color:#DC2626; }
+    .score-badge.medium { background:#FEF3C7; color:#D97706; }
+    .score-badge.low { background:#D1FAE5; color:#059669; }
+    .priority-badge { display:inline-block; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:700; }
+    .priority-badge.high { background:#FEE2E2; color:#DC2626; }
+    .priority-badge.medium { background:#FEF3C7; color:#D97706; }
+    .priority-badge.low { background:#D1FAE5; color:#059669; }
+    .issues-list { font-size:0.78rem; color:var(--gris-medio); }
+    .result-card { border:1px solid var(--borde); border-radius:10px; padding:1rem; background:#F8FAFC; }
+    .result-card h3 { font-size:0.95rem; color:var(--azul); margin-bottom:0.75rem; }
+    .result-detail { display:flex; align-items:center; gap:0.5rem; padding:0.4rem 0; border-bottom:1px solid var(--borde); font-size:0.82rem; }
+    .result-detail:last-child { border-bottom:none; }
+    .result-detail .arrow { color:var(--gris-medio); }
+    .result-detail .before { color:var(--peligro); font-weight:600; }
+    .result-detail .after { color:var(--exito); font-weight:600; }
+    @media (max-width: 768px) {
+        .page-header { flex-direction:column; align-items:flex-start; }
+        .panel { padding:1rem; }
+        .kpi-grid { grid-template-columns:repeat(2,1fr); }
+        .params-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width: 480px) {
+        .kpi-grid { grid-template-columns:1fr 1fr; }
+        .kpi-val { font-size:1.6rem; }
+        .pending-table th, .pending-table td { padding:0.4rem 0.5rem; font-size:0.78rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-sync-alt" style="color:var(--naranja);"></i> Actualización Masiva de Contenido</h1>
+    <a href="{{ url_for('admin.dashboard') }}" style="color:var(--azul);text-decoration:none;font-size:0.9rem;">
+        <i class="fas fa-arrow-left"></i> Volver al panel
+    </a>
+</div>
+
+<!-- KPIs de calidad -->
+<div class="kpi-grid">
+    <div class="kpi-card blue">
+        <div class="kpi-val" style="color:var(--azul);">{{ dashboard_stats.total_tools }}</div>
+        <div class="kpi-label">Total herramientas</div>
+    </div>
+    <div class="kpi-card green">
+        <div class="kpi-val" style="color:var(--exito);">{{ dashboard_stats.pct_complete }}%</div>
+        <div class="kpi-label">Contenido completo</div>
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" style="width:{{ dashboard_stats.pct_complete }}%; background:var(--exito);"></div>
+        </div>
+    </div>
+    <div class="kpi-card orange">
+        <div class="kpi-val" style="color:var(--naranja);">{{ dashboard_stats.pending_count }}</div>
+        <div class="kpi-label">Pendientes de actualizar</div>
+    </div>
+    <div class="kpi-card blue">
+        <div class="kpi-val" style="color:var(--azul);">{{ dashboard_stats.tools_with_features }}</div>
+        <div class="kpi-label">Con funcionalidades</div>
+    </div>
+    <div class="kpi-card blue">
+        <div class="kpi-val" style="color:var(--azul);">{{ dashboard_stats.tools_with_editorial }}</div>
+        <div class="kpi-label">Con editorial "Novedades"</div>
+    </div>
+    <div class="kpi-card green">
+        <div class="kpi-val" style="color:var(--exito);">{{ dashboard_stats.tools_auto_updated }}</div>
+        <div class="kpi-label">Actualizadas por IA</div>
+    </div>
+</div>
+
+<!-- Pipeline de actualización -->
+<div class="panel">
+    <h2><i class="fas fa-play-circle" style="color:var(--naranja);"></i> Ejecutar Pipeline de Actualización</h2>
+
+    <form method="POST" action="{{ url_for('admin.refresh_all_run') }}"
+          onsubmit="return confirmRun(this);" id="refreshForm">
+
+        <div class="params-grid" style="margin-bottom:1.2rem;">
+            <div class="form-group">
+                <label for="category_filter"><i class="fas fa-folder"></i> Filtrar por categoría</label>
+                <select name="category_filter" id="category_filter">
+                    <option value="">— Todas las categorías —</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="min_days_old"><i class="fas fa-clock"></i> Antigüedad mínima (días)</label>
+                <input type="number" name="min_days_old" id="min_days_old"
+                       placeholder="Ej: 90 (dejar vacío = todas)"
+                       min="1" max="3650">
+            </div>
+
+            <div class="form-group">
+                <label for="limit"><i class="fas fa-list-ol"></i> Límite de herramientas</label>
+                <input type="number" name="limit" id="limit"
+                       value="{{ [dashboard_stats.pending_count, 10] | min }}"
+                       min="1" max="100">
+            </div>
+
+            <div class="form-group" style="justify-content:flex-end;">
+                <label class="check-label">
+                    <input type="checkbox" name="only_empty_fields" id="only_empty_fields">
+                    Solo con campos vacíos
+                </label>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-refresh" id="runBtn"
+                {% if refresh_status.running %}disabled{% endif %}>
+            <i class="fas fa-sync-alt"></i>
+            {% if refresh_status.running %}
+                Ejecutando...
+            {% else %}
+                Actualizar herramientas ahora
+            {% endif %}
+        </button>
+
+        {% if refresh_status.running %}
+        <span style="margin-left:1rem; font-size:0.85rem; color:var(--gris-medio);">
+            <i class="fas fa-spinner fa-spin"></i> Pipeline en ejecución — actualiza en unos segundos
+        </span>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Monitor en tiempo real -->
+<div class="panel">
+    <h2><i class="fas fa-terminal" style="color:var(--naranja);"></i> Monitor de Ejecución</h2>
+
+    <div class="monitor-box {% if refresh_status.running %}active{% endif %}" id="monitorBox">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem; flex-wrap:wrap;">
+            <div style="font-weight:700; font-size:0.9rem;" id="monitorStep">
+                {% if refresh_status.running %}
+                    <i class="fas fa-spinner fa-spin" style="color:var(--naranja);"></i>
+                {% elif refresh_status.step %}
+                    <i class="fas fa-check-circle" style="color:var(--exito);"></i>
+                {% else %}
+                    <i class="fas fa-circle" style="color:var(--gris-medio);"></i>
+                {% endif %}
+                {{ refresh_status.step or 'Sin ejecuciones recientes' }}
+            </div>
+            {% if refresh_status.total > 0 %}
+            <div style="font-size:0.82rem; color:var(--gris-medio);" id="monitorCount">
+                {{ refresh_status.current }} / {{ refresh_status.total }} herramientas
+            </div>
+            {% endif %}
+        </div>
+
+        {% if refresh_status.running or refresh_status.progress > 0 %}
+        <div class="progress-bar-track" style="margin-bottom:0.75rem;">
+            <div class="progress-bar-fill" id="progressFill"
+                 style="width:{{ refresh_status.progress }}%;"></div>
+        </div>
+        {% endif %}
+
+        {% if refresh_status.log %}
+        <div class="log-container" id="logContainer">
+            {% for line in refresh_status.log %}
+            <div class="log-line {% if '✓' in line or 'Completado' in line %}success{% elif '✗' in line or 'ERROR' in line %}error{% elif 'Iniciando' in line or '===' in line %}info{% endif %}">
+                {{ line }}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--gris-medio); font-size:0.88rem;">
+            Los logs de ejecución aparecerán aquí.
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Resultado de la última ejecución -->
+{% if last_result %}
+<div class="panel">
+    <h2><i class="fas fa-chart-bar" style="color:var(--naranja);"></i> Último Resultado</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1rem; margin-bottom:1.2rem;">
+        <div class="result-card">
+            <div style="font-size:1.8rem; font-weight:800; color:var(--exito);">{{ last_result.total_updated }}</div>
+            <div style="font-size:0.8rem; color:var(--gris-medio); text-transform:uppercase;">Actualizadas</div>
+        </div>
+        <div class="result-card">
+            <div style="font-size:1.8rem; font-weight:800; color:var(--peligro);">{{ last_result.total_errors }}</div>
+            <div style="font-size:0.8rem; color:var(--gris-medio); text-transform:uppercase;">Errores</div>
+        </div>
+        <div class="result-card">
+            <div style="font-size:1.8rem; font-weight:800; color:var(--azul);">{{ last_result.total_scanned }}</div>
+            <div style="font-size:0.8rem; color:var(--gris-medio); text-transform:uppercase;">Evaluadas</div>
+        </div>
+        <div class="result-card">
+            <div style="font-size:1.8rem; font-weight:800; color:var(--gris-oscuro);">{{ last_result.duration_seconds|round(1) }}s</div>
+            <div style="font-size:0.8rem; color:var(--gris-medio); text-transform:uppercase;">Duración</div>
+        </div>
+    </div>
+
+    {% if last_result.details %}
+    <div style="overflow-x:auto;">
+        <table class="pending-table">
+            <thead>
+                <tr>
+                    <th>Herramienta</th>
+                    <th>Score antes</th>
+                    <th>Score después</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in last_result.details %}
+                <tr>
+                    <td style="font-weight:600;">
+                        <a href="{{ url_for('main.herramienta_detalle', slug=detail.tool_slug) }}"
+                           style="color:var(--azul);text-decoration:none;">
+                            {{ detail.tool_name }}
+                        </a>
+                    </td>
+                    <td><span class="score-badge {% if detail.score_before < 40 %}high{% elif detail.score_before < 70 %}medium{% else %}low{% endif %}">{{ detail.score_before }}</span></td>
+                    <td><span class="score-badge {% if detail.score_after < 40 %}high{% elif detail.score_after < 70 %}medium{% else %}low{% endif %}">{{ detail.score_after }}</span></td>
+                    <td>
+                        {% if detail.status == 'updated' %}
+                        <span style="color:var(--exito); font-weight:600;"><i class="fas fa-check"></i> Actualizada</span>
+                        {% else %}
+                        <span style="color:var(--peligro); font-weight:600;" title="{{ detail.get('error', '') }}">
+                            <i class="fas fa-times"></i> Error
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Herramientas pendientes de actualización -->
+<div class="panel">
+    <h2><i class="fas fa-exclamation-circle" style="color:var(--naranja);"></i> Herramientas con Contenido Incompleto ({{ dashboard_stats.pending_count }} total)</h2>
+
+    {% if pending_tools %}
+    <div style="overflow-x:auto;">
+        <table class="pending-table">
+            <thead>
+                <tr>
+                    <th>Score</th>
+                    <th>Herramienta</th>
+                    <th>Categoría</th>
+                    <th>Prioridad</th>
+                    <th>Problemas detectados</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in pending_tools %}
+                <tr>
+                    <td>
+                        <span class="score-badge {{ item.review.priority }}">{{ item.review.score }}</span>
+                    </td>
+                    <td style="font-weight:600;">
+                        <a href="{{ url_for('main.herramienta_detalle', slug=item.tool.slug) }}"
+                           style="color:var(--azul);text-decoration:none;">
+                            {{ item.tool.name }}
+                        </a>
+                        {% if item.tool.auto_updated %}
+                        <span style="font-size:0.72rem; background:var(--azul-pale); color:var(--azul); padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.3rem;">IA</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:0.82rem; color:var(--gris-medio);">{{ item.tool.category or '—' }}</td>
+                    <td>
+                        <span class="priority-badge {{ item.review.priority }}">
+                            {% if item.review.priority == 'high' %}Alta{% elif item.review.priority == 'medium' %}Media{% else %}Baja{% endif %}
+                        </span>
+                    </td>
+                    <td class="issues-list">
+                        {% for issue in item.review.issues[:3] %}
+                        <div>• {{ issue }}</div>
+                        {% endfor %}
+                        {% if item.review.issues|length > 3 %}
+                        <div style="color:var(--gris-medio);">+{{ item.review.issues|length - 3 }} más</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if dashboard_stats.pending_count > 20 %}
+    <p style="text-align:center; margin-top:1rem; color:var(--gris-medio); font-size:0.85rem;">
+        Mostrando 20 de {{ dashboard_stats.pending_count }} herramientas pendientes.
+    </p>
+    {% endif %}
+    {% else %}
+    <p style="color:var(--exito); text-align:center; padding:2rem;">
+        <i class="fas fa-check-circle" style="font-size:1.5rem; margin-bottom:0.5rem; display:block;"></i>
+        ¡Todas las herramientas tienen contenido completo!
+    </p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmRun(form) {
+    const limit = document.getElementById('limit').value || 10;
+    return confirm(
+        `¿Ejecutar el pipeline de actualización para hasta ${limit} herramientas?\n\n` +
+        'Este proceso llamará a la IA para cada herramienta y puede tardar varios minutos. ' +
+        '¿Continuar?'
+    );
+}
+
+// Polling para monitoreo en tiempo real
+{% if refresh_status.running %}
+const poller = setInterval(async () => {
+    try {
+        const resp = await fetch('{{ url_for("admin.refresh_status_api") }}');
+        const data = await resp.json();
+
+        // Actualizar UI
+        document.getElementById('monitorStep').innerHTML = data.running
+            ? '<i class="fas fa-spinner fa-spin" style="color:var(--naranja);"></i> ' + data.step
+            : '<i class="fas fa-check-circle" style="color:var(--exito);"></i> ' + (data.step || 'Completado');
+
+        document.getElementById('progressFill').style.width = data.progress + '%';
+
+        const logContainer = document.getElementById('logContainer');
+        if (logContainer && data.log) {
+            logContainer.innerHTML = data.log.map(line => {
+                let cls = '';
+                if (line.includes('✓') || line.includes('Completado') || line.includes('===')) cls = 'success';
+                else if (line.includes('✗') || line.includes('ERROR')) cls = 'error';
+                else if (line.includes('Iniciando') || line.includes('Pipeline')) cls = 'info';
+                return `<div class="log-line ${cls}">${line}</div>`;
+            }).join('');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        if (!data.running) {
+            clearInterval(poller);
+            document.getElementById('runBtn').disabled = false;
+            document.getElementById('runBtn').innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar herramientas ahora';
+            // Recargar la página después de 2 segundos para ver resultados
+            setTimeout(() => window.location.reload(), 2000);
+        }
+    } catch (e) {
+        console.error('Polling error:', e);
+    }
+}, 3000);
+{% endif %}
+
+// Auto-scroll log
+const logEl = document.getElementById('logContainer');
+if (logEl) logEl.scrollTop = logEl.scrollHeight;
+</script>
+{% endblock %}
