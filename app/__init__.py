@@ -74,10 +74,39 @@ def create_app(config_name=None):
             return {'error': 'Internal server error'}, 500
         return render_template('errors/500.html'), 500
     
+    # ── Garantizar esquema de BD ────────────────────────────
+    _ensure_schema(app)
+
     # ── Garantizar usuario admin ──────────────────────────────
     _ensure_admin(app)
     
     return app
+
+
+def _ensure_schema(app):
+    """Ensure all required columns exist (safe for cold starts)."""
+    try:
+        with app.app_context():
+            from sqlalchemy import text, inspect as sa_inspect
+            inspector = sa_inspect(db.engine)
+            
+            # Check if 'entry' table exists at all
+            if 'entry' not in inspector.get_table_names():
+                db.create_all()
+                app.logger.info('Tables created via create_all()')
+                return
+            
+            # Check for cover_image_url column
+            columns = [c['name'] for c in inspector.get_columns('entry')]
+            if 'cover_image_url' not in columns:
+                with db.engine.connect() as conn:
+                    conn.execute(text(
+                        "ALTER TABLE entry ADD COLUMN cover_image_url VARCHAR(1000)"
+                    ))
+                    conn.commit()
+                app.logger.info('Added cover_image_url column to entry table')
+    except Exception as exc:
+        app.logger.warning('Schema ensure skipped: %s', exc)
 
 
 def _ensure_admin(app):
