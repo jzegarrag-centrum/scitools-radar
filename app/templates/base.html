@@ -178,6 +178,7 @@
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
         /* ===== CHAT WIDGET ===== */
+        /* TEMPORALMENTE OCULTO: Para reactivar, eliminar la línea "display: none;" de .chat-fab */
         .chat-fab {
             position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
             width: 64px; height: 64px; border-radius: 50%;
@@ -185,7 +186,7 @@
             border: none; cursor: pointer;
             box-shadow: 0 6px 20px rgba(255,107,0,0.4);
             transition: var(--transition);
-            display: flex; align-items: center; justify-content: center;
+            display: none;
         }
         .chat-fab:hover { transform: scale(1.08); box-shadow: 0 8px 28px rgba(255,107,0,0.5); }
         .chat-fab.open { transform: scale(0); pointer-events: none; }
@@ -270,6 +271,8 @@
             cursor: pointer; transition: var(--transition); font-family: inherit;
         }
         .chat-suggestion:hover { background: var(--azul); color: white; }
+        /* TABLA RESPONSIVE: envuelve tablas con esta clase para scroll horizontal en móvil */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
         /* RESPONSIVE */
         @media (max-width: 1024px) {
             .container { padding: 0 1.5rem; }
@@ -291,28 +294,33 @@
                 z-index: 200; gap: 0.5rem;
             }
             nav ul.mobile-open { display: flex; }
-            nav ul a { font-size: 1.1rem; padding: 0.9rem 1.25rem; border-radius: 12px; }
+            nav ul a { font-size: 1.1rem; padding: 0.9rem 1.25rem; border-radius: 12px; min-height: 44px; }
             nav ul a:hover { background: rgba(255,255,255,0.15); }
-            .mobile-toggle { display: block; }
+            .mobile-toggle { display: block; min-height: 44px; min-width: 44px; }
             .mobile-close-wrap { display: block; position: absolute; top: 1rem; right: 1rem; }
             .mobile-close-wrap button {
                 background: rgba(255,255,255,0.15); border: none; color: white;
-                width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+                width: 44px; height: 44px; border-radius: 10px; cursor: pointer;
                 font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
             }
             .footer-grid { grid-template-columns: 1fr; gap: 1.5rem; }
             .footer-bottom { flex-direction: column; text-align: center; }
-            .chat-fab { width: 52px; height: 52px; bottom: 1rem; right: 1rem; }
-            .fab-robot { width: 32px; height: 32px; }
             .chat-panel { width: calc(100vw - 1rem); right: 0.5rem; bottom: 0.5rem; max-height: 85vh; border-radius: 12px; }
             .chat-messages { max-height: 50vh; }
             .card { padding: 1.25rem; margin-bottom: 1rem; }
             .card-lg { padding: 1.25rem; }
+            /* Touch targets mínimos de 44px en móvil */
+            .btn { min-height: 44px; padding: 0.65rem 1.2rem; }
+            .btn-sm { min-height: 36px; }
+            input[type="text"], input[type="email"], input[type="password"],
+            input[type="search"], input[type="number"], select, textarea {
+                min-height: 44px;
+            }
         }
         @media (max-width: 480px) {
             .header-inner { padding: 0 0.75rem; }
             .container { padding: 0 0.75rem; }
-            .btn { padding: 0.55rem 1rem; font-size: 0.82rem; }
+            .btn { padding: 0.65rem 1rem; font-size: 0.82rem; }
             .badge { font-size: 0.72rem; padding: 0.2rem 0.5rem; }
         }
         {% block styles %}{% endblock %}
@@ -402,7 +410,7 @@
         </div>
     </footer>
 
-    <!-- Chat FAB -->
+    <!-- Chat FAB - TEMPORALMENTE OCULTO. Para reactivar: eliminar "display: none;" en CSS (.chat-fab) -->
     <button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Hablar con SciBot">
         <svg class="fab-robot" viewBox="0 0 40 40">
             <rect x="8" y="12" width="24" height="20" rx="5" fill="white"/>

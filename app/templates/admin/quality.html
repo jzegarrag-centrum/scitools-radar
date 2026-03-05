@@ -25,6 +25,21 @@
     .runs-table tr:hover { background:var(--gris-claro); }
     .metric-bar { width:60px; height:6px; background:#eee; border-radius:3px; display:inline-block; vertical-align:middle; margin-right:0.3rem; }
     .metric-fill { height:100%; border-radius:3px; }
+    /* Responsive */
+    @media (max-width: 768px) {
+        .quality-header { flex-direction:column; align-items:flex-start; }
+        .quality-header h1 { font-size:1.25rem; }
+        .panel { padding:1rem; }
+        .kpi-grid { grid-template-columns:repeat(2,1fr); gap:0.75rem; }
+        .kpi-value { font-size:1.7rem; }
+        .filter-form { flex-wrap:wrap; }
+        .filter-form select { min-height:44px; }
+    }
+    @media (max-width: 480px) {
+        .kpi-value { font-size:1.4rem; }
+        .metric-bar { width:40px; }
+        .runs-table th, .runs-table td { padding:0.4rem 0.4rem; font-size:0.78rem; }
+    }
 </style>
 {% endblock %}
 

@@ -25,6 +25,19 @@
     .cat-badge { display:inline-block; background:var(--azul-pale); color:var(--azul); padding:0.15rem 0.5rem; border-radius:4px; font-size:0.78rem; font-weight:600; }
     .pagination-bar { display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--borde); }
     .pagination-bar a { color:var(--azul); text-decoration:none; font-weight:600; font-size:0.88rem; }
+    /* Responsive */
+    @media (max-width: 768px) {
+        .tools-header { flex-direction:column; align-items:flex-start; }
+        .tools-header h1 { font-size:1.25rem; }
+        .panel { padding:1rem; }
+        .search-bar { flex-wrap:wrap; }
+        .search-bar input { min-height:44px; }
+        .search-bar button { min-height:44px; }
+    }
+    @media (max-width: 480px) {
+        .tools-table th, .tools-table td { padding:0.4rem 0.5rem; font-size:0.8rem; }
+        .cat-badge { font-size:0.72rem; }
+    }
 </style>
 {% endblock %}
 
