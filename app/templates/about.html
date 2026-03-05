@@ -220,10 +220,10 @@
     }
     .cat-table tr:hover td { background: var(--gris-claro); }
     .cat-table .cat-id {
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--azul);
         font-size: 0.82rem;
+        white-space: nowrap;
     }
 
     /* Team cards */
@@ -442,38 +442,37 @@
 <div class="about-section">
     <h2><i class="fas fa-binoculars"></i> 16 Categorías de Monitoreo</h2>
     <p>
-        El agente investigador cubre 16 categorías (A–P) que abarcan todo el espectro de herramientas
+        El agente investigador cubre 16 categorías que abarcan todo el espectro de herramientas
         de investigación, con énfasis especial en ciencias sociales:
     </p>
     <table class="cat-table">
         <thead>
             <tr>
-                <th>Cat</th>
-                <th>Área</th>
+                <th>Categoría</th>
                 <th>Herramientas representativas</th>
             </tr>
         </thead>
         <tbody>
-            <tr><td class="cat-id">A</td><td>Bases de datos bibliográficas</td><td>Scopus, WoS, OpenAlex, PubMed, Dimensions, Lens.org</td></tr>
-            <tr><td class="cat-id">B</td><td>IA para investigación</td><td>Elicit, Consensus, scite, SciSpace</td></tr>
-            <tr><td class="cat-id">C</td><td>Mapeo por citaciones</td><td>Research Rabbit, Connected Papers, Litmaps</td></tr>
-            <tr><td class="cat-id">D</td><td>Bibliometría y cienciometría</td><td>VOSviewer, Bibliometrix, CiteSpace, SCImago</td></tr>
-            <tr><td class="cat-id">E</td><td>Métricas e impacto</td><td>Altmetric, PlumX, Overton</td></tr>
-            <tr><td class="cat-id">F</td><td>Gestores de referencias</td><td>Zotero, Mendeley, EndNote, Paperpile</td></tr>
-            <tr><td class="cat-id">G</td><td>Escritura académica con IA</td><td>Jenni AI, Paperpal, Writefull, Trinka</td></tr>
-            <tr><td class="cat-id">H</td><td>Edición y publicación</td><td>Overleaf, Typst, Authorea</td></tr>
-            <tr><td class="cat-id">I</td><td>Ilustración y visualización</td><td>BioRender, GraphPad, Cytoscape</td></tr>
-            <tr><td class="cat-id">J</td><td>Revisiones sistemáticas</td><td>Covidence, Rayyan, ASReview</td></tr>
-            <tr><td class="cat-id">K</td><td>Análisis de datos y cómputo</td><td>R, Python, Julia, MATLAB</td></tr>
-            <tr><td class="cat-id">L</td><td>Ciencia abierta</td><td>OSF, ORCID, Zenodo, FAIR tools</td></tr>
-            <tr><td class="cat-id">M</td><td>Dominio específico</td><td>AlphaFold, ChemDraw, ImageJ, ArcGIS</td></tr>
-            <tr><td class="cat-id">N</td><td>Notebooks y ambientes</td><td>Jupyter, Colab, Posit Cloud</td></tr>
-            <tr><td class="cat-id">O</td><td>IA general para investigación</td><td>Claude, GPT-4, Gemini, Perplexity</td></tr>
-            <tr><td class="cat-id">P</td><td><strong>Ciencias sociales</strong> (13 subcategorías)</td><td>Stata, gretl, JASP, Gephi, NVivo, SmartPLS, Qualtrics</td></tr>
+            <tr><td class="cat-id">Bases de datos bibliográficas</td><td>Scopus, WoS, OpenAlex, PubMed, Dimensions, Lens.org</td></tr>
+            <tr><td class="cat-id">IA para investigación</td><td>Elicit, Consensus, scite, SciSpace</td></tr>
+            <tr><td class="cat-id">Mapeo por citaciones</td><td>Research Rabbit, Connected Papers, Litmaps</td></tr>
+            <tr><td class="cat-id">Bibliometría y cienciometría</td><td>VOSviewer, Bibliometrix, CiteSpace, SCImago</td></tr>
+            <tr><td class="cat-id">Métricas e impacto</td><td>Altmetric, PlumX, Overton</td></tr>
+            <tr><td class="cat-id">Gestores de referencias</td><td>Zotero, Mendeley, EndNote, Paperpile</td></tr>
+            <tr><td class="cat-id">Escritura académica con IA</td><td>Jenni AI, Paperpal, Writefull, Trinka</td></tr>
+            <tr><td class="cat-id">Edición y publicación</td><td>Overleaf, Typst, Authorea</td></tr>
+            <tr><td class="cat-id">Ilustración y visualización</td><td>BioRender, GraphPad, Cytoscape</td></tr>
+            <tr><td class="cat-id">Revisiones sistemáticas</td><td>Covidence, Rayyan, ASReview</td></tr>
+            <tr><td class="cat-id">Análisis de datos y cómputo</td><td>R, Python, Julia, MATLAB</td></tr>
+            <tr><td class="cat-id">Ciencia abierta</td><td>OSF, ORCID, Zenodo, FAIR tools</td></tr>
+            <tr><td class="cat-id">Dominio específico</td><td>AlphaFold, ChemDraw, ImageJ, ArcGIS</td></tr>
+            <tr><td class="cat-id">Notebooks y ambientes</td><td>Jupyter, Colab, Posit Cloud</td></tr>
+            <tr><td class="cat-id">IA general para investigación</td><td>Claude, GPT-4, Gemini, Perplexity</td></tr>
+            <tr><td class="cat-id"><strong>Ciencias sociales</strong> (13 sub.)</td><td>Stata, gretl, JASP, Gephi, NVivo, SmartPLS, Qualtrics</td></tr>
         </tbody>
     </table>
 
-    <h3><i class="fas fa-microscope" style="color: var(--naranja); margin-right: 0.3rem;"></i> Subcategorías de Ciencias Sociales (categoría P)</h3>
+    <h3><i class="fas fa-microscope" style="color: var(--naranja); margin-right: 0.3rem;"></i> Subcategorías de Ciencias Sociales (categoría 16)</h3>
     <div class="about-grid" style="margin-top: 0.75rem;">
         <ul style="margin-top: 0;">
             <li><strong>Econometría:</strong> Stata, gretl, EViews, R</li>
@@ -507,7 +506,7 @@
         <li>2 de cada 5 entradas cubren <strong>ciencias sociales</strong></li>
         <li>1 de cada 5 entradas cubre <strong>ciencia abierta</strong></li>
         <li>Se prioriza <strong>open source</strong> sobre propietario</li>
-        <li>Rotación de diversidad entre las 16 categorías A–P</li>
+        <li>Rotación de diversidad entre las 16 categorías</li>
     </ul>
     <div class="schedule-box">
         <i class="fas fa-calendar-check"></i>
