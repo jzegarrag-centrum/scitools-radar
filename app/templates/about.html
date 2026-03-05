@@ -35,6 +35,21 @@
         margin: 0 auto;
         line-height: 1.6;
     }
+    .about-hero .hero-badges {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1.25rem;
+        flex-wrap: wrap;
+    }
+    .about-hero .hero-badge {
+        background: rgba(255,255,255,0.15);
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        backdrop-filter: blur(4px);
+    }
     .about-section {
         background: var(--blanco);
         border-radius: var(--radius);
@@ -53,6 +68,12 @@
         gap: 0.5rem;
     }
     .about-section h2 i { color: var(--naranja); }
+    .about-section h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--gris-oscuro);
+        margin: 1.25rem 0 0.5rem 0;
+    }
     .about-section p, .about-section li {
         font-size: 0.95rem;
         line-height: 1.75;
@@ -63,6 +84,16 @@
         margin-top: 0.75rem;
     }
     .about-section li { margin-bottom: 0.5rem; }
+
+    /* Two-column layout */
+    .about-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .about-grid { grid-template-columns: 1fr; }
+    }
 
     /* Pipeline */
     .pipeline {
@@ -164,6 +195,106 @@
         font-size: 0.88rem;
         color: var(--gris-medio);
     }
+
+    /* Categories table */
+    .cat-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        font-size: 0.88rem;
+    }
+    .cat-table th {
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        background: var(--azul);
+        color: white;
+        font-weight: 600;
+        font-size: 0.82rem;
+    }
+    .cat-table th:first-child { border-radius: 8px 0 0 0; }
+    .cat-table th:last-child { border-radius: 0 8px 0 0; }
+    .cat-table td {
+        padding: 0.45rem 0.75rem;
+        border-bottom: 1px solid var(--borde);
+        color: var(--gris-oscuro);
+    }
+    .cat-table tr:hover td { background: var(--gris-claro); }
+    .cat-table .cat-id {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        color: var(--azul);
+        font-size: 0.82rem;
+    }
+
+    /* Team cards */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .team-card {
+        background: var(--gris-claro);
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-align: center;
+        border: 1px solid var(--borde);
+    }
+    .team-card i {
+        font-size: 1.5rem;
+        color: var(--azul);
+        margin-bottom: 0.5rem;
+    }
+    .team-card .team-name {
+        font-weight: 700;
+        color: var(--gris-oscuro);
+        font-size: 0.95rem;
+    }
+    .team-card .team-role {
+        font-size: 0.82rem;
+        color: var(--gris-medio);
+        margin-top: 0.2rem;
+    }
+
+    /* API routes table */
+    .route-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+    }
+    .route-table th {
+        text-align: left;
+        padding: 0.4rem 0.6rem;
+        background: var(--gris-claro);
+        font-weight: 700;
+        color: var(--gris-oscuro);
+        border-bottom: 2px solid var(--borde);
+        font-size: 0.8rem;
+    }
+    .route-table td {
+        padding: 0.35rem 0.6rem;
+        border-bottom: 1px solid var(--borde);
+        color: var(--gris-oscuro);
+    }
+    .route-table code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
+        background: var(--gris-claro);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        color: var(--azul);
+    }
+    .route-table .method {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+    }
+    .method-get { background: #e8f5e9; color: #2e7d32; }
+    .method-post { background: #fff3e0; color: #e65100; }
+
     /* Responsive */
     @media (max-width: 768px) {
         .about-hero { padding: 2rem 1.25rem; }
@@ -175,11 +306,19 @@
         .schedule-box i { font-size: 1.5rem; }
         .tech-grid { grid-template-columns: repeat(2, 1fr); }
         .pipeline-step { padding: 1rem 0.75rem; }
+        .cat-table { font-size: 0.82rem; }
+        .cat-table th, .cat-table td { padding: 0.35rem 0.5rem; }
+        .team-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 480px) {
         .about-hero h1 { font-size: 1.2rem; }
+        .about-hero .hero-badges { gap: 0.5rem; }
+        .about-hero .hero-badge { font-size: 0.75rem; padding: 0.3rem 0.7rem; }
         .tech-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
         .tech-item { font-size: 0.82rem; padding: 0.5rem 0.6rem; }
+        .team-grid { grid-template-columns: 1fr; }
+        .route-table { font-size: 0.78rem; }
+        .route-table th, .route-table td { padding: 0.3rem 0.4rem; }
     }
     @media (max-width: 360px) {
         .about-hero { padding: 1.5rem 1rem; }
@@ -206,8 +345,14 @@
     <h1><i class="fas fa-satellite-dish"></i> SciTools Radar</h1>
     <p>
         Plataforma de monitoreo automatizado de herramientas de investigación científica,
-        impulsada por agentes de inteligencia artificial.
+        impulsada por un pipeline de agentes de inteligencia artificial.
     </p>
+    <div class="hero-badges">
+        <span class="hero-badge"><i class="fas fa-tools"></i> {{ stats.total_tools }} herramientas</span>
+        <span class="hero-badge"><i class="fas fa-newspaper"></i> {{ stats.total_entries }} entradas</span>
+        <span class="hero-badge"><i class="fas fa-layer-group"></i> {{ stats.fields_covered }} campos</span>
+        <span class="hero-badge"><i class="fas fa-robot"></i> Pipeline IA autónomo</span>
+    </div>
 </div>
 
 <!-- What is it -->
@@ -215,14 +360,20 @@
     <h2><i class="fas fa-info-circle"></i> ¿Qué es SciTools Radar?</h2>
     <p>
         SciTools Radar es un sistema inteligente que rastrea, clasifica y reporta herramientas
-        digitales relevantes para la investigación académica y científica. El sistema combina
-        un pipeline de agentes de IA con curaduría humana para mantener un inventario actualizado
-        y generar entradas de blog informativas.
+        digitales relevantes para la investigación académica y científica, con énfasis particular 
+        en <strong>ciencias sociales</strong> (econometría, bibliometría, SEM, SNA, cienciometría, ML aplicado).
     </p>
     <p style="margin-top: 0.75rem;">
-        Desarrollado por <strong>Smart Centrum</strong>, el radar opera de forma autónoma
-        con actualizaciones periódicas, manteniendo a la comunidad informada sobre nuevas
-        herramientas y cambios relevantes en las ya catalogadas.
+        El sistema combina un pipeline de 5 agentes de IA con curaduría humana para descubrir 
+        nuevas herramientas vía búsqueda automatizada, clasificarlas por campo científico, redactar 
+        entradas editoriales de calidad profesional, evaluar la calidad del contenido generado y 
+        publicarlas con un flujo editorial completo: borrador → aprobación → publicación.
+    </p>
+    <p style="margin-top: 0.75rem;">
+        Desarrollado por la <strong>Unidad de Innovabilidad, Tecnologías de Frontera y Conocimiento 
+        Estratégico (SmartCentrum)</strong> en CENTRUM PUCP, bajo la dirección del Dr. Iván de la Vega. 
+        El público objetivo son investigadores, docentes y estudiantes de posgrado que necesitan 
+        mantenerse al día con el ecosistema de herramientas de investigación.
     </p>
 </div>
 
@@ -263,7 +414,7 @@
             <div class="pipeline-num">4</div>
             <div class="pipeline-icon"><i class="fas fa-database"></i></div>
             <div class="pipeline-title">Creador</div>
-            <div class="pipeline-model">Flask/SQLAlchemy</div>
+            <div class="pipeline-model">Flask / SQLAlchemy</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
                 Persiste la entrada en la base de datos
             </p>
@@ -274,9 +425,73 @@
             <div class="pipeline-title">Evaluador</div>
             <div class="pipeline-model">claude-sonnet-4</div>
             <p style="font-size:0.78rem; color:var(--gris-medio); margin-top:0.4rem;">
-                Evalúa la calidad (0–10) y proporciona retroalimentación
+                Evalúa calidad: completitud, diversidad, cobertura social, riesgo de alucinación
             </p>
         </div>
+    </div>
+
+    <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--gris-medio);">
+        <i class="fas fa-info-circle" style="color: var(--azul);"></i>
+        Adicionalmente, el sistema incluye un <strong>Tool Updater</strong> que refresca y enriquece
+        la información de herramientas ya registradas (descripción, pricing, funcionalidades) usando
+        investigación web automatizada.
+    </p>
+</div>
+
+<!-- Monitoring Categories -->
+<div class="about-section">
+    <h2><i class="fas fa-binoculars"></i> 16 Categorías de Monitoreo</h2>
+    <p>
+        El agente investigador cubre 16 categorías (A–P) que abarcan todo el espectro de herramientas
+        de investigación, con énfasis especial en ciencias sociales:
+    </p>
+    <table class="cat-table">
+        <thead>
+            <tr>
+                <th>Cat</th>
+                <th>Área</th>
+                <th>Herramientas representativas</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td class="cat-id">A</td><td>Bases de datos bibliográficas</td><td>Scopus, WoS, OpenAlex, PubMed, Dimensions, Lens.org</td></tr>
+            <tr><td class="cat-id">B</td><td>IA para investigación</td><td>Elicit, Consensus, scite, SciSpace</td></tr>
+            <tr><td class="cat-id">C</td><td>Mapeo por citaciones</td><td>Research Rabbit, Connected Papers, Litmaps</td></tr>
+            <tr><td class="cat-id">D</td><td>Bibliometría y cienciometría</td><td>VOSviewer, Bibliometrix, CiteSpace, SCImago</td></tr>
+            <tr><td class="cat-id">E</td><td>Métricas e impacto</td><td>Altmetric, PlumX, Overton</td></tr>
+            <tr><td class="cat-id">F</td><td>Gestores de referencias</td><td>Zotero, Mendeley, EndNote, Paperpile</td></tr>
+            <tr><td class="cat-id">G</td><td>Escritura académica con IA</td><td>Jenni AI, Paperpal, Writefull, Trinka</td></tr>
+            <tr><td class="cat-id">H</td><td>Edición y publicación</td><td>Overleaf, Typst, Authorea</td></tr>
+            <tr><td class="cat-id">I</td><td>Ilustración y visualización</td><td>BioRender, GraphPad, Cytoscape</td></tr>
+            <tr><td class="cat-id">J</td><td>Revisiones sistemáticas</td><td>Covidence, Rayyan, ASReview</td></tr>
+            <tr><td class="cat-id">K</td><td>Análisis de datos y cómputo</td><td>R, Python, Julia, MATLAB</td></tr>
+            <tr><td class="cat-id">L</td><td>Ciencia abierta</td><td>OSF, ORCID, Zenodo, FAIR tools</td></tr>
+            <tr><td class="cat-id">M</td><td>Dominio específico</td><td>AlphaFold, ChemDraw, ImageJ, ArcGIS</td></tr>
+            <tr><td class="cat-id">N</td><td>Notebooks y ambientes</td><td>Jupyter, Colab, Posit Cloud</td></tr>
+            <tr><td class="cat-id">O</td><td>IA general para investigación</td><td>Claude, GPT-4, Gemini, Perplexity</td></tr>
+            <tr><td class="cat-id">P</td><td><strong>Ciencias sociales</strong> (13 subcategorías)</td><td>Stata, gretl, JASP, Gephi, NVivo, SmartPLS, Qualtrics</td></tr>
+        </tbody>
+    </table>
+
+    <h3><i class="fas fa-microscope" style="color: var(--naranja); margin-right: 0.3rem;"></i> Subcategorías de Ciencias Sociales (categoría P)</h3>
+    <div class="about-grid" style="margin-top: 0.75rem;">
+        <ul style="margin-top: 0;">
+            <li><strong>Econometría:</strong> Stata, gretl, EViews, R</li>
+            <li><strong>Estadística social:</strong> JASP, jamovi, SPSS</li>
+            <li><strong>ML aplicado:</strong> scikit-learn, Orange, KNIME</li>
+            <li><strong>Análisis cualitativo:</strong> NVivo, ATLAS.ti, MAXQDA</li>
+            <li><strong>SEM:</strong> SmartPLS, lavaan, AMOS, Mplus</li>
+            <li><strong>SNA (redes):</strong> Gephi, UCINET, Pajek</li>
+            <li><strong>Encuestas:</strong> Qualtrics, LimeSurvey, REDCap</li>
+        </ul>
+        <ul style="margin-top: 0;">
+            <li><strong>Cienciometría:</strong> VOSviewer, Bibliometrix, CiteSpace</li>
+            <li><strong>Ciencias de la información:</strong> OpenAlex, Dimensions</li>
+            <li><strong>Economía/finanzas:</strong> WRDS, NBER, FRED</li>
+            <li><strong>NLP/text mining:</strong> spaCy, NLTK, Gensim</li>
+            <li><strong>Geoespacial social:</strong> QGIS, GeoDa</li>
+            <li><strong>Simulación social:</strong> NetLogo, Mesa</li>
+        </ul>
     </div>
 </div>
 
@@ -284,47 +499,207 @@
 <div class="about-section">
     <h2><i class="fas fa-clock"></i> Automatización</h2>
     <p>
-        El pipeline se ejecuta de forma automática según un calendario configurado. Cada ejecución
-        investiga nuevas herramientas, detecta actualizaciones en las existentes, genera un editorial
-        profesional y evalúa la calidad del contenido.
+        El pipeline se ejecuta de forma automática según un calendario configurable desde el panel de 
+        administración. Cada ejecución investiga nuevas herramientas (1–6 por día), detecta actualizaciones 
+        en las existentes (0–5 por día), genera un editorial profesional y evalúa la calidad del contenido.
     </p>
+    <ul>
+        <li>2 de cada 5 entradas cubren <strong>ciencias sociales</strong></li>
+        <li>1 de cada 5 entradas cubre <strong>ciencia abierta</strong></li>
+        <li>Se prioriza <strong>open source</strong> sobre propietario</li>
+        <li>Rotación de diversidad entre las 16 categorías A–P</li>
+    </ul>
     <div class="schedule-box">
         <i class="fas fa-calendar-check"></i>
         <div class="schedule-box-info">
             <strong>Martes y Jueves a las 07:00 UTC</strong>
-            <span>Dos ejecuciones semanales para mantener el radar actualizado sin sobrecargar los recursos de la plataforma.</span>
+            <span>Ejecuciones automáticas configurables desde Admin > Agent Control. También se puede disparar manualmente.</span>
         </div>
     </div>
 </div>
 
-<!-- Technology Stack -->
+<!-- SciBot -->
 <div class="about-section">
-    <h2><i class="fas fa-layer-group"></i> Stack Tecnológico</h2>
-    <div class="tech-grid">
-        <div class="tech-item"><i class="fab fa-python"></i> Flask 3.1</div>
-        <div class="tech-item"><i class="fas fa-database"></i> SQLAlchemy</div>
-        <div class="tech-item"><i class="fas fa-brain"></i> OpenAI SDK</div>
-        <div class="tech-item"><i class="fas fa-server"></i> PostgreSQL</div>
-        <div class="tech-item"><i class="fas fa-search"></i> Tavily API</div>
-        <div class="tech-item"><i class="fas fa-clock"></i> APScheduler</div>
-        <div class="tech-item"><i class="fab fa-html5"></i> Jinja2</div>
-        <div class="tech-item"><i class="fas fa-train"></i> Railway</div>
-        <div class="tech-item"><i class="fas fa-chart-bar"></i> Chart.js</div>
+    <h2><i class="fas fa-comment-dots"></i> SciBot — Asistente Conversacional</h2>
+    <p>
+        SciBot es un asistente integrado en la interfaz (widget flotante en la esquina inferior derecha) que:
+    </p>
+    <ul>
+        <li>Responde consultas sobre herramientas de investigación</li>
+        <li>Conoce el inventario completo de la plataforma</li>
+        <li>Sugiere herramientas según las necesidades del usuario</li>
+        <li>Usa <strong>Claude Sonnet 4</strong> vía CometAPI</li>
+    </ul>
+    <p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--gris-medio);">
+        Haz clic en el botón <i class="fas fa-robot" style="color: var(--azul);"></i> de la esquina 
+        inferior derecha para iniciar una conversación.
+    </p>
+</div>
+
+<!-- Two-column: Tech Stack + API -->
+<div class="about-grid">
+    <!-- Technology Stack -->
+    <div class="about-section" style="margin-bottom: 0;">
+        <h2><i class="fas fa-layer-group"></i> Stack Tecnológico</h2>
+        <div class="tech-grid">
+            <div class="tech-item"><i class="fab fa-python"></i> Flask 3.1</div>
+            <div class="tech-item"><i class="fas fa-database"></i> SQLAlchemy</div>
+            <div class="tech-item"><i class="fas fa-brain"></i> CometAPI</div>
+            <div class="tech-item"><i class="fas fa-server"></i> PostgreSQL</div>
+            <div class="tech-item"><i class="fas fa-search"></i> Tavily API</div>
+            <div class="tech-item"><i class="fas fa-clock"></i> APScheduler</div>
+            <div class="tech-item"><i class="fab fa-html5"></i> Jinja2</div>
+            <div class="tech-item"><i class="fas fa-train"></i> Railway</div>
+            <div class="tech-item"><i class="fas fa-chart-bar"></i> Chart.js 4</div>
+            <div class="tech-item"><i class="fas fa-icons"></i> Font Awesome 6</div>
+            <div class="tech-item"><i class="fas fa-exchange-alt"></i> Flask-Migrate</div>
+            <div class="tech-item"><i class="fas fa-shield-alt"></i> Gunicorn</div>
+        </div>
+    </div>
+
+    <!-- API -->
+    <div class="about-section" style="margin-bottom: 0;">
+        <h2><i class="fas fa-plug"></i> API REST v1</h2>
+        <p style="margin-bottom: 0.5rem; font-size: 0.88rem;">Endpoints públicos disponibles para integración:</p>
+        <table class="route-table">
+            <thead>
+                <tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="method method-get">GET</span></td>
+                    <td><code>/api/v1/tools</code></td>
+                    <td>Lista herramientas (paginado)</td>
+                </tr>
+                <tr>
+                    <td><span class="method method-get">GET</span></td>
+                    <td><code>/api/v1/tools/&lt;slug&gt;</code></td>
+                    <td>Detalle herramienta</td>
+                </tr>
+                <tr>
+                    <td><span class="method method-get">GET</span></td>
+                    <td><code>/api/v1/entries</code></td>
+                    <td>Lista entradas</td>
+                </tr>
+                <tr>
+                    <td><span class="method method-get">GET</span></td>
+                    <td><code>/api/v1/stats</code></td>
+                    <td>Estadísticas generales</td>
+                </tr>
+                <tr>
+                    <td><span class="method method-post">POST</span></td>
+                    <td><code>/api/v1/chat</code></td>
+                    <td>Chat con SciBot</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
-<!-- Credits -->
+<div style="height: 1.5rem;"></div>
+
+<!-- Flujo editorial -->
 <div class="about-section">
-    <h2><i class="fas fa-users"></i> Créditos</h2>
+    <h2><i class="fas fa-tasks"></i> Flujo Editorial</h2>
     <p>
-        Este proyecto fue desarrollado como parte de las herramientas de investigación de
-        <strong>Smart Centrum</strong>. El sistema es de código abierto y está disponible
-        para que la comunidad académica lo utilice y contribuya.
+        Las entradas generadas por el agente pasan por un flujo de aprobación controlado desde el
+        panel de administración:
     </p>
-    <ul>
-        <li><strong>Diseño y arquitectura:</strong> Pipeline multiagente con especialización por etapa</li>
-        <li><strong>Modelos de IA:</strong> CometAPI (compatible con OpenAI SDK)</li>
-        <li><strong>Infraestructura:</strong> Railway (producción) / SQLite (desarrollo)</li>
-    </ul>
+    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 1.25rem 0; justify-content: center;">
+        <span style="background: var(--gris-claro); border: 1px solid var(--borde); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.88rem;">
+            <i class="fas fa-robot" style="color: var(--azul);"></i> Agente genera borrador
+        </span>
+        <i class="fas fa-arrow-right" style="color: var(--gris-medio);"></i>
+        <span style="background: var(--gris-claro); border: 1px solid var(--borde); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.88rem;">
+            <i class="fas fa-user-check" style="color: var(--naranja);"></i> Admin revisa
+        </span>
+        <i class="fas fa-arrow-right" style="color: var(--gris-medio);"></i>
+        <span style="background: #e8f5e9; border: 1px solid #81c784; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.88rem;">
+            <i class="fas fa-check-circle" style="color: #2e7d32;"></i> Publicado
+        </span>
+    </div>
+    <p style="font-size: 0.88rem; color: var(--gris-medio); text-align: center;">
+        Las entradas no son visibles en el blog público hasta que el administrador las aprueba.
+    </p>
+</div>
+
+<!-- Identity -->
+<div class="about-section">
+    <h2><i class="fas fa-palette"></i> Identidad Visual</h2>
+    <p>
+        El diseño sigue la línea institucional de <strong>CENTRUM PUCP</strong>:
+    </p>
+    <div class="about-grid" style="margin-top: 1rem;">
+        <div>
+            <h3>Paleta de colores</h3>
+            <ul style="margin-top: 0.5rem;">
+                <li><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#003865;vertical-align:middle;margin-right:0.3rem;"></span> <strong>Azul marino</strong> — Acento principal (#003865)</li>
+                <li><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#C5922E;vertical-align:middle;margin-right:0.3rem;"></span> <strong>Dorado institucional</strong> — Acento secundario (#C5922E)</li>
+                <li><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#f7f8fa;vertical-align:middle;margin-right:0.3rem;border:1px solid #ddd;"></span> <strong>Gris perla</strong> — Fondo principal (#f7f8fa)</li>
+                <li><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#1A1F2E;vertical-align:middle;margin-right:0.3rem;"></span> <strong>Casi negro</strong> — Texto principal (#1A1F2E)</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Tipografía</h3>
+            <ul style="margin-top: 0.5rem;">
+                <li><strong>Source Serif 4</strong> — Títulos y nombres (serif académica)</li>
+                <li><strong>Source Sans 3</strong> — Cuerpo y descripciones (sans-serif)</li>
+                <li><strong>IBM Plex Mono</strong> — Código, versiones, badges (mono)</li>
+            </ul>
+            <p style="font-size: 0.85rem; color: var(--gris-medio); margin-top: 0.75rem;">
+                Cards con sombras sutiles, badges institucionales apagados, header sticky con glass blur. 
+                Sin gradientes neón ni animaciones de fondo.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Team -->
+<div class="about-section">
+    <h2><i class="fas fa-users"></i> Equipo</h2>
+    <p>
+        Desarrollado dentro de la <strong>Unidad de Innovabilidad, Tecnologías de Frontera y 
+        Conocimiento Estratégico (SmartCentrum)</strong> en CENTRUM PUCP.
+    </p>
+    <div class="team-grid">
+        <div class="team-card">
+            <i class="fas fa-user-tie"></i>
+            <div class="team-name">Dr. Iván de la Vega</div>
+            <div class="team-role">Director</div>
+        </div>
+        <div class="team-card">
+            <i class="fas fa-code"></i>
+            <div class="team-name">José Miguel Zegarr.</div>
+            <div class="team-role">Analista de Desarrollo</div>
+        </div>
+        <div class="team-card">
+            <i class="fas fa-user"></i>
+            <div class="team-name">Manuel Sotomayor</div>
+            <div class="team-role">Equipo SmartCentrum</div>
+        </div>
+        <div class="team-card">
+            <i class="fas fa-user"></i>
+            <div class="team-name">Rolando Neira</div>
+            <div class="team-role">Equipo SmartCentrum</div>
+        </div>
+    </div>
+</div>
+
+<!-- Source & License -->
+<div class="about-section">
+    <h2><i class="fab fa-github"></i> Código Fuente</h2>
+    <p>
+        El proyecto es de código abierto y está disponible en GitHub para que la comunidad 
+        académica lo utilice y contribuya.
+    </p>
+    <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="https://github.com/jzegarrag-centrum/scitools-radar" target="_blank" rel="noopener"
+           style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--azul); color: white; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: var(--transition);">
+            <i class="fab fa-github"></i> Ver en GitHub
+        </a>
+    </div>
+    <p style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--gris-medio);">
+        <strong>Licencia:</strong> Proyecto interno Smart Centrum — CENTRUM PUCP
+    </p>
 </div>
 {% endblock %}

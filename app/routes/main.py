@@ -174,4 +174,15 @@ def entrada_detalle(date_str):
 @main_bp.route('/about')
 def about():
     """Acerca de SciTools Radar"""
-    return render_template('about.html')
+    total_tools = Tool.query.filter_by(status='active').count()
+    total_entries = Entry.query.filter_by(status='published').count()
+    fields_covered = db.session.query(db.func.count(db.distinct(Tool.field))).filter(
+        Tool.status == 'active', Tool.field.isnot(None)
+    ).scalar() or 0
+    
+    stats = {
+        'total_tools': total_tools,
+        'total_entries': total_entries,
+        'fields_covered': fields_covered
+    }
+    return render_template('about.html', stats=stats)
