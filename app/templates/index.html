@@ -200,10 +200,24 @@
     @media (max-width: 480px) {
         .hero-section { padding: 1.5rem 1rem; margin-bottom: 1.25rem; }
         .hero-section h1 { font-size: 1.2rem; }
+        .hero-section::before { width: 250px; height: 250px; right: -30%; }
         .hero-stats { gap: 1rem; }
         .entry-date-badge { min-width: 50px; padding: 0.4rem 0.5rem; }
         .entry-date-badge .day { font-size: 1.2rem; }
         .entry-card-header { flex-direction: row; align-items: flex-start; }
+    }
+    @media (max-width: 360px) {
+        .hero-section { padding: 1.25rem 0.75rem; border-radius: var(--radius); }
+        .hero-section h1 { font-size: 1.05rem; }
+        .hero-section p { font-size: 0.82rem; }
+        .hero-stat-value { font-size: 1.2rem; }
+        .hero-stat-label { font-size: 0.68rem; }
+        .entry-card-header { padding: 0.75rem 0.75rem 0; }
+        .entry-card-body { padding: 0.75rem; }
+        .entry-card-footer { padding: 0 0.75rem 0.75rem; }
+        .entry-editorial { font-size: 0.85rem; }
+        .tool-chip { font-size: 0.72rem; padding: 0.2rem 0.5rem; }
+        .entry-card-header h2 { font-size: 0.95rem !important; }
     }
 </style>
 {% endblock %}

@@ -170,6 +170,10 @@
         font-size: 0.82rem;
         margin-top: 0.5rem;
         font-family: 'JetBrains Mono', monospace;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        overflow-x: auto;
+        max-width: 100%;
     }
     .change-old { color: var(--peligro); }
     .change-new { color: var(--exito); }
@@ -227,6 +231,17 @@
         .tool-meta-grid { grid-template-columns: 1fr; }
         .tool-hero-badges { gap: 0.35rem; }
         .badge { font-size: 0.72rem; }
+    }
+    @media (max-width: 360px) {
+        .tool-hero { padding: 1rem; }
+        .tool-hero-info h1 { font-size: 1.15rem; }
+        .tool-hero-icon { width: 44px; height: 44px; font-size: 1.1rem; border-radius: 10px; }
+        .detail-section { padding: 1rem; }
+        .detail-section h2 { font-size: 0.95rem; }
+        .timeline-desc { font-size: 0.82rem; }
+        .change-diff { font-size: 0.7rem; padding: 0.4rem 0.5rem; }
+        .entry-list-info a { font-size: 0.85rem; }
+        .entry-list-stats { font-size: 0.75rem; }
     }
     .tag-list {
         display: flex;

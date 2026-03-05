@@ -301,6 +301,18 @@
     @media (max-width: 480px) {
         .entry-date-display { border-radius: 10px; padding: 0.6rem 0.75rem; }
         .entry-date-day { font-size: 1.4rem; }
+        .tool-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 360px) {
+        .entry-hero { padding: 1rem; }
+        .entry-hero-info h1 { font-size: 1.05rem; }
+        .entry-hero-stats { font-size: 0.78rem; }
+        .editorial-card { padding: 1rem; }
+        .editorial-body { font-size: 0.88rem; line-height: 1.7; }
+        .tool-pill { font-size: 0.78rem; padding: 0.5rem 0.7rem; }
+        .update-tool-name { font-size: 0.85rem; }
+        .update-desc { font-size: 0.82rem; }
+        .entry-nav a { padding: 0.55rem 0.9rem; font-size: 0.82rem; }
     }
 </style>
 {% endblock %}
@@ -339,14 +351,15 @@
         </div>
     </div>
 
-    {% if agent_run and agent_run.quality_score is not none %}
+    {% if agent_run and agent_run.completeness is not none %}
+    {% set score = ((agent_run.completeness or 0) + (agent_run.field_diversity or 0) + (agent_run.social_coverage or 0) + (1.0 - (agent_run.hallucination_risk or 0))) / 4.0 * 10 %}
+    {% set score = score|round(1) %}
     <div class="quality-bar">
         <div class="quality-row">
             <span class="quality-label">Calidad</span>
             <div class="quality-meter">
-                {% set score = agent_run.quality_score %}
                 {% set color = 'var(--exito)' if score >= 7 else ('var(--naranja)' if score >= 5 else 'var(--peligro)') %}
-                <div class="quality-meter-fill" style="width:{{ score * 10 }}%; background:{{ color }};"></div>
+                <div class="quality-meter-fill" style="width:{{ [score * 10, 100]|min }}%; background:{{ color }};"></div>
             </div>
             <span class="quality-score" style="color:{{ color }};">{{ score }}/10</span>
         </div>

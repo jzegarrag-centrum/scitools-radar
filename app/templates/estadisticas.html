@@ -147,6 +147,16 @@
         .stat-value { font-size: 1.3rem; }
         .stat-label { font-size: 0.75rem; }
     }
+    @media (max-width: 360px) {
+        .stats-header h1 { font-size: 1.05rem; }
+        .stats-cards { gap: 0.5rem; }
+        .stat-card { padding: 0.75rem; }
+        .stat-icon { width: 34px; height: 34px; font-size: 0.85rem; margin-bottom: 0.35rem; }
+        .stat-value { font-size: 1.1rem; }
+        .stat-label { font-size: 0.7rem; }
+        .chart-card { padding: 0.75rem; }
+        .chart-canvas-wrap { height: 180px; }
+    }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 {% endblock %}
@@ -210,6 +220,7 @@
 <div class="charts-grid">
     <div class="chart-card">
         <h3><i class="fas fa-trophy"></i> Top Categorias</h3>
+        <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
         <table class="top-table">
             <thead>
                 <tr><th>#</th><th>Categoria</th><th>Herramientas</th></tr>
@@ -224,6 +235,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
     <div class="chart-card">
         <h3><i class="fas fa-calendar-alt"></i> Ultima Actividad</h3>
