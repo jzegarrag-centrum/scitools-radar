@@ -64,6 +64,17 @@
         .mini-table { font-size:0.8rem; }
         .mini-table th, .mini-table td { padding:0.4rem 0.5rem; }
     }
+    @media (max-width: 360px) {
+        .admin-header h1 { font-size:1.1rem; }
+        .kpi-grid { grid-template-columns:1fr 1fr; gap:0.5rem; }
+        .kpi-card { padding:0.85rem; }
+        .kpi-val { font-size:1.3rem; }
+        .kpi-label { font-size:0.7rem; }
+        .section-card { padding:0.75rem; }
+        .action-btn { padding:0.75rem 0.9rem; font-size:0.82rem; }
+        .action-btn i { width:30px; height:30px; font-size:1rem; }
+        .mini-table th, .mini-table td { padding:0.3rem 0.35rem; font-size:0.75rem; }
+    }
 </style>
 {% endblock %}
 
@@ -240,22 +251,34 @@
 
 {% block scripts %}
 <script>
-// Polling para monitoreo en tiempo real
+// Polling con detección de interacción
 {% if agent_status.running %}
-(function poll() {
-    fetch('{{ url_for("admin.agent_status_api") }}')
-        .then(r => r.json())
-        .then(data => {
-            const step = document.getElementById('monitorStep');
-            const progress = document.getElementById('monitorProgress');
-            const percent = document.getElementById('monitorPercent');
-            if (step) step.textContent = data.step || '';
-            if (progress) progress.style.width = (data.progress || 0) + '%';
-            if (percent) percent.textContent = (data.progress || 0) + '%';
-            if (data.running) setTimeout(poll, 2000);
-            else location.reload();
-        })
-        .catch(() => setTimeout(poll, 5000));
+(function() {
+    let userInteracting = false;
+    document.addEventListener('mousedown', () => { userInteracting = true; });
+    document.addEventListener('mouseup', () => { setTimeout(() => { userInteracting = false; }, 1500); });
+    document.querySelectorAll('.action-btn, form, a').forEach(el => {
+        el.addEventListener('mouseenter', () => { userInteracting = true; });
+        el.addEventListener('mouseleave', () => { setTimeout(() => { userInteracting = false; }, 1000); });
+    });
+
+    function poll() {
+        if (userInteracting) { setTimeout(poll, 2000); return; }
+        fetch('{{ url_for("admin.agent_status_api") }}')
+            .then(r => r.json())
+            .then(data => {
+                const step = document.getElementById('monitorStep');
+                const progress = document.getElementById('monitorProgress');
+                const percent = document.getElementById('monitorPercent');
+                if (step) step.textContent = data.step || '';
+                if (progress) progress.style.width = (data.progress || 0) + '%';
+                if (percent) percent.textContent = (data.progress || 0) + '%';
+                if (data.running) setTimeout(poll, 3000);
+                else setTimeout(() => location.reload(), 1500);
+            })
+            .catch(() => setTimeout(poll, 5000));
+    }
+    setTimeout(poll, 3000);
 })();
 {% endif %}
 </script>

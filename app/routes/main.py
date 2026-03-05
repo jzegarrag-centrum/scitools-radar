@@ -28,11 +28,18 @@ def index():
         db.or_(Entry.status == 'published', Entry.status.is_(None))
     ).count()
     
+    # Contar borradores para admins
+    from flask_login import current_user
+    draft_count = 0
+    if current_user.is_authenticated:
+        draft_count = Entry.query.filter_by(status='draft').count()
+    
     return render_template(
         'index.html',
         entries=entries,
         total_tools=total_tools,
-        total_entries=total_entries
+        total_entries=total_entries,
+        draft_count=draft_count
     )
 
 
@@ -53,13 +60,15 @@ def inventario():
             field=field if field else None,
             category=category if category else None,
             pricing=pricing if pricing else None,
-            limit=per_page * 10  # Pre-filter para paginación manual
+            limit=per_page * 50  # Pre-filter para paginación manual
         )
         # Paginación manual simple para resultados filtrados
+        total_results = len(tools)
+        total_pages = max(1, (total_results + per_page - 1) // per_page)
         start = (page - 1) * per_page
         end = start + per_page
         tools_page = tools[start:end]
-        has_next = len(tools) > end
+        has_next = total_results > end
         has_prev = page > 1
     else:
         # Sin filtros: query directo con paginación
@@ -68,6 +77,8 @@ def inventario():
         tools_page = paginated.items
         has_next = paginated.has_next
         has_prev = paginated.has_prev
+        total_pages = paginated.pages or 1
+        total_results = paginated.total
     
     # Opciones para filtros
     fields = SearchService.get_all_fields()
@@ -86,7 +97,9 @@ def inventario():
         pricings=pricings,
         page=page,
         has_next=has_next,
-        has_prev=has_prev
+        has_prev=has_prev,
+        total_pages=total_pages,
+        total_results=total_results
     )
 
 

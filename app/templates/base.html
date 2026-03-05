@@ -92,6 +92,7 @@
             display: flex; align-items: center; gap: 0.4rem;
         }
         nav a:hover { background: rgba(255,255,255,0.12); color: white; }
+        nav a.active { background: rgba(255,255,255,0.15); color: white; border-bottom: 2px solid var(--naranja); }
         .nav-admin-link {
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
@@ -324,7 +325,8 @@
             .header-inner { padding: 0 0.75rem; }
             .container { padding: 0 0.75rem; }
             .btn { padding: 0.65rem 1rem; font-size: 0.82rem; }
-            .badge { font-size: 0.72rem; padding: 0.2rem 0.5rem; }
+            .badge { font-size: 0.72rem; padding: 0.2rem 0.5rem; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .pagination-bar .btn-sm { padding: 0.35rem 0.6rem; font-size: 0.75rem; min-height: 32px; min-width: 32px; justify-content: center; }
         }
         @media (max-width: 360px) {
             .header-inner { padding: 0 0.5rem; height: 52px; }
@@ -332,10 +334,12 @@
             .logo-icon { width: 28px; height: 28px; font-size: 0.85rem; border-radius: 7px; }
             .container { padding: 0 0.5rem; }
             .btn { padding: 0.5rem 0.75rem; font-size: 0.78rem; gap: 0.3rem; }
-            .badge { font-size: 0.68rem; padding: 0.15rem 0.4rem; }
+            .badge { font-size: 0.68rem; padding: 0.15rem 0.4rem; max-width: 140px; }
             .chat-fab { width: 46px; height: 46px; bottom: 0.75rem; right: 0.75rem; }
             .fab-robot { width: 28px; height: 28px; }
             .footer-bottom { font-size: 0.72rem; }
+            .pagination-bar { gap: 0.25rem; }
+            .pagination-bar .btn-sm { padding: 0.3rem 0.5rem; font-size: 0.72rem; min-height: 30px; min-width: 30px; }
         }
         {% block styles %}{% endblock %}
     </style>
@@ -357,10 +361,10 @@
                             <i class="fas fa-times"></i>
                         </button>
                     </li>
-                    <li><a href="{{ url_for('main.index') }}"><i class="fas fa-newspaper"></i> Blog</a></li>
-                    <li><a href="{{ url_for('main.inventario') }}"><i class="fas fa-th-large"></i> Inventario</a></li>
-                    <li><a href="{{ url_for('main.estadisticas') }}"><i class="fas fa-chart-bar"></i> Estadísticas</a></li>
-                    <li><a href="{{ url_for('main.about') }}"><i class="fas fa-info-circle"></i> Acerca de</a></li>
+                    <li><a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' or request.endpoint == 'main.entrada_detalle' %}active{% endif %}"><i class="fas fa-newspaper"></i> Blog</a></li>
+                    <li><a href="{{ url_for('main.inventario') }}" class="{% if request.endpoint == 'main.inventario' or request.endpoint == 'main.herramienta_detalle' %}active{% endif %}"><i class="fas fa-th-large"></i> Inventario</a></li>
+                    <li><a href="{{ url_for('main.estadisticas') }}" class="{% if request.endpoint == 'main.estadisticas' %}active{% endif %}"><i class="fas fa-chart-bar"></i> Estadísticas</a></li>
+                    <li><a href="{{ url_for('main.about') }}" class="{% if request.endpoint == 'main.about' %}active{% endif %}"><i class="fas fa-info-circle"></i> Acerca de</a></li>
                     {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('admin.dashboard') }}" class="nav-admin-link"><i class="fas fa-tachometer-alt"></i> Panel Admin</a></li>
                     <li><a href="{{ url_for('admin.logout') }}"><i class="fas fa-sign-out-alt"></i> Salir</a></li>

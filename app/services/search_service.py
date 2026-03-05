@@ -50,7 +50,19 @@ class SearchService:
             q = q.filter(Tool.category == category)
 
         if pricing:
-            q = q.filter(Tool.pricing == pricing)
+            # Mapear etiquetas cortas a patrones de búsqueda
+            pricing_patterns = {
+                'free': ['free', 'gratis', 'gratuito', 'gratuita', 'sin costo'],
+                'freemium': ['freemium', 'free tier', 'plan gratuito', 'free plan',
+                             'versión gratuita', 'free version', 'free basic'],
+                'open-source': ['open-source', 'open source', 'código abierto', 'opensource'],
+                'paid': ['paid', 'pago', 'subscription', 'suscripción', 'license',
+                         'licencia', 'premium', 'de pago'],
+                'enterprise': ['enterprise', 'empresarial', 'corporativo'],
+            }
+            patterns = pricing_patterns.get(pricing.lower(), [pricing])
+            pricing_filters = [Tool.pricing.ilike(f'%{p}%') for p in patterns]
+            q = q.filter(or_(*pricing_filters))
         
         # Orden por relevancia (nombre primero, luego summary)
         if query:
@@ -80,6 +92,5 @@ class SearchService:
 
     @staticmethod
     def get_all_pricings() -> List[str]:
-        """Retorna todos los modelos de pricing únicos"""
-        result = db.session.query(Tool.pricing).distinct().filter(Tool.pricing.isnot(None)).all()
-        return sorted([r[0] for r in result])
+        """Retorna categorías de pricing estandarizadas"""
+        return ['free', 'freemium', 'open-source', 'paid', 'enterprise']

@@ -83,6 +83,9 @@ def create_app(config_name=None):
     # ── Corregir categorías con letras sueltas ───────────────
     _fix_letter_categories(app)
 
+    # ── Corregir logos de baja resolución ────────────────────
+    _fix_known_logos(app)
+
     # ── Garantizar usuario admin ──────────────────────────────
     _ensure_admin(app)
     
@@ -212,4 +215,35 @@ def _ensure_admin(app):
                 app.logger.info('Admin user created (%s)', app.config['ADMIN_USERNAME'])
     except Exception:
         # Las tablas pueden no existir aún (pre-migración)
+        pass
+
+
+def _fix_known_logos(app):
+    """Corrige logos de baja resolución para herramientas conocidas."""
+    LOGO_OVERRIDES = {
+        'bibliometrix': 'https://www.bibliometrix.org/assets/img/logo_bg.png',
+        'lens': 'https://www.lens.org/images/lens-logo.png',
+        'lens-org': 'https://www.lens.org/images/lens-logo.png',
+        'the-lens': 'https://www.lens.org/images/lens-logo.png',
+        'scopus': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Scopus_logo.svg/512px-Scopus_logo.svg.png',
+        'scopus-ai': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Scopus_logo.svg/512px-Scopus_logo.svg.png',
+        'orca-ai': 'https://www.orca-ai.com/orca-ai-logo.svg',
+        'elsevier': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Elsevier.svg/400px-Elsevier.svg.png',
+        'zotero': 'https://www.zotero.org/support/_media/logo/zotero_256x256x32.png',
+        'mendeley': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Mendeley_Logo.svg/480px-Mendeley_Logo.svg.png',
+        'overleaf': 'https://images.ctfassets.net/nrgyaltdicpt/h9dpHuVys19B1sOAWvbP6/1ab2fdcfd1e4e12b0e10ec8c9c02ef02/ologo_square_colour_light_bg.svg',
+    }
+    try:
+        with app.app_context():
+            from app.models import Tool
+            fixed = 0
+            for slug, logo_url in LOGO_OVERRIDES.items():
+                tool = Tool.query.filter_by(slug=slug).first()
+                if tool and tool.logo_url != logo_url:
+                    tool.logo_url = logo_url
+                    fixed += 1
+            if fixed:
+                db.session.commit()
+                app.logger.info('Fixed %d tool logos with high-res overrides', fixed)
+    except Exception:
         pass

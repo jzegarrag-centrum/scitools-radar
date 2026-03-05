@@ -340,9 +340,31 @@ def generate_cover_image(entry: Entry):
 def fetch_tool_logos(entry: Entry):
     """
     Intenta obtener logos/favicons para las herramientas de la entrada.
-    Usa Google Favicon API como fuente confiable.
+    Usa Google Favicon API como fuente confiable, con overrides para logos conocidos.
     """
+    # Overrides para herramientas con logos conocidos de alta resolución
+    LOGO_OVERRIDES = {
+        'bibliometrix': 'https://www.bibliometrix.org/assets/img/logo_bg.png',
+        'lens': 'https://www.lens.org/images/lens-logo.png',
+        'lens-org': 'https://www.lens.org/images/lens-logo.png',
+        'the-lens': 'https://www.lens.org/images/lens-logo.png',
+        'scopus': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Scopus_logo.svg/512px-Scopus_logo.svg.png',
+        'scopus-ai': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Scopus_logo.svg/512px-Scopus_logo.svg.png',
+        'orca-ai': 'https://www.orca-ai.com/orca-ai-logo.svg',
+        'elsevier': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Elsevier.svg/400px-Elsevier.svg.png',
+        'zotero': 'https://www.zotero.org/support/_media/logo/zotero_256x256x32.png',
+        'mendeley': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Mendeley_Logo.svg/480px-Mendeley_Logo.svg.png',
+        'overleaf': 'https://images.ctfassets.net/nrgyaltdicpt/h9dpHuVys19B1sOAWvbP6/1ab2fdcfd1e4e12b0e10ec8c9c02ef02/ologo_square_colour_light_bg.svg',
+    }
+
     for tool in entry.tools:
+        # Aplicar override si existe (incluso si ya tiene logo)
+        slug_lower = (tool.slug or '').lower()
+        if slug_lower in LOGO_OVERRIDES:
+            tool.logo_url = LOGO_OVERRIDES[slug_lower]
+            logger.info(f"Logo override for {tool.slug}: {tool.logo_url}")
+            continue
+
         if tool.logo_url:
             continue  # Ya tiene logo
 

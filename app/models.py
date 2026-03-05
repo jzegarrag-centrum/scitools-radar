@@ -83,6 +83,42 @@ class Tool(db.Model):
                  postgresql_ops={'name': 'gin_trgm_ops', 'summary': 'gin_trgm_ops'}),
     )
 
+    @property
+    def pricing_label(self):
+        """Retorna una etiqueta corta de pricing basada en el texto descriptivo."""
+        if not self.pricing:
+            return None
+        p = self.pricing.lower().strip()
+        # Clasificar por palabras clave (orden importa)
+        if any(k in p for k in ['open-source', 'open source', 'código abierto', 'opensource']):
+            return 'Open Source'
+        if any(k in p for k in ['freemium', 'free tier', 'plan gratuito', 'versión gratuita',
+                                 'free plan', 'free version', 'gratis con',
+                                 'gratuito con limitaciones', 'free basic']):
+            return 'Freemium'
+        if any(k in p for k in ['free', 'gratis', 'gratuito', 'gratuita', 'sin costo', 'no cost']):
+            return 'Free'
+        if any(k in p for k in ['enterprise', 'empresarial', 'corporativo', 'custom pricing']):
+            return 'Enterprise'
+        if any(k in p for k in ['paid', 'pago', 'subscription', 'suscripción',
+                                 'license', 'licencia', '$', '€', 'pricing',
+                                 'premium', 'pro plan', 'de pago']):
+            return 'Paid'
+        # Si el texto es corto y coincide con una categoría conocida
+        labels_map = {
+            'free': 'Free', 'gratis': 'Free', 'gratuito': 'Free',
+            'freemium': 'Freemium', 'paid': 'Paid', 'pago': 'Paid',
+            'open-source': 'Open Source', 'open source': 'Open Source',
+            'enterprise': 'Enterprise',
+        }
+        if p in labels_map:
+            return labels_map[p]
+        # Fallback: truncar a máx 20 chars
+        short = self.pricing[:20].strip()
+        if len(self.pricing) > 20:
+            short += '…'
+        return short
+
     def features_as_list(self):
         """Retorna la lista de features parseada desde JSON o texto."""
         import json as _json

@@ -358,7 +358,7 @@
         .filter-select { min-width: 100%; }
         .tools-grid { grid-template-columns: 1fr; gap: 1rem; }
         .tool-card { padding: 1.25rem; }
-        .pagination-bar { flex-wrap: wrap; gap: 0.5rem; }
+        .pagination-bar { flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
         .quick-filters { gap: 0.3rem; }
         .view-controls { display: none; }
     }
@@ -367,6 +367,8 @@
         .tool-icon { width: 36px; height: 36px; font-size: 0.95rem; border-radius: 8px; }
         .tool-card-header h3 { font-size: 0.95rem; }
         .tool-badges { gap: 0.3rem; }
+        .pagination-bar .btn-sm { padding: 0.3rem 0.55rem; font-size: 0.75rem; min-width: 30px; min-height: 30px; }
+        .pagination-bar .page-info { font-size: 0.78rem; width: 100%; text-align: center; order: 10; }
     }
     @media (max-width: 360px) {
         .inv-header h1 { font-size: 1.05rem; }
@@ -376,6 +378,8 @@
         .tool-card { padding: 1rem; }
         .tool-summary { font-size: 0.82rem; }
         .tool-card-footer a { font-size: 0.8rem; }
+        .pagination-bar .btn-sm { padding: 0.25rem 0.45rem; font-size: 0.72rem; min-width: 28px; min-height: 28px; }
+        .quick-filters { display: none; }
     }
 </style>
 {% endblock %}
@@ -386,9 +390,9 @@
         <h1><i class="fas fa-th-large"></i> Inventario de Herramientas</h1>
         <div class="inv-count">
             {% if query or field or category or pricing %}
-                Resultados filtrados
+                Resultados filtrados: <strong>{{ total_results }}</strong> herramientas
             {% else %}
-                {{ tools|length }}+ herramientas científicas catalogadas
+                {{ total_results }}+ herramientas científicas catalogadas
             {% endif %}
         </div>
     </div>
@@ -415,8 +419,9 @@
         </select>
         <select name="pricing" class="filter-select" onchange="this.form.submit()">
             <option value="">Todos los precios</option>
+            {% set pricing_labels = {'free': 'Gratis', 'freemium': 'Freemium', 'open-source': 'Open Source', 'paid': 'De pago', 'enterprise': 'Enterprise'} %}
             {% for p in pricings %}
-            <option value="{{ p }}" {% if p == pricing %}selected{% endif %}>{{ p }}</option>
+            <option value="{{ p }}" {% if p == pricing %}selected{% endif %}>{{ pricing_labels.get(p, p) }}</option>
             {% endfor %}
         </select>
         <button type="submit" class="btn"><i class="fas fa-search"></i> Buscar</button>
@@ -496,7 +501,7 @@
             <span class="badge badge-naranja"><i class="fas fa-flask"></i> {{ tool.field }}</span>
             {% endif %}
             {% if tool.pricing %}
-            <span class="badge badge-verde"><i class="fas fa-tag"></i> {{ tool.pricing }}</span>
+            <span class="badge badge-verde"><i class="fas fa-tag"></i> {{ tool.pricing_label }}</span>
             {% endif %}
         </div>
         <div class="tool-summary">
@@ -517,19 +522,51 @@
 </div>
 
 <!-- Pagination -->
+{% if total_pages > 1 %}
 <div class="pagination-bar">
+    {# Previous #}
     {% if has_prev %}
-    <a href="{{ url_for('main.inventario', page=page-1, q=query, field=field, category=category, pricing=pricing) }}" class="btn btn-outline btn-sm">
-        <i class="fas fa-chevron-left"></i> Anterior
+    <a href="{{ url_for('main.inventario', page=page-1, q=query, field=field, category=category, pricing=pricing) }}" class="btn btn-outline btn-sm" title="Anterior">
+        <i class="fas fa-chevron-left"></i>
     </a>
+    {% else %}
+    <span class="btn btn-outline btn-sm" style="opacity:0.4; cursor:default;"><i class="fas fa-chevron-left"></i></span>
     {% endif %}
-    <span class="page-info">Página {{ page }}</span>
+
+    {# Page numbers #}
+    {% set start_page = [1, page - 2] | max %}
+    {% set end_page = [total_pages, page + 2] | min %}
+    
+    {% if start_page > 1 %}
+    <a href="{{ url_for('main.inventario', page=1, q=query, field=field, category=category, pricing=pricing) }}" class="btn btn-outline btn-sm">1</a>
+    {% if start_page > 2 %}<span class="page-info">…</span>{% endif %}
+    {% endif %}
+    
+    {% for p in range(start_page, end_page + 1) %}
+    {% if p == page %}
+    <span class="btn btn-sm" style="background:var(--azul); color:white; cursor:default;">{{ p }}</span>
+    {% else %}
+    <a href="{{ url_for('main.inventario', page=p, q=query, field=field, category=category, pricing=pricing) }}" class="btn btn-outline btn-sm">{{ p }}</a>
+    {% endif %}
+    {% endfor %}
+    
+    {% if end_page < total_pages %}
+    {% if end_page < total_pages - 1 %}<span class="page-info">…</span>{% endif %}
+    <a href="{{ url_for('main.inventario', page=total_pages, q=query, field=field, category=category, pricing=pricing) }}" class="btn btn-outline btn-sm">{{ total_pages }}</a>
+    {% endif %}
+
+    {# Next #}
     {% if has_next %}
-    <a href="{{ url_for('main.inventario', page=page+1, q=query, field=field, category=category, pricing=pricing) }}" class="btn btn-outline btn-sm">
-        Siguiente <i class="fas fa-chevron-right"></i>
+    <a href="{{ url_for('main.inventario', page=page+1, q=query, field=field, category=category, pricing=pricing) }}" class="btn btn-outline btn-sm" title="Siguiente">
+        <i class="fas fa-chevron-right"></i>
     </a>
+    {% else %}
+    <span class="btn btn-outline btn-sm" style="opacity:0.4; cursor:default;"><i class="fas fa-chevron-right"></i></span>
     {% endif %}
+    
+    <span class="page-info" style="margin-left:0.5rem;">{{ total_results }} herramientas</span>
 </div>
+{% endif %}
 {% else %}
 <div class="card card-lg" style="text-align: center; padding: 4rem;">
     <i class="fas fa-search" style="font-size: 2.5rem; color: var(--borde); margin-bottom: 1rem;"></i>

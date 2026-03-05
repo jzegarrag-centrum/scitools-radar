@@ -67,6 +67,15 @@
     }
     @media (max-width:480px) {
         .runs-table th, .runs-table td { padding:0.4rem 0.5rem; font-size:0.8rem; }
+        .agent-header h1 { font-size:1.1rem; }
+        .trigger-card h3 { font-size:0.88rem; }
+        .trigger-card p { font-size:0.78rem; }
+    }
+    @media (max-width:360px) {
+        .panel { padding:0.75rem; }
+        .trigger-card { padding:1rem; }
+        .log-area { font-size:0.68rem; max-height:120px; padding:0.75rem; }
+        .runs-table th, .runs-table td { padding:0.3rem 0.35rem; font-size:0.72rem; }
     }
 </style>
 {% endblock %}
@@ -245,50 +254,77 @@
 
 {% block scripts %}
 <script>
-// Real-time polling
-(function poll() {
-    fetch('{{ url_for("admin.agent_status_api") }}')
-        .then(r => r.json())
-        .then(data => {
-            const panel = document.getElementById('liveMonitorPanel');
-            const title = document.getElementById('monitorTitle');
-            const content = document.getElementById('monitorContent');
+// Real-time polling with interaction-aware pausing
+(function() {
+    let userInteracting = false;
+    let wasRunning = {{ 'true' if agent_status.running else 'false' }};
+    let pollTimer = null;
 
-            if (data.running) {
-                panel.classList.remove('idle');
-                panel.classList.add('');
-                title.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agente en Ejecucion';
-                title.style.color = '#92400E';
-                content.innerHTML = `
-                    <div style="font-weight:600;font-size:0.9rem;">${data.step}</div>
-                    <div class="progress-track"><div class="progress-fill" style="width:${data.progress}%;"></div></div>
-                    <div style="text-align:right;font-size:0.82rem;font-weight:700;color:var(--naranja);">${data.progress}%</div>
-                `;
-                // Update log
-                let logArea = document.getElementById('logArea');
-                if (!logArea) {
-                    logArea = document.createElement('div');
-                    logArea.id = 'logArea';
-                    logArea.className = 'log-area';
-                    panel.appendChild(logArea);
-                }
-                logArea.innerHTML = data.log.map(l =>
-                    `<div class="log-line ${l.includes('ERROR') ? 'error' : ''}">${l}</div>`
-                ).join('');
-                logArea.scrollTop = logArea.scrollHeight;
+    // Detectar interacción del usuario — pausar polling
+    document.addEventListener('mousedown', () => { userInteracting = true; });
+    document.addEventListener('mouseup', () => { setTimeout(() => { userInteracting = false; }, 1500); });
+    document.addEventListener('focusin', (e) => {
+        if (e.target.matches('input, select, textarea, button, a')) userInteracting = true;
+    });
+    document.addEventListener('focusout', () => { setTimeout(() => { userInteracting = false; }, 500); });
+    // Hover sobre botones y formularios pausa el polling
+    document.querySelectorAll('.trigger-card, .schedule-form, form').forEach(el => {
+        el.addEventListener('mouseenter', () => { userInteracting = true; });
+        el.addEventListener('mouseleave', () => { setTimeout(() => { userInteracting = false; }, 1000); });
+    });
 
-                // Disable buttons
-                document.querySelectorAll('.btn-trigger').forEach(b => b.disabled = true);
-                setTimeout(poll, 2000);
-            } else {
-                if (panel.style.borderColor !== 'rgb(187, 247, 208)') {
-                    // State changed from running to idle — reload
-                    location.reload();
+    function poll() {
+        if (userInteracting) {
+            pollTimer = setTimeout(poll, 2000);
+            return;
+        }
+        fetch('{{ url_for("admin.agent_status_api") }}')
+            .then(r => r.json())
+            .then(data => {
+                const panel = document.getElementById('liveMonitorPanel');
+                const title = document.getElementById('monitorTitle');
+                const content = document.getElementById('monitorContent');
+
+                if (data.running) {
+                    panel.classList.remove('idle');
+                    title.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agente en Ejecucion';
+                    title.style.color = '#92400E';
+                    content.innerHTML = `
+                        <div style="font-weight:600;font-size:0.9rem;">${data.step}</div>
+                        <div class="progress-track"><div class="progress-fill" style="width:${data.progress}%;"></div></div>
+                        <div style="text-align:right;font-size:0.82rem;font-weight:700;color:var(--naranja);">${data.progress}%</div>
+                    `;
+                    let logArea = document.getElementById('logArea');
+                    if (!logArea) {
+                        logArea = document.createElement('div');
+                        logArea.id = 'logArea';
+                        logArea.className = 'log-area';
+                        panel.appendChild(logArea);
+                    }
+                    logArea.innerHTML = data.log.map(l =>
+                        `<div class="log-line ${l.includes('ERROR') ? 'error' : ''}">${l}</div>`
+                    ).join('');
+                    logArea.scrollTop = logArea.scrollHeight;
+                    document.querySelectorAll('.btn-trigger').forEach(b => b.disabled = true);
+                    wasRunning = true;
+                    pollTimer = setTimeout(poll, 3000);
+                } else {
+                    if (wasRunning) {
+                        // Transición running→idle: recargar para mostrar resultados
+                        wasRunning = false;
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        // Inactivo: polling muy lento, sin recargar
+                        document.querySelectorAll('.btn-trigger').forEach(b => b.disabled = false);
+                        pollTimer = setTimeout(poll, 30000);
+                    }
                 }
-                setTimeout(poll, 10000);
-            }
-        })
-        .catch(() => setTimeout(poll, 5000));
+            })
+            .catch(() => { pollTimer = setTimeout(poll, 10000); });
+    }
+
+    // Iniciar polling
+    pollTimer = setTimeout(poll, wasRunning ? 3000 : 15000);
 })();
 
 {% if quality_trends %}

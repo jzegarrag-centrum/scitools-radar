@@ -241,6 +241,21 @@
 {% endblock %}
 
 {% block content %}
+<!-- Draft entries alert for admins -->
+{% if current_user.is_authenticated and draft_count and draft_count > 0 %}
+<div style="background:#FEF3C7; border:2px solid #FCD34D; border-radius:var(--radius); padding:1rem 1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+        <i class="fas fa-pen" style="color:#D97706;"></i>
+        <span style="font-weight:600; color:#92400E; font-size:0.92rem;">
+            {{ draft_count }} entrada{{ 's' if draft_count > 1 }} en borrador esperando aprobación
+        </span>
+    </div>
+    <a href="{{ url_for('admin.entries', status='draft') }}" class="btn btn-sm" style="background:#D97706;">
+        <i class="fas fa-check-circle"></i> Revisar y aprobar
+    </a>
+</div>
+{% endif %}
+
 <!-- Hero Section -->
 <div class="hero-section">
     <h1><i class="fas fa-satellite-dish"></i> Últimas Novedades</h1>

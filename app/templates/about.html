@@ -296,6 +296,9 @@
     .method-post { background: #fff3e0; color: #e65100; }
 
     /* Responsive */
+    @media (max-width: 1024px) {
+        .pipeline { grid-template-columns: repeat(3, 1fr) !important; }
+    }
     @media (max-width: 768px) {
         .about-hero { padding: 2rem 1.25rem; }
         .about-hero h1 { font-size: 1.4rem; }
@@ -305,10 +308,12 @@
         .schedule-box { flex-direction: column; text-align: center; gap: 0.75rem; padding: 1rem; }
         .schedule-box i { font-size: 1.5rem; }
         .tech-grid { grid-template-columns: repeat(2, 1fr); }
+        .pipeline { grid-template-columns: repeat(2, 1fr) !important; }
         .pipeline-step { padding: 1rem 0.75rem; }
         .cat-table { font-size: 0.82rem; }
         .cat-table th, .cat-table td { padding: 0.35rem 0.5rem; }
         .team-grid { grid-template-columns: repeat(2, 1fr); }
+        .route-table { font-size: 0.78rem; }
     }
     @media (max-width: 480px) {
         .about-hero h1 { font-size: 1.2rem; }
@@ -326,6 +331,7 @@
         .about-hero p { font-size: 0.85rem; }
         .about-section { padding: 1rem; }
         .about-section h2 { font-size: 0.95rem; }
+        .pipeline { grid-template-columns: 1fr !important; }
         .pipeline-step { padding: 0.75rem 0.5rem; }
         .pipeline-title { font-size: 0.78rem; }
         .pipeline-model { font-size: 0.65rem; }
@@ -335,6 +341,9 @@
         .schedule-box i { font-size: 1.2rem; }
         .schedule-box-info strong { font-size: 0.9rem; }
         .schedule-box-info span { font-size: 0.82rem; }
+        .team-grid { grid-template-columns: 1fr; }
+        .route-table { font-size: 0.72rem; }
+        .route-table code { font-size: 0.68rem; padding: 0.1rem 0.25rem; }
     }
 </style>
 {% endblock %}
@@ -468,6 +477,7 @@
         El agente investigador cubre 16 categorías que abarcan todo el espectro de herramientas
         de investigación, con énfasis especial en ciencias sociales:
     </p>
+    <div class="table-responsive">
     <table class="cat-table">
         <thead>
             <tr>
@@ -494,6 +504,7 @@
             <tr><td class="cat-id"><strong>Ciencias sociales</strong> (13 sub.)</td><td>Stata, gretl, JASP, Gephi, NVivo, SmartPLS, Qualtrics</td></tr>
         </tbody>
     </table>
+    </div>
 
     <h3><i class="fas fa-microscope" style="color: var(--naranja); margin-right: 0.3rem;"></i> Subcategorías de Ciencias Sociales (categoría 16)</h3>
     <div class="about-grid" style="margin-top: 0.75rem;">
@@ -608,6 +619,7 @@
     <div class="about-section" style="margin-bottom: 0;">
         <h2><i class="fas fa-plug"></i> API REST v1</h2>
         <p style="margin-bottom: 0.5rem; font-size: 0.88rem;">Endpoints públicos disponibles para integración:</p>
+        <div class="table-responsive">
         <table class="route-table">
             <thead>
                 <tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr>
@@ -640,6 +652,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
