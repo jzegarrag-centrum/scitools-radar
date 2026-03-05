@@ -666,8 +666,7 @@ def refresh_all_run():
 
     # Parámetros opcionales
     category_filter = request.form.get('category_filter', '').strip() or None
-    min_days_old = request.form.get('min_days_old', '', type=str)
-    min_days_old = int(min_days_old) if min_days_old and min_days_old.isdigit() else None
+    min_days_old = request.form.get('min_days_old', type=int)
     only_empty = request.form.get('only_empty_fields') == 'on'
     limit_str = request.form.get('limit', '').strip()
     limit = int(limit_str) if limit_str and limit_str.isdigit() else current_app.config.get('AGENT_MAX_REFRESH', 10)

@@ -250,7 +250,7 @@ def _tavily_tool_search(tool) -> str:
         from tavily import TavilyClient
         tavily = TavilyClient(api_key=tavily_key)
         results = tavily.search(
-            query=f'{tool.name} scientific research tool features update 2025 2026',
+            query=f'{tool.name} scientific research tool features update {datetime.utcnow().year} {datetime.utcnow().year + 1}',
             search_depth='basic',
             max_results=3,
             include_answer=False,
@@ -456,7 +456,7 @@ def run_refresh_pipeline(
             new_content = write_improved_content(tool, research_data)
 
             # Guardar en BD
-            _apply_content_update(tool, new_content, review['score'])
+            _apply_content_update(tool, new_content)
             db.session.commit()
 
             # Score re-evaluado (post-update)
@@ -517,7 +517,7 @@ def run_refresh_pipeline(
     return stats
 
 
-def _apply_content_update(tool, new_content: Dict, quality_score_before: int) -> None:
+def _apply_content_update(tool, new_content: Dict) -> None:
     """Aplica el contenido generado al objeto Tool."""
     description = new_content.get('description', '')
     features = new_content.get('features', [])
@@ -537,5 +537,5 @@ def _apply_content_update(tool, new_content: Dict, quality_score_before: int) ->
         tool.pricing = pricing
 
     tool.auto_updated = True
-    tool.quality_score = quality_score_before
+    tool.quality_score = review_tool_quality(tool)['score']
     tool.last_updated = datetime.utcnow()
