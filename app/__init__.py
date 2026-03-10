@@ -1,4 +1,6 @@
 import os
+from datetime import date, datetime, timezone
+from urllib.parse import parse_qs, urlparse
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -11,6 +13,45 @@ db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 cache = Cache()
+
+SPANISH_MONTHS = {
+    1: 'enero',
+    2: 'febrero',
+    3: 'marzo',
+    4: 'abril',
+    5: 'mayo',
+    6: 'junio',
+    7: 'julio',
+    8: 'agosto',
+    9: 'septiembre',
+    10: 'octubre',
+    11: 'noviembre',
+    12: 'diciembre',
+}
+
+SPANISH_MONTHS_ABBR = {
+    1: 'ene',
+    2: 'feb',
+    3: 'mar',
+    4: 'abr',
+    5: 'may',
+    6: 'jun',
+    7: 'jul',
+    8: 'ago',
+    9: 'sep',
+    10: 'oct',
+    11: 'nov',
+    12: 'dic',
+}
+
+KNOWN_BAD_IMAGE_HOSTS = {
+    'www.orca-ai.com',
+}
+
+KNOWN_BAD_IMAGE_PATHS = {
+    ('www.lens.org', '/images/lens-logo.png'),
+    ('www.bibliometrix.org', '/assets/img/logo_bg.png'),
+}
 
 
 def create_app(config_name=None):
@@ -52,7 +93,15 @@ def create_app(config_name=None):
     # Context processors para templates
     @app.context_processor
     def inject_theme():
-        return {'theme': app.config['THEME_COLORS']}
+        return {
+            'theme': app.config['THEME_COLORS'],
+            'format_date_es': _format_date_es,
+            'format_date_full_es': _format_date_full_es,
+            'format_date_short_es': _format_date_short_es,
+            'format_day_month_es': _format_day_month_es,
+            'format_month_abbr_es': _format_month_abbr_es,
+            'safe_image_url': _safe_image_url,
+        }
     
     # Health check (lightweight, no DB)
     @app.route('/health')
@@ -138,6 +187,72 @@ def _ensure_schema(app):
                         app.logger.info('Widened tool columns: %s', ', '.join(fixed))
     except Exception as exc:
         app.logger.warning('Schema ensure skipped: %s', exc)
+
+
+def _normalize_date(value):
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return None
+
+
+def _format_month_abbr_es(value):
+    normalized = _normalize_date(value)
+    if normalized is None:
+        return ''
+    return SPANISH_MONTHS_ABBR[normalized.month]
+
+
+def _format_day_month_es(value):
+    normalized = _normalize_date(value)
+    if normalized is None:
+        return ''
+    return f'{normalized.day:02d} {SPANISH_MONTHS_ABBR[normalized.month]}'
+
+
+def _format_date_short_es(value):
+    normalized = _normalize_date(value)
+    if normalized is None:
+        return ''
+    return f'{normalized.day:02d} {SPANISH_MONTHS_ABBR[normalized.month]} {normalized.year}'
+
+
+def _format_date_full_es(value):
+    normalized = _normalize_date(value)
+    if normalized is None:
+        return ''
+    return f'{normalized.day:02d} {SPANISH_MONTHS[normalized.month]} {normalized.year}'
+
+
+def _format_date_es(value):
+    normalized = _normalize_date(value)
+    if normalized is None:
+        return ''
+    return f'{normalized.day:02d} de {SPANISH_MONTHS[normalized.month]}, {normalized.year}'
+
+
+def _safe_image_url(url):
+    if not url:
+        return None
+
+    parsed = urlparse(url)
+    host = parsed.netloc.lower()
+    path = parsed.path.rstrip('/')
+
+    if host in KNOWN_BAD_IMAGE_HOSTS or (host, path) in KNOWN_BAD_IMAGE_PATHS:
+        return None
+
+    expires_at = parse_qs(parsed.query).get('se', [None])[0]
+    if expires_at:
+        try:
+            expiry = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+            if expiry <= datetime.now(timezone.utc):
+                return None
+        except ValueError:
+            pass
+
+    return url
 
 
 def _cleanup_stuck_runs(app):

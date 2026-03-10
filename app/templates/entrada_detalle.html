@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Radar del {{ entry.date.strftime('%d de %B, %Y') }} - SciTools Radar{% endblock %}
+{% block title %}Radar del {{ format_date_es(entry.date) }} - SciTools Radar{% endblock %}
 
 {% block styles %}
 <style>
@@ -403,13 +403,14 @@
 <div class="breadcrumb">
     <a href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Blog</a>
     <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
-    <span>{{ entry.date.strftime('%d %B %Y') }}</span>
+    <span>{{ format_date_full_es(entry.date) }}</span>
 </div>
 
 <!-- Hero with Cover Image -->
 <div class="entry-hero">
-    {% if entry.cover_image_url %}
-    <img src="{{ entry.cover_image_url }}" alt="Portada — Radar del {{ entry.date.strftime('%d de %B') }}" class="entry-cover" loading="lazy">
+    {% set cover_url = safe_image_url(entry.cover_image_url) %}
+    {% if cover_url %}
+    <img src="{{ cover_url }}" alt="Portada — Radar del {{ format_date_es(entry.date) }}" class="entry-cover" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'), { className: 'entry-cover-placeholder', innerHTML: '<i class=\'fas fa-satellite-dish\'></i>' }));">
     {% else %}
     <div class="entry-cover-placeholder">
         <i class="fas fa-satellite-dish"></i>
@@ -420,11 +421,11 @@
         <div class="entry-hero-header">
             <div class="entry-date-display">
                 <div class="entry-date-day">{{ entry.date.strftime('%d') }}</div>
-                <div class="entry-date-month">{{ entry.date.strftime('%b') }}</div>
+                <div class="entry-date-month">{{ format_month_abbr_es(entry.date) }}</div>
                 <div class="entry-date-year">{{ entry.date.strftime('%Y') }}</div>
             </div>
             <div class="entry-hero-info">
-                <h1>Radar del {{ entry.date.strftime('%d de %B, %Y') }}</h1>
+                <h1>Radar del {{ format_date_es(entry.date) }}</h1>
                 <div class="entry-hero-stats">
                     <span class="entry-hero-stat">
                         <i class="fas fa-cube"></i> {{ tools_count }} herramientas
@@ -498,8 +499,9 @@
         <div class="tool-card-grid">
             {% for tool in tools %}
             <a href="{{ url_for('main.herramienta_detalle', slug=tool.slug) }}" class="tool-card-mini">
-                {% if tool.logo_url %}
-                <img src="{{ tool.logo_url }}" alt="{{ tool.name }}" class="tool-card-mini-logo" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                {% set tool_logo_url = safe_image_url(tool.logo_url) %}
+                {% if tool_logo_url %}
+                <img src="{{ tool_logo_url }}" alt="{{ tool.name }}" class="tool-card-mini-logo" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="tool-card-mini-icon" style="display:none;"><i class="fas fa-cube"></i></div>
                 {% else %}
                 <div class="tool-card-mini-icon"><i class="fas fa-cube"></i></div>
@@ -554,14 +556,14 @@
 <div class="entry-nav">
     {% if prev_entry %}
     <a href="{{ url_for('main.entrada_detalle', date_str=prev_entry.date.isoformat()) }}">
-        <i class="fas fa-chevron-left"></i> {{ prev_entry.date.strftime('%d %b %Y') }}
+        <i class="fas fa-chevron-left"></i> {{ format_date_short_es(prev_entry.date) }}
     </a>
     {% else %}
     <span></span>
     {% endif %}
     {% if next_entry %}
     <a href="{{ url_for('main.entrada_detalle', date_str=next_entry.date.isoformat()) }}">
-        {{ next_entry.date.strftime('%d %b %Y') }} <i class="fas fa-chevron-right"></i>
+        {{ format_date_short_es(next_entry.date) }} <i class="fas fa-chevron-right"></i>
     </a>
     {% else %}
     <span></span>

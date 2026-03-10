@@ -102,6 +102,9 @@
         gap: 0.5rem;
         margin: 1.5rem 0;
     }
+    .pipeline.pipeline-wide {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
     @media (max-width: 768px) {
         .pipeline { grid-template-columns: 1fr; }
     }
@@ -298,6 +301,7 @@
     /* Responsive */
     @media (max-width: 1024px) {
         .pipeline { grid-template-columns: repeat(3, 1fr) !important; }
+        .pipeline.pipeline-wide { grid-template-columns: repeat(3, 1fr) !important; }
     }
     @media (max-width: 768px) {
         .about-hero { padding: 2rem 1.25rem; }
@@ -309,6 +313,7 @@
         .schedule-box i { font-size: 1.5rem; }
         .tech-grid { grid-template-columns: repeat(2, 1fr); }
         .pipeline { grid-template-columns: repeat(2, 1fr) !important; }
+        .pipeline.pipeline-wide { grid-template-columns: repeat(2, 1fr) !important; }
         .pipeline-step { padding: 1rem 0.75rem; }
         .cat-table { font-size: 0.82rem; }
         .cat-table th, .cat-table td { padding: 0.35rem 0.5rem; }
@@ -332,6 +337,7 @@
         .about-section { padding: 1rem; }
         .about-section h2 { font-size: 0.95rem; }
         .pipeline { grid-template-columns: 1fr !important; }
+        .pipeline.pipeline-wide { grid-template-columns: 1fr !important; }
         .pipeline-step { padding: 0.75rem 0.5rem; }
         .pipeline-title { font-size: 0.78rem; }
         .pipeline-model { font-size: 0.65rem; }
@@ -392,7 +398,7 @@
     <h2><i class="fas fa-robot"></i> Pipeline de Agentes IA</h2>
     <p>El proceso de generación de contenido utiliza un pipeline de 6 etapas, cada una con un modelo especializado:</p>
 
-    <div class="pipeline" style="grid-template-columns: repeat(6, 1fr);">
+    <div class="pipeline pipeline-wide">
         <div class="pipeline-step">
             <div class="pipeline-num">1</div>
             <div class="pipeline-icon"><i class="fas fa-search"></i></div>

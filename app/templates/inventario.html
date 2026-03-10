@@ -481,8 +481,9 @@
     <div class="tool-card">
         <div class="tool-card-header">
             <div class="tool-icon">
-                {% if tool.logo_url %}
-                <img src="{{ tool.logo_url }}" alt="{{ tool.name }}" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\'fas fa-cube\'></i>';">
+                {% set tool_logo_url = safe_image_url(tool.logo_url) %}
+                {% if tool_logo_url %}
+                <img src="{{ tool_logo_url }}" alt="{{ tool.name }}" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\'fas fa-cube\'></i>';">
                 {% else %}
                 <i class="fas fa-{% if 'AI' in (tool.category or '') or 'ai' in (tool.category or '').lower() %}brain{% elif 'reference' in (tool.category or '').lower() %}book{% elif 'data' in (tool.category or '').lower() or 'statist' in (tool.category or '').lower() %}chart-line{% elif 'visual' in (tool.category or '').lower() %}palette{% elif 'writing' in (tool.category or '').lower() or 'escrit' in (tool.category or '').lower() %}pen-fancy{% elif 'open' in (tool.category or '').lower() %}lock-open{% elif 'review' in (tool.category or '').lower() %}tasks{% elif 'notebook' in (tool.category or '').lower() %}laptop-code{% elif 'qualitative' in (tool.category or '').lower() %}comments{% elif 'survey' in (tool.category or '').lower() %}poll{% elif 'bibliometr' in (tool.category or '').lower() %}project-diagram{% else %}cube{% endif %}"></i>
                 {% endif %}

@@ -252,8 +252,9 @@
 <div class="tool-hero">
     <div class="tool-hero-top">
         <div class="tool-hero-icon">
-            {% if tool.logo_url %}
-            <img src="{{ tool.logo_url }}" alt="{{ tool.name }}" style="width:100%;height:100%;object-fit:contain;border-radius:16px;" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-cube\'></i>';">
+            {% set tool_logo_url = safe_image_url(tool.logo_url) %}
+            {% if tool_logo_url %}
+            <img src="{{ tool_logo_url }}" alt="{{ tool.name }}" style="width:100%;height:100%;object-fit:contain;border-radius:16px;" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-cube\'></i>';">
             {% else %}
             <i class="fas fa-cube"></i>
             {% endif %}
@@ -332,11 +333,11 @@
     <div class="tool-meta-grid">
         <div class="tool-meta-item">
             <span class="tool-meta-label">Primera detección</span>
-            <span class="tool-meta-value">{{ tool.first_seen.strftime('%d %b %Y') if tool.first_seen else 'No registrada' }}</span>
+            <span class="tool-meta-value">{{ format_date_short_es(tool.first_seen) if tool.first_seen else 'No registrada' }}</span>
         </div>
         <div class="tool-meta-item">
             <span class="tool-meta-label">Última actualización</span>
-            <span class="tool-meta-value">{{ tool.last_updated.strftime('%d %b %Y') if tool.last_updated else 'Sin actualizaciones' }}</span>
+            <span class="tool-meta-value">{{ format_date_short_es(tool.last_updated) if tool.last_updated else 'Sin actualizaciones' }}</span>
         </div>
         {% if tool.developer %}
         <div class="tool-meta-item">
@@ -363,7 +364,7 @@
             {% for entry, entry_updates in grouped_updates %}
             <div class="entry-group">
                 <div class="entry-group-header">
-                    <span class="entry-group-date">{{ entry.date.strftime('%d de %B, %Y') }}</span>
+                    <span class="entry-group-date">{{ format_date_es(entry.date) }}</span>
                     <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}" class="entry-group-link">
                         <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i> Ver entrada
                     </a>
@@ -396,10 +397,10 @@
         <div>
             {% for entry in entries %}
             <div class="entry-list-item">
-                <span class="entry-list-date">{{ entry.date.strftime('%d %b') }}</span>
+                <span class="entry-list-date">{{ format_day_month_es(entry.date) }}</span>
                 <div class="entry-list-info">
                     <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}">
-                        Radar del {{ entry.date.strftime('%d de %B, %Y') }}
+                        Radar del {{ format_date_es(entry.date) }}
                     </a>
                     <div class="entry-list-stats">
                         {{ entry.tools|length }} herramientas &middot; {{ entry.updates|length }} actualizaciones

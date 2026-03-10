@@ -279,9 +279,10 @@
 {% if entries.items %}
     {% for entry in entries.items %}
     <article class="entry-card">
-        {% if entry.cover_image_url %}
+        {% set cover_url = safe_image_url(entry.cover_image_url) %}
+        {% if cover_url %}
         <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}">
-            <img class="entry-cover" src="{{ entry.cover_image_url }}" alt="Portada"
+            <img class="entry-cover" src="{{ cover_url }}" alt="Portada"
                  onerror="this.parentElement.outerHTML='<div class=entry-cover-placeholder><i class=fas\ fa-satellite-dish></i></div>'">
         </a>
         {% else %}
@@ -292,13 +293,13 @@
         <div class="entry-card-header">
             <div class="entry-date-badge">
                 <div class="day">{{ entry.date.strftime('%d') }}</div>
-                <div class="month">{{ entry.date.strftime('%b') }}</div>
+                <div class="month">{{ format_month_abbr_es(entry.date) }}</div>
             </div>
             <div>
                 <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--gris-oscuro); margin-bottom: 0.25rem;">
                     <a href="{{ url_for('main.entrada_detalle', date_str=entry.date.isoformat()) }}"
                        style="color: inherit; text-decoration: none;">
-                        Radar del {{ entry.date.strftime('%d de %B, %Y') }}
+                        Radar del {{ format_date_es(entry.date) }}
                     </a>
                 </h2>
                 <div class="entry-meta">
@@ -316,8 +317,9 @@
             <div class="entry-tools-strip">
                 {% for tool in entry.tools[:6] %}
                 <a href="{{ url_for('main.herramienta_detalle', slug=tool.slug) }}" class="tool-chip">
-                    {% if tool.logo_url %}
-                    <img src="{{ tool.logo_url }}" alt="" style="width:14px;height:14px;border-radius:2px;vertical-align:middle;">
+                    {% set tool_logo_url = safe_image_url(tool.logo_url) %}
+                    {% if tool_logo_url %}
+                    <img src="{{ tool_logo_url }}" alt="" style="width:14px;height:14px;border-radius:2px;vertical-align:middle;" loading="lazy" onerror="this.outerHTML='<i class=\'fas fa-cube\'></i>';"></img>
                     {% else %}
                     <i class="fas fa-cube"></i>
                     {% endif %}
